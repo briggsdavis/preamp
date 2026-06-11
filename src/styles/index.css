@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* Global base styles. Add design tokens / theme customizations here.
+   Tailwind v4 is configured via this CSS file — see the `@theme` directive
+   in the docs for custom colors, fonts, and spacing.
+   https://tailwindcss.com/docs/theme */
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
