@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { NAV, SITE } from "@/data/site";
 import { RippleStripes } from "@/components/site/RippleStripes";
 import { Reveal } from "@/components/site/Reveal";
+import { InstagramIcon, TikTokIcon } from "@/components/site/SocialIcons";
 
 export function Footer() {
   return (
@@ -19,6 +20,26 @@ export function Footer() {
           <p className="mt-2 text-sm text-cream/70">
             A coffee-and-vinyl listening bar. Brews & beats, all day.
           </p>
+          <div className="mt-5 flex items-center gap-3">
+            <a
+              href={SITE.instagram}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Pre Amp on Instagram"
+              className="grid h-10 w-10 place-items-center rounded-full border border-cream/15 text-cream/80 transition-all hover:-translate-y-0.5 hover:border-gold hover:text-gold"
+            >
+              <InstagramIcon className="h-5 w-5" />
+            </a>
+            <a
+              href={SITE.tiktok}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="RD Restaurants on TikTok"
+              className="grid h-10 w-10 place-items-center rounded-full border border-cream/15 text-cream/80 transition-all hover:-translate-y-0.5 hover:border-gold hover:text-gold"
+            >
+              <TikTokIcon className="h-5 w-5" />
+            </a>
+          </div>
           <a
             href={SITE.instagram}
             target="_blank"

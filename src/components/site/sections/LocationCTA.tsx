@@ -10,7 +10,7 @@ export function LocationCTA() {
         <RippleStripes count={26} fade="none" />
       </div>
 
-      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-24 md:grid-cols-2 md:items-center md:px-8">
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-24 md:grid-cols-2 md:items-stretch md:px-8">
         <motion.div
           initial={{ opacity: 0, x: -30, filter: "blur(12px)" }}
           whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
@@ -70,7 +70,7 @@ export function LocationCTA() {
           <iframe
             title="Pre Amp Coffee Studio location map"
             src={SITE.mapsEmbed}
-            className="h-[420px] w-full"
+            className="h-full min-h-[420px] w-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />

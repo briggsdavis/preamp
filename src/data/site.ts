@@ -15,6 +15,7 @@ export const SITE = {
     { day: "Sunday", time: "8:00 AM – 5:00 PM" },
   ],
   instagram: "https://www.instagram.com/preamp.coffeestudio/",
+  tiktok: "https://www.tiktok.com/@rd_restaurants",
   mapsEmbed:
     "https://www.google.com/maps?q=5840+Forbes+Ave,+Pittsburgh,+PA+15217&output=embed",
   mapsLink: "https://www.google.com/maps/search/?api=1&query=5840+Forbes+Ave+Pittsburgh+PA+15217",
@@ -134,6 +135,34 @@ export const TESTIMONIALS: Testimonial[] = [
     name: "Marcus T.",
     source: "Yelp",
   },
+];
+
+export interface Restaurant {
+  name: string;
+  /** Square photo (e.g. the restaurant's Facebook profile image). */
+  image?: string;
+  href?: string;
+}
+
+/**
+ * The other concepts under Richard Dishon's restaurant group (RD Restaurants).
+ * Each renders as a square tile. Drop in the real Facebook profile images and
+ * page links as `image` / `href` to replace the on-brand placeholders.
+ */
+export const RD_RESTAURANTS: Restaurant[] = [
+  { name: "Pre Amp Coffee Studio" },
+  { name: "The Vinyl Room" },
+  { name: "Forbes & Murray" },
+  { name: "Honeycomb Kitchen" },
+  { name: "Smokestack BBQ" },
+  { name: "Lantern Noodle Bar" },
+  { name: "Steel City Slice" },
+  { name: "The Gilded Spoon" },
+  { name: "Marigold Cafe" },
+  { name: "Northside Tap" },
+  { name: "Sable & Salt" },
+  { name: "Carmine's Trattoria" },
+  { name: "Driftwood Oyster Co." },
 ];
 
 export interface QuizQuestion {
