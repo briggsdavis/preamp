@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
 import App from "@/App";
-import { ConvexProvider } from "@/providers/ConvexProvider";
 import "@/styles/index.css";
 
 const rootElement = document.getElementById("root");
@@ -13,10 +12,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ConvexProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ConvexProvider>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </StrictMode>,
 );

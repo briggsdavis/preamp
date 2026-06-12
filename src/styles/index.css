@@ -1,12 +1,34 @@
 @import "tailwindcss";
 
-/* Global base styles. Add design tokens / theme customizations here.
-   Tailwind v4 is configured via this CSS file — see the `@theme` directive
-   in the docs for custom colors, fonts, and spacing.
-   https://tailwindcss.com/docs/theme */
+/* =========================================================================
+   Pre Amp Coffee Studio — design tokens
+   Warm "sunset" palette: cream → gold → orange → terracotta → brick → maroon,
+   grounded in espresso brown. Groovy display (Monoton/Righteous) + clean sans.
+   ========================================================================= */
+@theme {
+  --color-cream: #f4ecde;
+  --color-cream-deep: #ece0cc;
+  --color-sand: #e3d3b8;
+  --color-gold: #d9883b;
+  --color-amber: #e0a042;
+  --color-orange: #ce6b38;
+  --color-terracotta: #b55335;
+  --color-brick: #9e4a3c;
+  --color-maroon: #6b2f26;
+  --color-espresso: #2a1a12;
+  --color-espresso-soft: #3b2417;
+
+  --font-display: "Monoton", system-ui, sans-serif;
+  --font-groovy: "Righteous", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, -apple-system, sans-serif;
+}
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 html,
@@ -17,5 +39,131 @@ body,
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
+  background-color: var(--color-cream);
+  color: var(--color-espresso);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Paper grain overlay for warmth ------------------------------------------ */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Typography helpers ------------------------------------------------------ */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  line-height: 1.05;
+}
+.font-groovy {
+  font-family: var(--font-groovy);
+  letter-spacing: 0.01em;
+}
+
+/* The lined / "grooved" retro headline effect inspired by the original site.
+   Layers gradient text-fill with repeating horizontal grooves. */
+.grooved {
+  font-family: var(--font-groovy);
+  position: relative;
+  background-image: repeating-linear-gradient(
+    180deg,
+    var(--color-orange) 0,
+    var(--color-orange) 2px,
+    transparent 2px,
+    transparent 5px
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--color-terracotta);
+}
+
+/* =========================================================================
+   Animations
+   ========================================================================= */
+
+/* Rippling sunset stripes (decorative background) */
+@keyframes stripe-ripple {
+  0%,
+  100% {
+    transform: scaleY(1) translateY(0);
+  }
+  50% {
+    transform: scaleY(1.04) translateY(-1.5%);
+  }
+}
+
+@keyframes stripe-shimmer {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Slow vinyl spin */
+@keyframes spin-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-spin-slow {
+  animation: spin-slow 14s linear infinite;
+}
+
+/* Floating bob */
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+.animate-bob {
+  animation: bob 6s ease-in-out infinite;
+}
+
+/* Marquee for the running ticker */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.animate-marquee {
+  animation: marquee 26s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Utility: hide scrollbars on horizontal carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
