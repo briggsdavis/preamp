@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { TESTIMONIALS } from "@/data/site";
-import { SectionLines } from "@/components/site/SectionLines";
+import { SideStripes } from "@/components/site/SideStripes";
 
 export function Testimonials() {
   const [index, setIndex] = useState(0);
@@ -21,8 +21,8 @@ export function Testimonials() {
 
   return (
     <section className="relative overflow-hidden px-6 py-24 md:px-8">
-      <SectionLines count={24} opacity={0.06} />
-      <div className="relative mx-auto max-w-5xl">
+      <SideStripes />
+      <div className="relative z-10 mx-auto max-w-5xl">
       <motion.div
         initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}

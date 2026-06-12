@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 import { FEATURED, type Drink } from "@/data/site";
-import { SectionLines } from "@/components/site/SectionLines";
+import { SideStripes } from "@/components/site/SideStripes";
 
 function DrinkCard({ drink }: { drink: Drink }) {
   return (
@@ -51,10 +51,11 @@ export function FeaturedCarousel() {
 
   // rAF-driven marquee. Translating ourselves (rather than a CSS animation)
   // lets us (a) wrap on an exactly-measured set width to kill the end-of-loop
-  // jump, and (b) add a speed boost proportional to scroll velocity.
+  // jump, and (b) ease the speed up a touch while you're actively scrolling.
   const x = useRef(0);
   const setWidth = useRef(0);
-  const boost = useRef(0);
+  const boostTarget = useRef(0); // where the extra speed wants to be
+  const boost = useRef(0); // eased extra speed actually applied
   const paused = useRef(false);
 
   useEffect(() => {
@@ -74,7 +75,9 @@ export function FeaturedCarousel() {
     measure();
     window.addEventListener("resize", measure);
 
-    // Scroll velocity feeds a decaying boost so the strip accelerates with you.
+    // Scroll velocity nudges a small, gently-decaying boost target so the
+    // strip drifts a touch faster while you scroll, never lurching.
+    const MAX_BOOST = 45; // px/s of extra speed at most (~base speed)
     let lastScrollY = window.scrollY;
     let lastScrollT = performance.now();
     const onScroll = () => {
@@ -82,25 +85,28 @@ export function FeaturedCarousel() {
       const dy = Math.abs(window.scrollY - lastScrollY);
       const dt = Math.max(now - lastScrollT, 1);
       const velocity = (dy / dt) * 1000; // px per second
-      boost.current = Math.min(boost.current + velocity * 0.5, 1600);
+      boostTarget.current = Math.min(velocity * 0.03, MAX_BOOST);
       lastScrollY = window.scrollY;
       lastScrollT = now;
     };
     if (!reduce) window.addEventListener("scroll", onScroll, { passive: true });
 
-    const base = reduce ? 0 : 55; // px per second at rest
+    const base = reduce ? 0 : 42; // px per second at rest (self-scroll)
     let last = performance.now();
     let raf = 0;
     const frame = (now: number) => {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
 
+      // The boost target relaxes back to zero, and the applied boost eases
+      // toward it slowly — so any speed change ramps in and out gradually.
+      boostTarget.current *= 0.94;
+      if (boostTarget.current < 0.1) boostTarget.current = 0;
+      boost.current += (boostTarget.current - boost.current) * Math.min(dt * 2.5, 1);
+
       if (!paused.current) {
         x.current -= (base + boost.current) * dt;
       }
-      // Decay the boost back toward the resting speed.
-      boost.current *= 0.9;
-      if (boost.current < 0.5) boost.current = 0;
 
       const w = setWidth.current;
       if (w > 0) {
@@ -123,7 +129,7 @@ export function FeaturedCarousel() {
 
   return (
     <section className="relative overflow-hidden bg-cream-deep py-24">
-      <SectionLines count={28} opacity={0.06} />
+      <SideStripes />
 
       <motion.div
         initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}

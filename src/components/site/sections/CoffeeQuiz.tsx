@@ -42,7 +42,7 @@ export function CoffeeQuiz() {
             The Pre Amp Oracle
           </p>
           <h2 className="mt-3 font-groovy text-4xl leading-tight md:text-5xl">
-            Not sure what to order? Let the bar read your mood.
+            Let the bar read your mood.
           </h2>
           <p className="mt-5 max-w-md text-cream/70">
             Four quick taps and we'll spin up the drink with your name on it.

@@ -14,7 +14,7 @@ export function Footer() {
         <RippleStripes count={20} fade="none" />
       </div>
 
-      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pb-12 pt-40 md:grid-cols-4 md:px-8">
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pb-12 pt-56 md:grid-cols-4 md:px-8">
         <Reveal className="md:col-span-1">
           <p className="font-display text-3xl text-gold">Pre Amp</p>
           <p className="mt-2 text-sm text-cream/70">
