@@ -96,22 +96,22 @@ body {
 @keyframes stripe-ripple {
   0%,
   100% {
-    transform: scaleY(0.9) translateY(0);
+    transform: scaleY(0.985) translateY(0);
   }
   50% {
-    transform: scaleY(1.1) translateY(-2.5%);
+    transform: scaleY(1.015) translateY(-0.5%);
   }
 }
 
 @keyframes stripe-shimmer {
   0%,
   100% {
-    opacity: 0.45;
-    filter: brightness(0.72);
+    opacity: 0.82;
+    filter: brightness(0.96);
   }
   50% {
-    opacity: 1;
-    filter: brightness(1.18);
+    opacity: 0.95;
+    filter: brightness(1.04);
   }
 }
 
