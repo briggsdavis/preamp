@@ -7,6 +7,7 @@ import { ParallaxBanner } from "@/components/site/sections/ParallaxBanner";
 import { CoffeeQuiz } from "@/components/site/sections/CoffeeQuiz";
 import { Testimonials } from "@/components/site/sections/Testimonials";
 import { LocationCTA } from "@/components/site/sections/LocationCTA";
+import { RestaurantGroup } from "@/components/site/sections/RestaurantGroup";
 
 export function Home() {
   return (
@@ -34,6 +35,7 @@ export function Home() {
       <CoffeeQuiz />
       <Testimonials />
       <LocationCTA />
+      <RestaurantGroup />
     </PageWrapper>
   );
 }
