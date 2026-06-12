@@ -43,8 +43,8 @@ export function Hero() {
         className="relative mx-auto w-full max-w-7xl px-6 pt-28 md:px-8"
       >
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ delay: 0.1, duration: 0.6 }}
           className="font-groovy text-sm uppercase tracking-[0.4em] text-amber"
         >
@@ -52,8 +52,8 @@ export function Hero() {
         </motion.p>
 
         <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 30, filter: "blur(14px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ delay: 0.2, duration: 0.7 }}
           className="mt-4 font-display text-[15vw] leading-[0.9] text-cream drop-shadow-[0_4px_0_rgba(0,0,0,0.15)] md:text-[8rem]"
         >
@@ -61,8 +61,8 @@ export function Hero() {
         </motion.h1>
 
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ delay: 0.35, duration: 0.6 }}
           className="mt-4 max-w-xl font-groovy text-2xl leading-snug text-cream/95 md:text-3xl"
         >
@@ -71,8 +71,8 @@ export function Hero() {
         </motion.p>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
           transition={{ delay: 0.5, duration: 0.6 }}
           className="mt-9 flex flex-wrap gap-4"
         >

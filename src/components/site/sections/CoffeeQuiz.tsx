@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { QUIZ, predictDrink, type Drink } from "@/data/site";
+import { SectionLines } from "@/components/site/SectionLines";
 
 export function CoffeeQuiz() {
   const [step, setStep] = useState(0);
@@ -29,8 +30,14 @@ export function CoffeeQuiz() {
 
   return (
     <section className="relative overflow-hidden bg-espresso py-24 text-cream">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2 md:px-8">
-        <div>
+      <SectionLines count={26} opacity={0.1} />
+      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2 md:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-amber">
             The Pre Amp Oracle
           </p>
@@ -41,9 +48,14 @@ export function CoffeeQuiz() {
             Four quick taps and we'll spin up the drink with your name on it.
             (Then come let us actually make it.)
           </p>
-        </div>
+        </motion.div>
 
-        <div className="relative min-h-[340px] rounded-3xl border border-cream/15 bg-cream/[0.04] p-8 backdrop-blur">
+        <motion.div
+          initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
+          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="relative min-h-[340px] rounded-3xl border border-cream/15 bg-cream/[0.04] p-8 backdrop-blur">
           <AnimatePresence mode="wait">
             {!result ? (
               <motion.div
@@ -120,7 +132,7 @@ export function CoffeeQuiz() {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

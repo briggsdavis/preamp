@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* =========================================================================
-   Pre Amp Coffee Studio — design tokens
+   Pre Amp Coffee Studio: design tokens
    Warm "sunset" palette: cream → gold → orange → terracotta → brick → maroon,
    grounded in espresso brown. Groovy display (Monoton/Righteous) + clean sans.
    ========================================================================= */
@@ -90,24 +90,28 @@ body {
    Animations
    ========================================================================= */
 
-/* Rippling sunset stripes (decorative background) */
+/* Rippling sunset stripes (decorative background).
+   The motif carries a "flickering rhythm": a size pulse paired with an
+   opacity + darkness pulse so the lines breathe and shimmer noticeably. */
 @keyframes stripe-ripple {
   0%,
   100% {
-    transform: scaleY(1) translateY(0);
+    transform: scaleY(0.9) translateY(0);
   }
   50% {
-    transform: scaleY(1.04) translateY(-1.5%);
+    transform: scaleY(1.1) translateY(-2.5%);
   }
 }
 
 @keyframes stripe-shimmer {
   0%,
   100% {
-    opacity: 0.85;
+    opacity: 0.45;
+    filter: brightness(0.72);
   }
   50% {
     opacity: 1;
+    filter: brightness(1.18);
   }
 }
 

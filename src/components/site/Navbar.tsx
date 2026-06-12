@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -73,11 +73,23 @@ function DesktopItem({ item }: { item: NavItem }) {
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const lastY = useRef(0);
   const location = useLocation();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 24);
+      // Hide when scrolling down past the header; reveal when scrolling up.
+      if (y > lastY.current && y > 120) {
+        setHidden(true);
+      } else if (y < lastY.current) {
+        setHidden(false);
+      }
+      lastY.current = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -92,10 +104,12 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 transition-all duration-300",
+        "fixed inset-x-0 top-0 z-50 backdrop-blur-md transition-all duration-300",
         scrolled
-          ? "bg-cream/90 shadow-sm shadow-maroon/10 backdrop-blur-md"
-          : "bg-transparent",
+          ? "bg-cream/95 shadow-sm shadow-maroon/10"
+          : "bg-cream/80 shadow-sm shadow-maroon/5",
+        // Slide out of view on scroll-down so it reappears on scroll-up.
+        hidden && !mobileOpen && "-translate-y-full",
       )}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">

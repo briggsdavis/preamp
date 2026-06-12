@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { Layout } from "@/components/site/Layout";
 import { Home } from "@/pages/Home";
 import { NotDeveloped } from "@/pages/NotDeveloped";
+import { useSmoothScroll } from "@/lib/useSmoothScroll";
 
 /**
  * Route table for Pre Amp Coffee Studio. Only the home page is built out;
@@ -13,6 +14,9 @@ import { NotDeveloped } from "@/pages/NotDeveloped";
  */
 export default function App() {
   const location = useLocation();
+
+  // Subtle scroll weight via eased wheel scrolling.
+  useSmoothScroll();
 
   // Jump to the top of the page on every route change.
   useEffect(() => {

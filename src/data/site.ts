@@ -62,7 +62,7 @@ export interface Drink {
 export const FEATURED: Drink[] = [
   {
     name: "Smokey Robinson",
-    blurb: "Our house signature — smooth, sweet, a little smoky.",
+    blurb: "Our house signature: smooth, sweet, a little smoky.",
     notes: "Local honey · smoked sea salt · cinnamon · peppercorn",
     badge: "Signature",
     hue: "var(--color-gold)",
@@ -106,7 +106,7 @@ export interface Testimonial {
 export const TESTIMONIALS: Testimonial[] = [
   {
     quote:
-      "Incredible space — great staff, killer decor, and the records spinning all day make it feel like a party.",
+      "Incredible space, great staff, killer decor, and the records spinning all day make it feel like a party.",
     name: "Jordan M.",
     source: "Google Reviews",
   },

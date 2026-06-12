@@ -19,7 +19,7 @@ export function Home() {
         image="https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1920&q=80"
         kicker="The Cup"
         heading="Dialed Daily"
-        sub="Passenger beans, pulled and poured with care — from espresso to slow Kyoto cold brew."
+        sub="Passenger beans, pulled and poured with care, from espresso to slow Kyoto cold brew."
       />
 
       <FeaturedCarousel />

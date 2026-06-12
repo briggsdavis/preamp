@@ -13,7 +13,7 @@ import { authTables } from "@convex-dev/auth/server";
 export default defineSchema({
   ...authTables,
 
-  // Example application table — replace with your own.
+  // Example application table; replace with your own.
   messages: defineTable({
     authorId: v.id("users"),
     body: v.string(),

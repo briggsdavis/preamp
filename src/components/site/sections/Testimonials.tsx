@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { TESTIMONIALS } from "@/data/site";
+import { SectionLines } from "@/components/site/SectionLines";
 
 export function Testimonials() {
   const [index, setIndex] = useState(0);
@@ -19,15 +20,23 @@ export function Testimonials() {
   const t = TESTIMONIALS[index];
 
   return (
-    <section className="relative mx-auto max-w-5xl px-6 py-24 md:px-8">
-      <div className="text-center">
+    <section className="relative overflow-hidden px-6 py-24 md:px-8">
+      <SectionLines count={24} opacity={0.06} />
+      <div className="relative mx-auto max-w-5xl">
+      <motion.div
+        initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
+        whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="text-center"
+      >
         <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
           On the record
         </p>
         <h2 className="mt-3 font-groovy text-4xl text-espresso md:text-5xl">
           What the regulars say
         </h2>
-      </div>
+      </motion.div>
 
       <div
         className="relative mx-auto mt-12 flex h-56 max-w-3xl items-center justify-center overflow-hidden"
@@ -65,6 +74,7 @@ export function Testimonials() {
             }`}
           />
         ))}
+      </div>
       </div>
     </section>
   );

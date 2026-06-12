@@ -1,3 +1,5 @@
+import { Reveal } from "@/components/site/Reveal";
+
 const ITEMS = [
   "Passenger Coffee",
   "★",
@@ -15,17 +17,19 @@ const ITEMS = [
 export function Marquee() {
   const line = [...ITEMS, ...ITEMS];
   return (
-    <div className="overflow-hidden border-y-2 border-espresso bg-terracotta py-3">
-      <div className="animate-marquee flex w-max gap-8 whitespace-nowrap">
-        {line.map((item, i) => (
-          <span
-            key={i}
-            className="font-groovy text-lg uppercase tracking-[0.2em] text-cream"
-          >
-            {item}
-          </span>
-        ))}
+    <Reveal y={0}>
+      <div className="overflow-hidden border-y-2 border-espresso bg-terracotta py-3">
+        <div className="animate-marquee flex w-max gap-8 whitespace-nowrap">
+          {line.map((item, i) => (
+            <span
+              key={i}
+              className="font-groovy text-lg uppercase tracking-[0.2em] text-cream"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
       </div>
-    </div>
+    </Reveal>
   );
 }
