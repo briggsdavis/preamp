@@ -19,7 +19,7 @@ interface RippleStripesProps {
 }
 
 /**
- * Decorative panel of vertical "sunset" stripes that ripple in a slow wave —
+ * Decorative panel of vertical "sunset" stripes that ripple in a slow wave,
  * a nod to the original Pre Amp site's line motif. Purely ornamental.
  */
 export function RippleStripes({

@@ -37,8 +37,8 @@ export function NotDeveloped() {
 
           {label && (
             <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 12, filter: "blur(10px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ delay: 0.2 }}
               className="mt-8 font-groovy text-sm uppercase tracking-[0.35em] text-amber"
             >
@@ -47,8 +47,8 @@ export function NotDeveloped() {
           )}
 
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20, filter: "blur(14px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ delay: 0.3 }}
             className="mt-4 font-display text-5xl leading-tight text-gold md:text-6xl"
           >
@@ -56,18 +56,18 @@ export function NotDeveloped() {
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ delay: 0.4 }}
             className="mx-auto mt-5 max-w-md text-lg text-cream/80"
           >
-            This page is still steeping. We're looking forward to building it —
-            check back soon for the full pour.
+            This page is still steeping. We're looking forward to building it.
+            Check back soon for the full pour.
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ delay: 0.5 }}
           >
             <Link

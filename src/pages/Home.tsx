@@ -7,6 +7,7 @@ import { ParallaxBanner } from "@/components/site/sections/ParallaxBanner";
 import { CoffeeQuiz } from "@/components/site/sections/CoffeeQuiz";
 import { Testimonials } from "@/components/site/sections/Testimonials";
 import { LocationCTA } from "@/components/site/sections/LocationCTA";
+import { RestaurantGroup } from "@/components/site/sections/RestaurantGroup";
 
 export function Home() {
   return (
@@ -19,7 +20,7 @@ export function Home() {
         image="https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1920&q=80"
         kicker="The Cup"
         heading="Dialed Daily"
-        sub="Passenger beans, pulled and poured with care — from espresso to slow Kyoto cold brew."
+        sub="Passenger beans, pulled and poured with care, from espresso to slow Kyoto cold brew."
       />
 
       <FeaturedCarousel />
@@ -34,6 +35,7 @@ export function Home() {
       <CoffeeQuiz />
       <Testimonials />
       <LocationCTA />
+      <RestaurantGroup />
     </PageWrapper>
   );
 }
