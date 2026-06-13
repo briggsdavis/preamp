@@ -114,10 +114,11 @@ export function Navbar() {
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
         <Link to="/" className="group flex items-center gap-3">
-          <span className="relative grid h-10 w-10 place-items-center rounded-full bg-espresso text-cream">
-            <span className="absolute h-3 w-3 rounded-full bg-gold" />
-            <span className="absolute inset-1 rounded-full border border-cream/30 animate-spin-slow" />
-          </span>
+          <img
+            src="/preamplogo.png"
+            alt={`${SITE.name} logo`}
+            className="h-10 w-10 object-contain transition-transform group-hover:-rotate-6"
+          />
           <span className="leading-none">
             <span className="block font-groovy text-lg tracking-wide text-espresso">
               {SITE.name}

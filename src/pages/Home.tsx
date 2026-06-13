@@ -17,7 +17,7 @@ export function Home() {
       <Intro />
 
       <ParallaxBanner
-        image="https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1920&q=80"
+        image="/preampdecor2.jpg"
         kicker="The Cup"
         heading="Dialed Daily"
         sub="Passenger beans, pulled and poured with care, from espresso to slow Kyoto cold brew."
@@ -26,7 +26,7 @@ export function Home() {
       <FeaturedCarousel />
 
       <ParallaxBanner
-        image="https://images.unsplash.com/photo-1483412033650-1015ddeb83d1?auto=format&fit=crop&w=1920&q=80"
+        image="/preampdecor3.jpg"
         kicker="The Room"
         heading="Records Spinning"
         sub="A wall of album art, warm gold light, and a needle that never lifts. This is the listening bar."
