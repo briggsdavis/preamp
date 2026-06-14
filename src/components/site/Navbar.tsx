@@ -81,6 +81,13 @@ export function Navbar() {
   const lastY = useRef(0);
   const location = useLocation();
 
+  // Treat Order as a regular nav link (no highlighted pill) and distribute all
+  // items evenly on either side of the centered logo.
+  const allNav: NavItem[] = [...NAV, { label: "Order", to: "/menu/coffee" }];
+  const mid = Math.ceil(allNav.length / 2);
+  const leftNav = allNav.slice(0, mid);
+  const rightNav = allNav.slice(mid);
+
   useEffect(() => {
     const reduce = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -126,37 +133,56 @@ export function Navbar() {
       )}
       style={{ transitionDuration: entered ? undefined : "700ms" }}
     >
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
-        <Link to="/" className="group flex items-center gap-3">
+      <nav className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-5 py-4 md:px-8">
+        {/* Left-hand nav items (desktop) */}
+        <div className="hidden items-center justify-end gap-7 md:flex">
+          {leftNav.map((item) => (
+            <DesktopItem key={item.label} item={item} />
+          ))}
+        </div>
+
+        {/* Centered logo — 1.3x at the top of the page, shrinks on scroll */}
+        <Link
+          to="/"
+          className="group col-start-2 flex items-center gap-3 justify-self-center"
+        >
           <img
             src="/preamplogo.png"
             alt={`${SITE.name} logo`}
-            className="h-10 w-10 object-contain transition-transform group-hover:-rotate-6"
+            className={cn(
+              "object-contain transition-all duration-300 group-hover:-rotate-6",
+              scrolled ? "h-10 w-10" : "h-[3.25rem] w-[3.25rem]",
+            )}
           />
           <span className="leading-none">
-            <span className="block font-groovy text-lg tracking-wide text-espresso">
+            <span
+              className={cn(
+                "block font-groovy tracking-wide text-espresso transition-all duration-300",
+                scrolled ? "text-lg" : "text-[1.5rem]",
+              )}
+            >
               {SITE.name}
             </span>
-            <span className="block text-[10px] uppercase tracking-[0.3em] text-terracotta">
+            <span
+              className={cn(
+                "block uppercase tracking-[0.3em] text-terracotta transition-all duration-300",
+                scrolled ? "text-[10px]" : "text-[13px]",
+              )}
+            >
               {SITE.tagline}
             </span>
           </span>
         </Link>
 
-        <div className="hidden items-center gap-7 md:flex">
-          {NAV.map((item) => (
+        {/* Right-hand nav items (desktop) */}
+        <div className="hidden items-center justify-start gap-7 md:flex">
+          {rightNav.map((item) => (
             <DesktopItem key={item.label} item={item} />
           ))}
-          <Link
-            to="/menu/coffee"
-            className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
-          >
-            Order
-          </Link>
         </div>
 
         <button
-          className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 md:hidden"
+          className="col-start-3 flex h-10 w-10 flex-col items-center justify-center gap-1.5 justify-self-end md:hidden"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label="Toggle menu"
           aria-expanded={mobileOpen}
@@ -192,7 +218,7 @@ export function Navbar() {
             className="overflow-hidden border-t border-espresso/10 bg-cream md:hidden"
           >
             <div className="space-y-4 px-6 py-6">
-              {NAV.map((item) => (
+              {allNav.map((item) => (
                 <div key={item.label}>
                   {item.to ? (
                     <Link
@@ -221,12 +247,6 @@ export function Navbar() {
                   )}
                 </div>
               ))}
-              <Link
-                to="/menu/coffee"
-                className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold text-cream"
-              >
-                Order
-              </Link>
             </div>
           </motion.div>
         )}

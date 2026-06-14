@@ -12,9 +12,9 @@ export function Hero() {
     offset: ["start start", "end start"],
   });
 
-  // Layered parallax: background drifts slowly, content lifts, stripes shift.
-  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-18%"]);
+  // Layered parallax: background drifts, content lifts hard, stripes shift.
+  const bgY = useTransform(scrollYProgress, [0, 1], ["0%", "60%"]);
+  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "-55%"]);
   const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
   return (
@@ -79,19 +79,6 @@ export function Hero() {
             Find Us
           </a>
         </motion.div>
-      </motion.div>
-
-      {/* Scroll cue */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 4.1, duration: 0.8 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-cream/70"
-      >
-        <span className="block animate-bob text-center text-xs uppercase tracking-[0.3em]">
-          Scroll
-          <span className="mt-1 block text-lg">↓</span>
-        </span>
       </motion.div>
     </section>
   );
