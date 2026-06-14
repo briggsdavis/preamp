@@ -43,18 +43,18 @@ export function Hero() {
         className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-6 pt-28 text-center md:px-8"
       >
         <motion.img
-          src="/preampprimary.png"
+          src="/heroprimary.png"
           alt={SITE.name}
           initial={{ opacity: 0, y: 30, filter: "blur(14px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 0.2, duration: 0.7 }}
+          transition={{ delay: 1.3, duration: 0.8 }}
           className="w-full max-w-2xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.25)]"
         />
 
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 0.5, duration: 0.6 }}
+          transition={{ delay: 2.3, duration: 0.7 }}
           className="mt-9 flex flex-wrap justify-center gap-4"
         >
           <Link
@@ -76,7 +76,7 @@ export function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 0.8 }}
+        transition={{ delay: 4.3, duration: 0.8 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 text-cream/70"
       >
         <span className="block animate-bob text-center text-xs uppercase tracking-[0.3em]">

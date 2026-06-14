@@ -37,7 +37,7 @@ export function ParallaxBanner({
         style={{ y: textY }}
         initial={{ opacity: 0, filter: "blur(14px)" }}
         whileInView={{ opacity: 1, filter: "blur(0px)" }}
-        viewport={{ once: true, margin: "-80px" }}
+        viewport={{ once: true, margin: "0px 0px -18% 0px" }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="mx-auto max-w-4xl px-6 text-center"
       >

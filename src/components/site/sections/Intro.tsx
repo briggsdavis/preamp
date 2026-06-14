@@ -10,7 +10,7 @@ export function Intro() {
       <motion.div
         initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, margin: "0px 0px -18% 0px" }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 mx-auto max-w-3xl text-center"
       >

@@ -59,7 +59,7 @@ function RestaurantTile({ r, i }: { r: Restaurant; i: number }) {
     <motion.div
       initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={{ once: true, margin: "-40px" }}
+      viewport={{ once: true, margin: "0px 0px -18% 0px" }}
       transition={{ duration: 0.5, delay: (i % 7) * 0.04, ease: [0.22, 1, 0.36, 1] }}
       className="group"
     >
@@ -84,7 +84,7 @@ export function RestaurantGroup() {
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          viewport={{ once: true, margin: "-80px" }}
+          viewport={{ once: true, margin: "0px 0px -18% 0px" }}
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           className="text-center"
         >
