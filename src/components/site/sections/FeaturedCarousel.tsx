@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 import { FEATURED, type Drink } from "@/data/site";
-import { SideStripes } from "@/components/site/SideStripes";
 
 function DrinkCard({ drink }: { drink: Drink }) {
   return (
@@ -134,8 +133,6 @@ export function FeaturedCarousel() {
 
   return (
     <section className="relative overflow-hidden bg-cream-deep py-24">
-      <SideStripes />
-
       <motion.div
         initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { TESTIMONIALS } from "@/data/site";
-import { SideStripes } from "@/components/site/SideStripes";
 
 export function Testimonials() {
   const [index, setIndex] = useState(0);
@@ -21,7 +20,6 @@ export function Testimonials() {
 
   return (
     <section className="relative overflow-hidden px-6 py-24 md:px-8">
-      <SideStripes />
       <div className="relative z-10 mx-auto max-w-5xl">
       <motion.div
         initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}

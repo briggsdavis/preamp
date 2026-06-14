@@ -1,20 +1,13 @@
 import { Link } from "react-router-dom";
 
 import { NAV, SITE } from "@/data/site";
-import { RippleStripes } from "@/components/site/RippleStripes";
 import { Reveal } from "@/components/site/Reveal";
 import { InstagramIcon, TikTokIcon } from "@/components/site/SocialIcons";
 
 export function Footer() {
   return (
     <footer className="relative overflow-hidden bg-espresso text-cream">
-      {/* Taller band with breathing room up top so the rippling ovals can
-          pulse upward without being clipped at the footer edge. */}
-      <div className="absolute inset-x-0 top-0 h-36 pt-5 opacity-40">
-        <RippleStripes count={20} fade="none" />
-      </div>
-
-      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pb-12 pt-56 md:grid-cols-4 md:px-8">
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pb-12 pt-20 md:grid-cols-4 md:px-8">
         <Reveal className="md:col-span-1">
           <div className="flex items-center gap-3">
             <img

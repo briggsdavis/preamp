@@ -2,7 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
-import { RippleStripes } from "@/components/site/RippleStripes";
 
 /** Friendly placeholder for every page that isn't built yet. */
 export function NotDeveloped() {
@@ -16,9 +15,6 @@ export function NotDeveloped() {
   return (
     <PageWrapper>
       <section className="relative flex min-h-[100svh] items-center justify-center overflow-hidden bg-espresso text-cream">
-        <div className="absolute inset-0 opacity-25">
-          <RippleStripes count={28} fade="none" />
-        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-espresso via-espresso/60 to-espresso/90" />
 
         <div className="relative mx-auto max-w-2xl px-6 text-center">

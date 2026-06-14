@@ -1,12 +1,8 @@
 import { motion } from "framer-motion";
 
-import { SideStripes } from "@/components/site/SideStripes";
-
 export function Intro() {
   return (
     <section className="relative overflow-hidden px-6 py-24 md:py-32">
-      <SideStripes />
-
       <motion.div
         initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
         whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}

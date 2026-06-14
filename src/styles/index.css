@@ -101,29 +101,24 @@ body {
    Animations
    ========================================================================= */
 
-/* Rippling sunset stripes (decorative background).
-   The motif carries a "flickering rhythm": a size pulse paired with an
-   opacity + darkness pulse so the lines breathe and shimmer noticeably. */
-@keyframes stripe-ripple {
-  0%,
-  100% {
-    transform: scaleY(0.985) translateY(0);
+/* Snaking-line motif: a light pulse that flows along each line of the bundle.
+   The path is normalised to pathLength=1000, so a short dash chases the full
+   length on a loop; per-line duration/delay are set inline for an organic feel. */
+@keyframes snake-flow {
+  from {
+    stroke-dashoffset: 0;
   }
-  50% {
-    transform: scaleY(1.015) translateY(-0.5%);
+  to {
+    stroke-dashoffset: -1000;
   }
 }
-
-@keyframes stripe-shimmer {
-  0%,
-  100% {
-    opacity: 0.82;
-    filter: brightness(0.96);
-  }
-  50% {
-    opacity: 0.95;
-    filter: brightness(1.04);
-  }
+.snake-flow {
+  stroke-dasharray: 26 974;
+  animation-name: snake-flow;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-duration: 9s;
+  filter: drop-shadow(0 0 4px rgba(255, 240, 210, 0.6));
 }
 
 /* Slow vinyl spin */

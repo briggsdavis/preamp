@@ -2,7 +2,6 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { QUIZ, predictDrink, type Drink } from "@/data/site";
-import { SectionLines } from "@/components/site/SectionLines";
 
 export function CoffeeQuiz() {
   const [step, setStep] = useState(0);
@@ -30,7 +29,6 @@ export function CoffeeQuiz() {
 
   return (
     <section className="relative overflow-hidden bg-espresso py-24 text-cream">
-      <SectionLines count={26} opacity={0.1} />
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2 md:px-8">
         <motion.div
           initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}

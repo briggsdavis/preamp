@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 import { SITE } from "@/data/site";
-import { RippleStripes } from "@/components/site/RippleStripes";
 
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
@@ -32,11 +31,6 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-br from-espresso/80 via-maroon/55 to-espresso/85" />
         <div className="absolute inset-0 bg-gradient-to-t from-cream via-transparent to-transparent" />
       </motion.div>
-
-      {/* Rippling sunset stripes down the right edge */}
-      <div className="absolute right-0 top-0 -z-10 h-full w-1/3 opacity-70 md:w-1/4">
-        <RippleStripes count={10} fade="left" />
-      </div>
 
       <motion.div
         style={{ y: contentY, opacity: fade }}
