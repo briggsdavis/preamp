@@ -35,8 +35,8 @@ export function CoffeeQuiz() {
         <motion.div
           initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "0px 0px -18% 0px" }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-amber">
             The Pre Amp Oracle
@@ -53,8 +53,8 @@ export function CoffeeQuiz() {
         <motion.div
           initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
           whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "0px 0px -18% 0px" }}
+          transition={{ duration: 0.9, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
           className="relative min-h-[340px] rounded-3xl border border-cream/15 bg-cream/[0.04] p-8 backdrop-blur">
           <AnimatePresence mode="wait">
             {!result ? (

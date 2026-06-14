@@ -75,8 +75,19 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Held back on first paint so the navbar slides in last, after the hero's
+  // staggered intro (image → buttons → navbar).
+  const [entered, setEntered] = useState(false);
   const lastY = useRef(0);
   const location = useLocation();
+
+  useEffect(() => {
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const t = setTimeout(() => setEntered(true), reduce ? 0 : 3400);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -108,9 +119,12 @@ export function Navbar() {
         scrolled
           ? "bg-cream/95 shadow-sm shadow-maroon/10"
           : "bg-cream/80 shadow-sm shadow-maroon/5",
+        // Slide in last, after the hero intro finishes.
+        !entered && "-translate-y-full opacity-0",
         // Slide out of view on scroll-down so it reappears on scroll-up.
-        hidden && !mobileOpen && "-translate-y-full",
+        entered && hidden && !mobileOpen && "-translate-y-full",
       )}
+      style={{ transitionDuration: entered ? undefined : "700ms" }}
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
         <Link to="/" className="group flex items-center gap-3">
