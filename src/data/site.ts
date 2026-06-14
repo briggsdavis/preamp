@@ -150,19 +150,19 @@ export interface Restaurant {
  * page links as `image` / `href` to replace the on-brand placeholders.
  */
 export const RD_RESTAURANTS: Restaurant[] = [
-  { name: "Pre Amp Coffee Studio" },
-  { name: "The Vinyl Room" },
-  { name: "Forbes & Murray" },
-  { name: "Honeycomb Kitchen" },
-  { name: "Smokestack BBQ" },
-  { name: "Lantern Noodle Bar" },
-  { name: "Steel City Slice" },
-  { name: "The Gilded Spoon" },
-  { name: "Marigold Cafe" },
-  { name: "Northside Tap" },
-  { name: "Sable & Salt" },
-  { name: "Carmine's Trattoria" },
-  { name: "Driftwood Oyster Co." },
+  { name: "Meat & Potatoes", image: "/meatpotatoes.jpg", href: "https://meatandpotatoespgh.com/" },
+  { name: "Butcher and the Rye", image: "/butcherandtherye.jpg", href: "https://butcherandtherye.com/" },
+  { name: "täkō", image: "/tako.jpg", href: "https://takopgh.com/" },
+  { name: "Tako Torta", image: "/takotorta.jpg", href: "https://takotorta.com/" },
+  { name: "Poulet Bleu", image: "/pouletbleu.jpg", href: "https://www.pouletbleupgh.com/" },
+  { name: "Fish nor Fowl", image: "/fishnorfowl.jpg", href: "https://fishnorfowlpgh.com/" },
+  { name: "Coup De Ville", image: "/coupdeville.jpg", href: "https://coopdevillepgh.com/" },
+  { name: "Sally Ann's", image: "/sallyannys.jpg", href: "https://sallyannspgh.com/" },
+  { name: "Golden Gai", image: "/goldengai.jpg", href: "https://goldengaipgh.com/" },
+  { name: "Vieux Carré", image: "/vieuxcarre.jpg", href: "https://www.seamonkeypgh.com/vieux-carre" },
+  { name: "Hand Roll", image: "/handroll.jpg", href: "https://gi-jin.com/" },
+  { name: "Sea Monkey", image: "/seamonkey.jpg", href: "https://www.seamonkeypgh.com/" },
+  { name: "Rib Room", image: "/ribroom.jpg", href: "https://ribroompgh.com/" },
 ];
 
 export interface QuizQuestion {
