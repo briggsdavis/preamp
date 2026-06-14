@@ -25,7 +25,7 @@ export function Hero() {
       {/* Photographic ambience, slow parallax */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 -z-20 scale-110">
         <img
-          src="https://images.unsplash.com/photo-1453614512568-c4024d13c247?auto=format&fit=crop&w=1920&q=80"
+          src="/preampdecor.jpg"
           alt=""
           className="h-full w-full object-cover"
         />

@@ -5,6 +5,17 @@
    Warm "sunset" palette: cream → gold → orange → terracotta → brick → maroon,
    grounded in espresso brown. Groovy display (Monoton/Righteous) + clean sans.
    ========================================================================= */
+
+/* Churchward: house display face for titles, sits ahead of the groovy
+   Google fonts so headlines read in Churchward where the file loads. */
+@font-face {
+  font-family: "Churchward";
+  src: url("/fonts/churchward-design-bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   --color-cream: #f4ecde;
   --color-cream-deep: #ece0cc;
@@ -18,9 +29,9 @@
   --color-espresso: #2a1a12;
   --color-espresso-soft: #3b2417;
 
-  --font-display: "Monoton", system-ui, sans-serif;
-  --font-groovy: "Righteous", system-ui, sans-serif;
-  --font-body: "DM Sans", system-ui, -apple-system, sans-serif;
+  --font-display: "Churchward", "Monoton", system-ui, sans-serif;
+  --font-groovy: "Churchward", "Righteous", system-ui, sans-serif;
+  --font-body: "Montserrat", system-ui, -apple-system, sans-serif;
 }
 
 :root {

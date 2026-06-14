@@ -26,6 +26,19 @@ export function Intro() {
           cold brew, and we pair every one with the warm crackle of vinyl. Come
           for the coffee, stay for the record that's spinning.
         </p>
+
+        <div className="mt-12 grid gap-4 sm:grid-cols-2">
+          <img
+            src="/preampdecor4.jpg"
+            alt=""
+            className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
+          />
+          <img
+            src="/preampdecor5.jpg"
+            alt=""
+            className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
+          />
+        </div>
       </motion.div>
     </section>
   );

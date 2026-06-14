@@ -16,7 +16,14 @@ export function Footer() {
 
       <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pb-12 pt-56 md:grid-cols-4 md:px-8">
         <Reveal className="md:col-span-1">
-          <p className="font-display text-3xl text-gold">Pre Amp</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/preamplogo.png"
+              alt="Pre Amp logo"
+              className="h-12 w-12 object-contain"
+            />
+            <p className="font-display text-3xl text-gold">Pre Amp</p>
+          </div>
           <p className="mt-2 text-sm text-cream/70">
             A coffee-and-vinyl listening bar. Brews & beats, all day.
           </p>
