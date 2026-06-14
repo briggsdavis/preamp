@@ -56,6 +56,7 @@ export function FeaturedCarousel() {
   const setWidth = useRef(0);
   const boostTarget = useRef(0); // where the extra speed wants to be
   const boost = useRef(0); // eased extra speed actually applied
+  const dir = useRef(-1); // travel direction: -1 left, +1 right
   const paused = useRef(false);
 
   useEffect(() => {
@@ -76,16 +77,20 @@ export function FeaturedCarousel() {
     window.addEventListener("resize", measure);
 
     // Scroll velocity nudges a small, gently-decaying boost target so the
-    // strip drifts a touch faster while you scroll, never lurching.
-    const MAX_BOOST = 45; // px/s of extra speed at most (~base speed)
+    // strip drifts a touch faster while you scroll, never lurching. Scroll
+    // direction also flips which way the strip travels: down → left, up → right.
+    const MAX_BOOST = 60; // px/s of extra speed at most (~1.4x base)
     let lastScrollY = window.scrollY;
     let lastScrollT = performance.now();
     const onScroll = () => {
       const now = performance.now();
-      const dy = Math.abs(window.scrollY - lastScrollY);
+      const signedDy = window.scrollY - lastScrollY;
+      const dy = Math.abs(signedDy);
       const dt = Math.max(now - lastScrollT, 1);
       const velocity = (dy / dt) * 1000; // px per second
-      boostTarget.current = Math.min(velocity * 0.03, MAX_BOOST);
+      boostTarget.current = Math.min(velocity * 0.045, MAX_BOOST);
+      if (signedDy > 0) dir.current = -1;
+      else if (signedDy < 0) dir.current = 1;
       lastScrollY = window.scrollY;
       lastScrollT = now;
     };
@@ -105,7 +110,7 @@ export function FeaturedCarousel() {
       boost.current += (boostTarget.current - boost.current) * Math.min(dt * 2.5, 1);
 
       if (!paused.current) {
-        x.current -= (base + boost.current) * dt;
+        x.current += dir.current * (base + boost.current) * dt;
       }
 
       const w = setWidth.current;
