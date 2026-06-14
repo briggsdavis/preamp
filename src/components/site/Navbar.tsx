@@ -85,7 +85,7 @@ export function Navbar() {
     const reduce = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    const t = setTimeout(() => setEntered(true), reduce ? 0 : 3300);
+    const t = setTimeout(() => setEntered(true), reduce ? 0 : 4300);
     return () => clearTimeout(t);
   }, []);
 

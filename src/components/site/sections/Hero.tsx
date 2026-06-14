@@ -47,14 +47,23 @@ export function Hero() {
           alt={SITE.name}
           initial={{ opacity: 0, y: 30, filter: "blur(14px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 1.3, duration: 0.8 }}
+          transition={{ delay: 1.3, duration: 1.2 }}
           className="w-full max-w-2xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.25)]"
         />
+
+        <motion.h1
+          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          transition={{ delay: 2.3, duration: 1.05 }}
+          className="mt-6 max-w-2xl font-groovy text-lg uppercase tracking-[0.18em] text-cream/90 md:text-xl"
+        >
+          Coffee studio &amp; vinyl listening bar — Squirrel Hill, Pittsburgh
+        </motion.h1>
 
         <motion.div
           initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 2.3, duration: 0.7 }}
+          transition={{ delay: 3.3, duration: 1.05 }}
           className="mt-9 flex flex-wrap justify-center gap-4"
         >
           <Link
@@ -76,7 +85,7 @@ export function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 4.3, duration: 0.8 }}
+        transition={{ delay: 5.3, duration: 0.8 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 text-cream/70"
       >
         <span className="block animate-bob text-center text-xs uppercase tracking-[0.3em]">

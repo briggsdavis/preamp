@@ -22,7 +22,7 @@ export function Reveal({ children, delay = 0, y = 24, className }: RevealProps) 
       // Hold off until the element is ~18% up from the bottom edge so it
       // animates where the eye actually is, not the instant it peeks in.
       viewport={{ once: true, margin: "0px 0px -18% 0px" }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay }}
+      transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay }}
       className={className}
     >
       {children}

@@ -15,7 +15,7 @@ export function LocationCTA() {
           initial={{ opacity: 0, x: -30, filter: "blur(12px)" }}
           whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.9 }}
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-cream/80">
             Come hang
@@ -64,7 +64,7 @@ export function LocationCTA() {
           initial={{ opacity: 0, scale: 0.95, filter: "blur(12px)" }}
           whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.9 }}
           className="overflow-hidden rounded-3xl border-4 border-cream/60 shadow-2xl"
         >
           <iframe
