@@ -150,19 +150,19 @@ export interface Restaurant {
  * page links as `image` / `href` to replace the on-brand placeholders.
  */
 export const RD_RESTAURANTS: Restaurant[] = [
-  { name: "Pre Amp Coffee Studio" },
-  { name: "The Vinyl Room" },
-  { name: "Forbes & Murray" },
-  { name: "Honeycomb Kitchen" },
-  { name: "Smokestack BBQ" },
-  { name: "Lantern Noodle Bar" },
-  { name: "Steel City Slice" },
-  { name: "The Gilded Spoon" },
-  { name: "Marigold Cafe" },
-  { name: "Northside Tap" },
-  { name: "Sable & Salt" },
-  { name: "Carmine's Trattoria" },
-  { name: "Driftwood Oyster Co." },
+  { name: "Meat & Potatoes", image: "/meatpotatoes.jpg" },
+  { name: "Butcher and the Rye", image: "/butcherandtherye.jpg" },
+  { name: "täkō", image: "/tako.jpg" },
+  { name: "Tako Torta", image: "/takotorta.jpg" },
+  { name: "Poulet Bleu", image: "/pouletbleu.jpg" },
+  { name: "Fish nor Fowl", image: "/fishnorfowl.jpg" },
+  { name: "Coup De Ville", image: "/coupdeville.jpg" },
+  { name: "Sally Ann's", image: "/sallyannys.jpg" },
+  { name: "Golden Gai", image: "/goldengai.jpg" },
+  { name: "Vieux Carré", image: "/vieuxcarre.jpg" },
+  { name: "Hand Roll", image: "/handroll.jpg" },
+  { name: "Sea Monkey", image: "/seamonkey.jpg" },
+  { name: "Rib Room", image: "/ribroom.jpg" },
 ];
 
 export interface QuizQuestion {
