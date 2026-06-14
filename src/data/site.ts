@@ -150,19 +150,19 @@ export interface Restaurant {
  * page links as `image` / `href` to replace the on-brand placeholders.
  */
 export const RD_RESTAURANTS: Restaurant[] = [
-  { name: "Meat & Potatoes", image: "/meatpotatoes.jpg" },
-  { name: "Butcher and the Rye", image: "/butcherandtherye.jpg" },
-  { name: "täkō", image: "/tako.jpg" },
-  { name: "Tako Torta", image: "/takotorta.jpg" },
-  { name: "Poulet Bleu", image: "/pouletbleu.jpg" },
-  { name: "Fish nor Fowl", image: "/fishnorfowl.jpg" },
-  { name: "Coup De Ville", image: "/coupdeville.jpg" },
-  { name: "Sally Ann's", image: "/sallyannys.jpg" },
-  { name: "Golden Gai", image: "/goldengai.jpg" },
-  { name: "Vieux Carré", image: "/vieuxcarre.jpg" },
-  { name: "Hand Roll", image: "/handroll.jpg" },
-  { name: "Sea Monkey", image: "/seamonkey.jpg" },
-  { name: "Rib Room", image: "/ribroom.jpg" },
+  { name: "Meat & Potatoes", image: "/meatpotatoes.jpg", href: "https://meatandpotatoespgh.com/" },
+  { name: "Butcher and the Rye", image: "/butcherandtherye.jpg", href: "https://butcherandtherye.com/" },
+  { name: "täkō", image: "/tako.jpg", href: "https://takopgh.com/" },
+  { name: "Tako Torta", image: "/takotorta.jpg", href: "https://takotorta.com/" },
+  { name: "Poulet Bleu", image: "/pouletbleu.jpg", href: "https://www.pouletbleupgh.com/" },
+  { name: "Fish nor Fowl", image: "/fishnorfowl.jpg", href: "https://fishnorfowlpgh.com/" },
+  { name: "Coup De Ville", image: "/coupdeville.jpg", href: "https://coopdevillepgh.com/" },
+  { name: "Sally Ann's", image: "/sallyannys.jpg", href: "https://sallyannspgh.com/" },
+  { name: "Golden Gai", image: "/goldengai.jpg", href: "https://goldengaipgh.com/" },
+  { name: "Vieux Carré", image: "/vieuxcarre.jpg", href: "https://www.seamonkeypgh.com/vieux-carre" },
+  { name: "Hand Roll", image: "/handroll.jpg", href: "https://gi-jin.com/" },
+  { name: "Sea Monkey", image: "/seamonkey.jpg", href: "https://www.seamonkeypgh.com/" },
+  { name: "Rib Room", image: "/ribroom.jpg", href: "https://ribroompgh.com/" },
 ];
 
 export interface QuizQuestion {
