@@ -5,7 +5,7 @@ import { SquiggleLine } from "@/components/site/SquiggleLine";
 export function Intro() {
   return (
     <section className="relative overflow-hidden px-6 py-24 md:py-32">
-      <SquiggleLine />
+      <SquiggleLine side="left" />
 
       <motion.div
         initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}

@@ -18,6 +18,8 @@ const RIBBON = [
 
 interface SquiggleLineProps {
   className?: string;
+  /** Which edge the ribbon hugs. */
+  side?: "left" | "right";
   /** Horizontal sway of the ribbon, in viewBox units (half-width = 50). */
   amplitude?: number;
   /** How many full weaves fit down the section. */
@@ -30,22 +32,44 @@ interface SquiggleLineProps {
 
 const VIEW_W = 100;
 const VIEW_H = 100;
-const STEPS = 64;
+const STEPS = 22;
+
+interface Pt {
+  x: number;
+  y: number;
+}
 
 /**
- * Build a smooth vertical squiggle as a polyline of many short segments
- * (rounded joins make it read as a continuous curve). `offset` shifts the
- * whole strand sideways so the five strands run parallel.
+ * Build a genuinely smooth vertical squiggle: sample a sine wave down the
+ * section, then stitch the samples together with a Catmull-Rom spline emitted
+ * as cubic Béziers so the strand is a true curve (no faceting), even when the
+ * band is stretched horizontally. `offset` shifts the strand sideways so the
+ * five strands run parallel.
  */
 function wavePath(amplitude: number, waves: number, offset: number) {
-  const pts: string[] = [];
+  const pts: Pt[] = [];
   for (let i = 0; i <= STEPS; i++) {
     const t = i / STEPS;
     const y = -5 + t * (VIEW_H + 10); // overshoot top & bottom so it bleeds off
     const x = VIEW_W / 2 + offset + amplitude * Math.sin(t * waves * Math.PI * 2);
-    pts.push(`${x.toFixed(2)},${y.toFixed(2)}`);
+    pts.push({ x, y });
   }
-  return `M ${pts.join(" L ")}`;
+
+  let d = `M ${pts[0].x.toFixed(2)},${pts[0].y.toFixed(2)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? pts[i + 1];
+    const c1x = p1.x + (p2.x - p0.x) / 6;
+    const c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6;
+    const c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${c1x.toFixed(2)},${c1y.toFixed(2)} ${c2x.toFixed(2)},${c2y.toFixed(
+      2,
+    )} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`;
+  }
+  return d;
 }
 
 /**
@@ -55,6 +79,7 @@ function wavePath(amplitude: number, waves: number, offset: number) {
  */
 export function SquiggleLine({
   className,
+  side = "right",
   amplitude = 30,
   waves = 2,
   spacing = 2.2,
@@ -82,9 +107,10 @@ export function SquiggleLine({
       ref={ref}
       aria-hidden
       className={cn(
-        // A vertical band down the right side, away from the centred headings,
-        // so the ribbon reads as one gentle line descending the section.
-        "pointer-events-none absolute inset-y-0 right-0 -z-0 w-[46%] sm:w-[36%] md:w-[28%]",
+        // A vertical band hugging one edge, clear of the centred headings, so
+        // the ribbon reads as one gentle line descending the section.
+        "pointer-events-none absolute inset-y-0 -z-0 w-[46%] sm:w-[36%] md:w-[28%]",
+        side === "left" ? "left-0" : "right-0",
         className,
       )}
     >
