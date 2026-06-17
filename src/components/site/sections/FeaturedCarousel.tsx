@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 import { FEATURED, type Drink } from "@/data/site";
-import { SideStripes } from "@/components/site/SideStripes";
+import { SquiggleLine } from "@/components/site/SquiggleLine";
 
 function DrinkCard({ drink }: { drink: Drink }) {
   return (
@@ -99,7 +99,7 @@ export function FeaturedCarousel() {
       last = now;
 
       // The boost target relaxes back to zero, and the applied boost eases
-      // toward it slowly — so any speed change ramps in and out gradually.
+      // toward it slowly, so any speed change ramps in and out gradually.
       boostTarget.current *= 0.94;
       if (boostTarget.current < 0.1) boostTarget.current = 0;
       boost.current += (boostTarget.current - boost.current) * Math.min(dt * 2.5, 1);
@@ -129,7 +129,7 @@ export function FeaturedCarousel() {
 
   return (
     <section className="relative overflow-hidden bg-cream-deep py-24">
-      <SideStripes />
+      <SquiggleLine />
 
       <motion.div
         initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}

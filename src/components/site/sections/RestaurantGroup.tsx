@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 import { RD_RESTAURANTS, type Restaurant } from "@/data/site";
-import { SectionLines } from "@/components/site/SectionLines";
+import { SquiggleLine } from "@/components/site/SquiggleLine";
 
 const HUES = [
   "var(--color-gold)",
@@ -78,7 +78,7 @@ function RestaurantTile({ r, i }: { r: Restaurant; i: number }) {
 export function RestaurantGroup() {
   return (
     <section className="relative overflow-hidden bg-cream-deep py-20">
-      <SectionLines count={26} opacity={0.06} />
+      <SquiggleLine />
 
       <div className="relative mx-auto max-w-7xl px-6 md:px-8">
         <motion.div
