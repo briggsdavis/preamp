@@ -55,31 +55,38 @@ function wavePath(amplitude: number, waves: number, offset: number) {
  */
 export function SquiggleLine({
   className,
-  amplitude = 26,
-  waves = 1.5,
-  spacing = 1.5,
+  amplitude = 30,
+  waves = 2,
+  spacing = 2.2,
   strokeWidth = 3,
 }: SquiggleLineProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
 
+  // Bind to the section the squiggle lives in, so each section draws its own
+  // single, unbroken stroke as it scrolls through. Start drawing a touch after
+  // the section enters and finish before it leaves, so the whole stroke is
+  // revealed on screen rather than off the bottom edge.
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
-  // Draw the ribbon on through the first ~60% of the section's travel so it's
-  // fully revealed while still comfortably on screen.
-  const drawn = useTransform(scrollYProgress, [0, 0.6], [0, 1]);
+  const drawn = useTransform(scrollYProgress, [0.05, 0.65], [0, 1]);
   const pathLength = reduce ? 1 : drawn;
 
-  // Centre the five strands so the bundle sits on the section's midline.
+  // Centre the five strands so the bundle sits on the band's midline.
   const mid = (RIBBON.length - 1) / 2;
 
   return (
     <div
       ref={ref}
       aria-hidden
-      className={cn("pointer-events-none absolute inset-0 -z-0", className)}
+      className={cn(
+        // A vertical band down the right side, away from the centred headings,
+        // so the ribbon reads as one gentle line descending the section.
+        "pointer-events-none absolute inset-y-0 right-0 -z-0 w-[46%] sm:w-[36%] md:w-[28%]",
+        className,
+      )}
     >
       <svg
         className="h-full w-full"
