@@ -90,13 +90,13 @@ export function SquiggleLine({
 
   // Bind to the section the squiggle lives in, so each section draws its own
   // single, unbroken stroke as it scrolls through. Start drawing a touch after
-  // the section enters and finish before it leaves, so the whole stroke is
-  // revealed on screen rather than off the bottom edge.
+  // the section enters and keep drawing right up until it has fully left the
+  // viewport, so the stroke is still completing as the section scrolls away.
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
-  const drawn = useTransform(scrollYProgress, [0.05, 0.65], [0, 1]);
+  const drawn = useTransform(scrollYProgress, [0.05, 1], [0, 1]);
   const pathLength = reduce ? 1 : drawn;
 
   // Centre the five strands so the bundle sits on the band's midline.
