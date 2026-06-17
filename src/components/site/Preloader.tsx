@@ -25,7 +25,7 @@ export function Preloader() {
       {!done && (
         <motion.div
           key="preloader"
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 bg-espresso"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-[1.05rem] bg-espresso"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
@@ -47,7 +47,7 @@ export function Preloader() {
             initial={{ opacity: 0, y: 12, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ delay: 0.4, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            className="w-64 max-w-[70vw] object-contain md:w-80"
+            className="w-[12.8rem] max-w-[56vw] object-contain md:w-64"
           />
         </motion.div>
       )}
