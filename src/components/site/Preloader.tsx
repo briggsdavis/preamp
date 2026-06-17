@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 /**
- * Brief black load-in sequence shown on the first paint of the site: a vinyl
- * disc spins up, the wordmark resolves, a gold line sweeps, then the whole
- * curtain lifts away. Kept short and minimal so it never gets in the way.
+ * Brief load-in sequence shown on the first paint of the site: the flat-icon
+ * logo blurs in and the "Pre Amp Coffee Studio" wordmark settles in just
+ * beneath it, then the whole curtain lifts away. Kept short so it never gets
+ * in the way.
  */
 export function Preloader() {
   const [done, setDone] = useState(false);
@@ -15,7 +16,7 @@ export function Preloader() {
     ).matches;
     // Lock scrolling under the curtain while it's up.
     document.body.style.overflow = "hidden";
-    const t = setTimeout(() => setDone(true), reduce ? 150 : 1300);
+    const t = setTimeout(() => setDone(true), reduce ? 150 : 1600);
     return () => clearTimeout(t);
   }, []);
 
@@ -24,40 +25,29 @@ export function Preloader() {
       {!done && (
         <motion.div
           key="preloader"
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-espresso"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-6 bg-espresso"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
         >
-          {/* Vinyl disc */}
-          <motion.div
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="relative grid h-20 w-20 place-items-center rounded-full bg-espresso-soft shadow-2xl"
-          >
-            <div className="grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-gold to-terracotta animate-spin-slow">
-              <span className="absolute inset-2 rounded-full border border-cream/20" />
-              <span className="h-3 w-3 rounded-full bg-espresso" />
-            </div>
-          </motion.div>
+          {/* Flat-icon logo blurs in */}
+          <motion.img
+            src="/preamplogo.png"
+            alt="Pre Amp"
+            initial={{ opacity: 0, scale: 0.85, filter: "blur(14px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="h-24 w-24 object-contain md:h-28 md:w-28"
+          />
 
-          {/* Wordmark */}
-          <motion.p
-            initial={{ opacity: 0, y: 12, filter: "blur(8px)" }}
+          {/* Hero wordmark settles in just beneath it */}
+          <motion.img
+            src="/heroprimary.png"
+            alt="Pre Amp Coffee Studio"
+            initial={{ opacity: 0, y: 12, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.25, duration: 0.5 }}
-            className="mt-6 font-display text-3xl tracking-[0.15em] text-gold"
-          >
-            Pre Amp
-          </motion.p>
-
-          {/* Sweeping line motif */}
-          <motion.span
-            initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ delay: 0.45, duration: 0.6, ease: "easeOut" }}
-            className="mt-4 h-px w-32 origin-center bg-gradient-to-r from-transparent via-amber to-transparent"
+            transition={{ delay: 0.4, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="w-64 max-w-[70vw] object-contain md:w-80"
           />
         </motion.div>
       )}
