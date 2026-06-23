@@ -6,6 +6,7 @@ import { Layout } from "@/components/site/Layout";
 import { Home } from "@/pages/Home";
 import { MenuCoffee } from "@/pages/MenuCoffee";
 import { MenuFood } from "@/pages/MenuFood";
+import { About } from "@/pages/About";
 import { Merch } from "@/pages/Merch";
 import { Contact } from "@/pages/Contact";
 import { Events } from "@/pages/Events";
@@ -32,7 +33,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/menu/coffee" element={<MenuCoffee />} />
           <Route path="/menu/food" element={<MenuFood />} />
-          <Route path="/about" element={<NotDeveloped />} />
+          <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/retail" element={<Merch />} />
           <Route path="/events" element={<Events />} />
