@@ -4,6 +4,8 @@ import { AnimatePresence } from "framer-motion";
 
 import { Layout } from "@/components/site/Layout";
 import { Home } from "@/pages/Home";
+import { Contact } from "@/pages/Contact";
+import { Hiring } from "@/pages/Hiring";
 import { NotDeveloped } from "@/pages/NotDeveloped";
 
 /**
@@ -27,11 +29,11 @@ export default function App() {
           <Route path="/menu/coffee" element={<NotDeveloped />} />
           <Route path="/menu/food" element={<NotDeveloped />} />
           <Route path="/about" element={<NotDeveloped />} />
-          <Route path="/contact" element={<NotDeveloped />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/retail" element={<NotDeveloped />} />
           <Route path="/events" element={<NotDeveloped />} />
           <Route path="/gift-cards" element={<NotDeveloped />} />
-          <Route path="/hiring" element={<NotDeveloped />} />
+          <Route path="/hiring" element={<Hiring />} />
           <Route path="*" element={<NotDeveloped />} />
         </Routes>
       </AnimatePresence>
