@@ -9,7 +9,7 @@ function DrinkCard({ drink }: { drink: Drink }) {
     <motion.article
       whileHover={{ y: -10 }}
       transition={{ type: "spring", stiffness: 220, damping: 18 }}
-      className="group flex h-full w-[300px] shrink-0 flex-col rounded-3xl border border-espresso/10 bg-cream p-7 shadow-sm transition-shadow hover:shadow-2xl hover:shadow-maroon/15"
+      className="group flex w-[300px] shrink-0 flex-col rounded-3xl border border-espresso/10 bg-cream p-7 shadow-sm transition-shadow hover:shadow-2xl hover:shadow-maroon/15"
     >
       {/* Vinyl-style disc that spins on hover */}
       <div className="relative mx-auto grid h-40 w-40 place-items-center">
