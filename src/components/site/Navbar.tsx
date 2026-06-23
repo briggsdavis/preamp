@@ -46,15 +46,25 @@ function DesktopItem({ item }: { item: NavItem }) {
             className="absolute left-1/2 top-full z-50 -translate-x-1/2 pt-3"
           >
             <div className="min-w-[180px] overflow-hidden rounded-2xl border border-espresso/10 bg-cream shadow-xl shadow-maroon/10">
-              {item.children.map((child) => (
-                <Link
-                  key={child.to}
-                  to={child.to}
-                  className="block px-5 py-3 text-sm font-medium text-espresso/80 transition-colors hover:bg-gold/15 hover:text-terracotta"
-                >
-                  {child.label}
-                </Link>
-              ))}
+              {item.children.map((child) => {
+                const cls =
+                  "block px-5 py-3 text-sm font-medium text-espresso/80 transition-colors hover:bg-gold/15 hover:text-terracotta";
+                return child.external ? (
+                  <a
+                    key={child.to}
+                    href={child.to}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cls}
+                  >
+                    {child.label}
+                  </a>
+                ) : (
+                  <Link key={child.to} to={child.to} className={cls}>
+                    {child.label}
+                  </Link>
+                );
+              })}
             </div>
           </motion.div>
         )}
@@ -202,15 +212,27 @@ export function Navbar() {
                         {item.label}
                       </p>
                       <div className="mt-1 flex flex-col gap-1 pl-3">
-                        {item.children!.map((child) => (
-                          <Link
-                            key={child.to}
-                            to={child.to}
-                            className="py-1 text-sm text-espresso/70"
-                          >
-                            {child.label}
-                          </Link>
-                        ))}
+                        {item.children!.map((child) =>
+                          child.external ? (
+                            <a
+                              key={child.to}
+                              href={child.to}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="py-1 text-sm text-espresso/70"
+                            >
+                              {child.label}
+                            </a>
+                          ) : (
+                            <Link
+                              key={child.to}
+                              to={child.to}
+                              className="py-1 text-sm text-espresso/70"
+                            >
+                              {child.label}
+                            </Link>
+                          ),
+                        )}
                       </div>
                     </>
                   )}

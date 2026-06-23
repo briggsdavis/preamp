@@ -65,12 +65,23 @@ export function Footer() {
             <ul className="mt-3 space-y-2">
               {group.children!.map((c) => (
                 <li key={c.to}>
-                  <Link
-                    to={c.to}
-                    className="text-sm text-cream/75 transition-colors hover:text-gold"
-                  >
-                    {c.label}
-                  </Link>
+                  {c.external ? (
+                    <a
+                      href={c.to}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-cream/75 transition-colors hover:text-gold"
+                    >
+                      {c.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={c.to}
+                      className="text-sm text-cream/75 transition-colors hover:text-gold"
+                    >
+                      {c.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

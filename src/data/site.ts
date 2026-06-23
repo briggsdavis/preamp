@@ -24,6 +24,8 @@ export const SITE = {
 export interface NavLink {
   label: string;
   to: string;
+  /** When true, `to` is an external URL that opens in a new tab. */
+  external?: boolean;
 }
 export interface NavItem {
   label: string;
@@ -36,7 +38,6 @@ export const NAV: NavItem[] = [
     label: "Menu",
     children: [
       { label: "Coffee", to: "/menu/coffee" },
-      { label: "Drip", to: "/menu/drip" },
       { label: "Food", to: "/menu/food" },
     ],
   },
@@ -47,7 +48,12 @@ export const NAV: NavItem[] = [
     children: [
       { label: "Retail", to: "/retail" },
       { label: "Events", to: "/events" },
-      { label: "Gift Cards", to: "/gift-cards" },
+      { label: "Hiring", to: "/hiring" },
+      {
+        label: "Gift Card",
+        to: "https://order.toasttab.com/egiftcards/pre-amp-new-5840-forbes-avenue",
+        external: true,
+      },
     ],
   },
 ];
