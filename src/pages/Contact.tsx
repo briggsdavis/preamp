@@ -28,7 +28,7 @@ export function Contact() {
         <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-32 md:px-8 md:pt-40">
           {/* Two-column: heading + contact details on the left, image + sliding form on the right */}
           <div className="grid gap-10 md:grid-cols-2 md:items-stretch">
-            {/* Left — heading + contact details */}
+            {/* Left - heading + contact details */}
             <motion.div
               initial={{ opacity: 0, x: -30, filter: "blur(12px)" }}
               whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
@@ -108,7 +108,7 @@ export function Contact() {
               </div>
             </motion.div>
 
-            {/* Right — image with a button that reveals a sliding contact form */}
+            {/* Right - image with a button that reveals a sliding contact form */}
             <motion.div
               initial={{ opacity: 0, scale: 0.96, filter: "blur(12px)" }}
               whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}

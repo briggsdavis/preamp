@@ -125,7 +125,7 @@ export function Hiring() {
 
   return (
     <PageWrapper>
-      {/* Hero banner — half the viewport */}
+      {/* Hero banner - half the viewport */}
       <section className="relative flex h-[50vh] min-h-[360px] items-center justify-center overflow-hidden">
         <img
           src="/hiringBG.jpg"

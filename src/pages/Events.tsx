@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
 
-/** Placeholder upcoming events — newest/soonest first. Swap for real data. */
+/** Placeholder upcoming events - newest/soonest first. Swap for real data. */
 interface EventItem {
   title: string;
   date: Date;
@@ -16,7 +16,7 @@ const EVENTS: EventItem[] = [
     title: "Vinyl Night: Soul & Funk",
     date: new Date(2026, 5, 27, 19, 0),
     description:
-      "Crate-diggers welcome. We're spinning soul and funk all night with a guest selector behind the bar — pull up a stool and stay a while.",
+      "Crate-diggers welcome. We're spinning soul and funk all night with a guest selector behind the bar, so pull up a stool and stay a while.",
     image: "/eventvinyls.jpg",
   },
   {
@@ -30,7 +30,7 @@ const EVENTS: EventItem[] = [
     title: "Live Set: Late Night Listening",
     date: new Date(2026, 6, 11, 20, 0),
     description:
-      "An intimate after-hours listening session on the big speakers. Limited seating — espresso martinis and ambient grooves.",
+      "An intimate after-hours listening session on the big speakers. Limited seating, espresso martinis, and ambient grooves.",
     image: "/eventspeakers.jpg",
   },
 ];
@@ -183,7 +183,7 @@ function Calendar() {
   );
 }
 
-/** List of upcoming events — image left, details right. Soonest first. */
+/** List of upcoming events - image left, details right. Soonest first. */
 function UpcomingEvents() {
   const sorted = [...EVENTS].sort((a, b) => a.date.getTime() - b.date.getTime());
 
@@ -225,7 +225,7 @@ export function Events() {
 
   return (
     <PageWrapper>
-      {/* Hero banner — half the viewport */}
+      {/* Hero banner - half the viewport */}
       <section className="relative flex h-[50vh] min-h-[360px] items-center justify-center overflow-hidden">
         <img
           src="/artworkheadon.jpg"

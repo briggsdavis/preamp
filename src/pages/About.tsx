@@ -90,7 +90,7 @@ function FeatureSection({
   );
 }
 
-/** Line icons for the value cards — inherit color via currentColor. */
+/** Line icons for the value cards - inherit color via currentColor. */
 function PrecisionIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -159,7 +159,7 @@ const VALUES = [
   {
     Icon: PrecisionIcon,
     title: "Precision",
-    body: "Every espresso shot is treated like a fine spirit — house-made syrups, unique infusions, balanced like a master bartender would.",
+    body: "Every espresso shot is treated like a fine spirit, with house-made syrups, unique infusions, balanced like a master bartender would.",
   },
   {
     Icon: WarmthIcon,
@@ -235,7 +235,7 @@ export function About() {
         </div>
       </section>
 
-      {/* About Us — base section with the squiggle ribbon */}
+      {/* About Us - base section with the squiggle ribbon */}
       <section className="relative overflow-hidden bg-cream-deep py-24 md:py-32">
         <SquiggleLine side="right" />
         <div className="relative mx-auto max-w-3xl px-6 text-center md:px-8">
@@ -255,7 +255,7 @@ export function About() {
               At Pre Amp, every sip hits the perfect note. Our space hums with
               the warmth of vinyl spinning and the aroma of beans roasted to
               perfection, welcoming every kind of coffee lover. Step up to our
-              bar and watch our baristas — true coffee mixologists —
+              bar and watch our baristas, true coffee mixologists,
               meticulously craft your drink. Each espresso shot is treated like
               a fine spirit, blended with house-made syrups, unique infusions,
               and balanced with the precision of a master bartender. From bold
@@ -266,7 +266,7 @@ export function About() {
         </div>
       </section>
 
-      {/* Values / philosophy — hover cards */}
+      {/* Values / philosophy - hover cards */}
       <section className="relative overflow-hidden bg-espresso py-24 md:py-32">
         <div className="absolute inset-0 opacity-20">
           <RippleStripes count={26} fade="none" drift="left" />
@@ -303,7 +303,7 @@ export function About() {
         </div>
       </section>
 
-      {/* Origin — Danny Ryan */}
+      {/* Origin - Danny Ryan */}
       <FeatureSection
         kicker="Our Origin"
         title="Meet Danny Ryan"
@@ -313,18 +313,18 @@ export function About() {
         <p>
           After a decade in restaurants, cafes, and a roastery in New York City,
           Danny packed up his family for a new chapter: opening a cafe in
-          Pittsburgh in 2020. The pandemic had other plans — and in a twist of
+          Pittsburgh in 2020. The pandemic had other plans, and in a twist of
           fate, things worked out better than he could have imagined.
         </p>
         <p>
           While seeking work, he met Tolga and Rick, who brought him on as
           coffee lead at Coup De Ville. Their trust grew into a partnership
-          focused on creating the ultimate coffee experience in Pittsburgh — a
+          focused on creating the ultimate coffee experience in Pittsburgh, a
           dream he couldn't have achieved alone.
         </p>
         <p>
           His passion ignited in 2009 over a $6 cup brewed on a Clover machine
-          at Cafe Grumpy in NYC — captivated by the complexity, rich flavors,
+          at Cafe Grumpy in NYC, captivated by the complexity, rich flavors,
           and stories held within each bean.
         </p>
       </FeatureSection>
@@ -341,7 +341,7 @@ export function About() {
       >
         <p>
           House-made syrups, unique infusions, and a bartender's balance go into
-          every cup. Bold and complex or smooth and sweet — our baristas build
+          every cup. Bold and complex or smooth and sweet, our baristas build
           each drink like a fine cocktail.
         </p>
         <p>
@@ -360,7 +360,7 @@ export function About() {
       >
         <p>
           Our kitchen turns out house focaccia sandwiches, fresh sides, and
-          comfort plates — all built to sit alongside whatever you're sipping.
+          comfort plates, all built to sit alongside whatever you're sipping.
         </p>
         <p className="text-base text-espresso/70">
           Kitchen hours: Wed – Sat 11am – 6pm · Sun 11am – 4pm (closed Mon &amp;
@@ -368,7 +368,7 @@ export function About() {
         </p>
       </FeatureSection>
 
-      {/* Music & vinyl — with the waveform rhythm decoration */}
+      {/* Music & vinyl - with the waveform rhythm decoration */}
       <section className="relative overflow-hidden bg-espresso text-cream">
         {/* music rhythm band across the top */}
         <div className="absolute inset-x-0 top-0 h-28 opacity-30">
@@ -396,7 +396,7 @@ export function About() {
               <p>
                 Crate-dig with us, catch a guest selector, or just let the
                 playlist set the pace while your drink comes together at the
-                bar. Brews and beats — that's the whole idea.
+                bar. Brews and beats. That's the whole idea.
               </p>
             </div>
             <Link

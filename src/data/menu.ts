@@ -79,13 +79,13 @@ export const COFFEE_SECTIONS: MenuSection[] = [
     items: [
       item("hot-chocolate", "Hot Chocolate", "$4.50", "Rich drinking chocolate, steamed to order.", "/menu-coffeecheers.jpg", 49),
       item("golden-milk", "Golden Milk", "$5.00", "Turmeric, ginger, and warm spices over steamed milk.", "/menu-coffeemachine.jpg", 27),
-      item("vanilla-steamer", "Vanilla Steamer", "$4.00", "Steamed milk and vanilla — no caffeine, all comfort.", "/menu-coffee.jpg", 31),
+      item("vanilla-steamer", "Vanilla Steamer", "$4.00", "Steamed milk and vanilla. No caffeine, all comfort.", "/menu-coffee.jpg", 31),
     ],
   },
   {
     title: "Specials",
     items: [
-      item("seasonal-special", "Seasonal Special", "$6.00", "Ask the bar — our rotating drink of the moment.", "/menu-coffeeshot.jpg", 84, [
+      item("seasonal-special", "Seasonal Special", "$6.00", "Ask the bar for our rotating drink of the moment.", "/menu-coffeeshot.jpg", 84, [
         { name: "Devon R.", rating: 5, text: "Whatever they make, get it." },
       ]),
       item("baristas-choice", "Barista's Choice", "$6.50", "Hand it to the bar and let them surprise you.", "/menu-coffeepouring.jpg", 57),

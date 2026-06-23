@@ -284,7 +284,7 @@ function ItemModal({
                 </h3>
                 {state.reviews.length === 0 ? (
                   <p className="mt-3 text-espresso/60">
-                    No reviews yet — be the first!
+                    No reviews yet. Be the first!
                   </p>
                 ) : (
                   <ul className="mt-3 space-y-4">

@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * The five-strand "sunset" ribbon, ramped orange → brown to match the brand
- * artwork (no yellow). Index 0 is the outer strand (lighter orange) — the top
+ * artwork (no yellow). Index 0 is the outer strand (lighter orange) - the top
  * of a left-to-right run and the outside of every curve.
  */
 const RIBBON = [
@@ -166,7 +166,7 @@ function strandPath(points: Pt[], R: number, o: number): string {
 
 /**
  * A decorative five-strand sunset ribbon that snakes through a section as a
- * rounded "racetrack" — straight runs with rounded U-turns — and draws itself
+ * rounded "racetrack" - straight runs with rounded U-turns - and draws itself
  * on as the section scrolls through the viewport. Sits full-bleed behind the
  * section content on the cream/beige sections.
  */
