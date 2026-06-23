@@ -7,7 +7,7 @@ import { RippleStripes } from "@/components/site/RippleStripes";
 
 /** Shared field styling for the cream-on-white inputs used across the form. */
 const fieldClass =
-  "w-full rounded-xl border-2 border-cream/30 bg-cream px-4 py-3 text-espresso placeholder:text-espresso/50 outline-none transition-colors focus:border-gold";
+  "w-full rounded-xl border-2 border-sand bg-white px-4 py-3 text-espresso placeholder:text-espresso/55 outline-none transition-colors focus:border-gold";
 
 export function Contact() {
   const [formOpen, setFormOpen] = useState(false);
@@ -26,23 +26,9 @@ export function Contact() {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-32 md:px-8 md:pt-40">
-          <motion.div
-            initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.8 }}
-            className="max-w-2xl"
-          >
-            <p className="font-groovy text-sm uppercase tracking-[0.35em] text-cream/80">
-              Say hello
-            </p>
-            <h1 className="mt-3 font-display text-5xl leading-tight text-cream md:text-7xl">
-              Get In Touch
-            </h1>
-          </motion.div>
-
-          {/* Two-column: contact details on the left, image + sliding form on the right */}
-          <div className="mt-14 grid gap-10 md:grid-cols-2 md:items-stretch">
-            {/* Left — contact details */}
+          {/* Two-column: heading + contact details on the left, image + sliding form on the right */}
+          <div className="grid gap-10 md:grid-cols-2 md:items-stretch">
+            {/* Left — heading + contact details */}
             <motion.div
               initial={{ opacity: 0, x: -30, filter: "blur(12px)" }}
               whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
@@ -50,7 +36,14 @@ export function Contact() {
               transition={{ duration: 0.9 }}
               className="flex flex-col"
             >
-              <p className="max-w-md text-lg text-cream/90">
+              <p className="font-groovy text-sm uppercase tracking-[0.35em] text-cream/80">
+                Say hello
+              </p>
+              <h1 className="mt-3 font-display text-5xl leading-tight text-cream md:text-7xl">
+                Get In Touch
+              </h1>
+
+              <p className="mt-8 max-w-md text-lg text-cream/90">
                 Pull up to the bar, send a note, or just come hang. Tucked into{" "}
                 {SITE.neighborhood}, we'd love to hear what's spinning for you.
               </p>
@@ -158,17 +151,17 @@ export function Contact() {
                     animate={{ y: 0 }}
                     exit={{ y: "100%" }}
                     transition={{ type: "spring", damping: 28, stiffness: 240 }}
-                    className="absolute inset-0 flex flex-col bg-maroon/95 p-7 backdrop-blur-md"
+                    className="absolute inset-0 flex flex-col bg-cream-deep/97 p-7 backdrop-blur-md"
                   >
                     <div className="flex items-start justify-between">
-                      <h2 className="font-display text-3xl text-cream">
+                      <h2 className="font-display text-3xl text-espresso">
                         Send a Note
                       </h2>
                       <button
                         type="button"
                         onClick={() => setFormOpen(false)}
                         aria-label="Close contact form"
-                        className="rounded-full border-2 border-cream/50 px-3 py-1 text-cream transition-colors hover:bg-cream/10"
+                        className="rounded-full border-2 border-espresso/30 px-3 py-1 text-espresso transition-colors hover:bg-espresso/10"
                       >
                         ✕
                       </button>
@@ -176,10 +169,10 @@ export function Contact() {
 
                     {sent ? (
                       <div className="flex flex-1 flex-col items-center justify-center text-center">
-                        <p className="font-display text-4xl text-gold">
+                        <p className="font-display text-4xl text-brick">
                           Thanks!
                         </p>
-                        <p className="mt-3 max-w-xs text-cream/90">
+                        <p className="mt-3 max-w-xs text-espresso/80">
                           Your note's on its way. We'll get back to you as soon
                           as we can.
                         </p>
@@ -226,7 +219,7 @@ export function Contact() {
                         />
                         <button
                           type="submit"
-                          className="mt-1 rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg transition-all hover:-translate-y-1 hover:bg-amber"
+                          className="mt-1 rounded-full bg-brick px-7 py-3 font-semibold text-cream shadow-lg transition-all hover:-translate-y-1 hover:bg-maroon"
                         >
                           Send Message →
                         </button>
