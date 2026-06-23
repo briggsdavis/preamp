@@ -26,8 +26,9 @@ interface SquiggleLineProps {
   gap?: number;
   /** Stroke width, in px. */
   strokeWidth?: number;
-  /** Target vertical distance between horizontal runs, in px (drives density). */
-  rowGap?: number;
+  /** Distance the top/bottom runs sit from the section edges, in px. Keeps the
+   * runs up in the section padding so they clear the content. */
+  marginY?: number;
 }
 
 interface Pt {
@@ -38,9 +39,11 @@ interface Pt {
 const f = (n: number) => n.toFixed(2);
 
 /**
- * Build the centre-line of a serpentine "racetrack": straight horizontal runs
- * stacked down the section, joined by U-turns alternating left/right. The first
- * and last segments overshoot the top/bottom edges so the ribbon bleeds off.
+ * Build the centre-line of the ribbon as a "frame": one horizontal run tucked
+ * into the top margin and one into the bottom margin, joined by a single tall
+ * connector running down one side gutter, with the ends bleeding off the top
+ * and bottom edges. Keeping the runs in the margins and the connector at the
+ * edge means the ribbon never crosses the centred section content.
  */
 function buildWaypoints(
   W: number,
@@ -48,42 +51,30 @@ function buildWaypoints(
   R: number,
   bundleHalf: number,
   strokeWidth: number,
-  rowGapTarget: number,
+  marginY: number,
   startLeft: boolean,
 ): { points: Pt[]; effR: number } {
   const insetX = bundleHalf + strokeWidth + 2;
   const xL = insetX;
   const xR = W - insetX;
 
-  const padY = R + bundleHalf + strokeWidth + 6;
-  const span = Math.max(0, H - 2 * padY);
+  const topY = marginY;
+  const botY = H - marginY;
+  // Shrink the corner radius if the section is too short/narrow for it.
+  const effR = Math.min(R, (botY - topY) / 2 - 6, (xR - xL) / 2 - 6);
+  const overshoot = effR + 90;
 
-  // Pick the number of runs from the section height, then keep the U-turns from
-  // colliding by guaranteeing a straight vertical between the two corners.
-  let n = Math.max(2, Math.round(span / rowGapTarget) + 1);
-  let rowGap = span / (n - 1);
-  while (n > 2 && rowGap < 2 * R + 24) {
-    n -= 1;
-    rowGap = span / (n - 1);
-  }
-  // Shrink the corner radius if the section is too short for the chosen radius.
-  const effR = Math.min(R, rowGap / 2 - 6, (xR - xL) / 2 - 6);
+  const start = startLeft ? xL : xR;
+  const other = startLeft ? xR : xL;
 
-  const ys = Array.from({ length: n }, (_, j) => padY + j * rowGap);
-  const overshoot = effR + 80;
-
-  const points: Pt[] = [];
-  let curX = startLeft ? xL : xR;
-  const other = (x: number) => (x === xL ? xR : xL);
-
-  points.push({ x: curX, y: ys[0] - overshoot }); // bleed in from the top
-  for (let j = 0; j < n; j++) {
-    points.push({ x: curX, y: ys[j] }); // start of run (top of a connector)
-    const endX = other(curX);
-    points.push({ x: endX, y: ys[j] }); // end of run
-    curX = endX;
-  }
-  points.push({ x: curX, y: ys[n - 1] + overshoot }); // bleed off the bottom
+  const points: Pt[] = [
+    { x: start, y: topY - overshoot }, // bleed in from the top
+    { x: start, y: topY }, // into the top run
+    { x: other, y: topY }, // top run across
+    { x: other, y: botY }, // tall connector down the side gutter
+    { x: start, y: botY }, // bottom run back across
+    { x: start, y: botY + overshoot }, // bleed off the bottom
+  ];
 
   return { points, effR };
 }
@@ -115,7 +106,8 @@ function strandPath(points: Pt[], R: number, o: number): string {
     const tout = { x: P.x + b.ux * R + o * b.px, y: P.y + b.uy * R + o * b.py };
     const cross = a.ux * b.uy - a.uy * b.ux; // ±1 for the 90° turns
     const r = R - cross * o;
-    const sweep = cross < 0 ? 1 : 0;
+    // Convex (racetrack) corners: the bundle bulges outward through each turn.
+    const sweep = cross < 0 ? 0 : 1;
     d += ` L ${f(tin.x)},${f(tin.y)}`;
     d += ` A ${f(r)} ${f(r)} 0 0 ${sweep} ${f(tout.x)},${f(tout.y)}`;
   }
@@ -134,10 +126,10 @@ function strandPath(points: Pt[], R: number, o: number): string {
 export function SquiggleLine({
   className,
   side = "left",
-  cornerRadius = 64,
+  cornerRadius = 72,
   gap = 9,
   strokeWidth = 3,
-  rowGap = 260,
+  marginY = 52,
 }: SquiggleLineProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
@@ -171,11 +163,11 @@ export function SquiggleLine({
       cornerRadius,
       bundleHalf,
       strokeWidth,
-      rowGap,
+      marginY,
       side !== "right",
     );
     return RIBBON.map((_, i) => strandPath(points, effR, (i - mid) * gap));
-  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, rowGap, gap, mid, side]);
+  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, gap, mid, side]);
 
   // Draw the ribbon on as the section scrolls through the viewport.
   const { scrollYProgress } = useScroll({

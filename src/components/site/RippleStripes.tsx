@@ -28,6 +28,9 @@ interface RippleStripesProps {
    * per-stripe oscillation. "none" (default) leaves it stationary.
    */
   drift?: "left" | "right" | "none";
+  /** Gap between stripes, in px. Lower it (with a higher count) for a finer,
+   * higher-resolution waveform. */
+  gap?: number;
 }
 
 /**
@@ -56,6 +59,7 @@ export function RippleStripes({
   fade = "right",
   variant = "bars",
   drift = "none",
+  gap = 6,
 }: RippleStripesProps) {
   const maskStyle =
     fade === "none"
@@ -107,11 +111,12 @@ export function RippleStripes({
     >
       <div
         className={cn(
-          "flex h-full items-center gap-[6px]",
+          "flex h-full items-center",
           drift === "none" ? "w-full" : "w-[200%]",
           drift === "left" && "animate-drift-left",
           drift === "right" && "animate-drift-right",
         )}
+        style={{ columnGap: `${gap}px` }}
       >
         {Array.from({ length: total }).map((_, i) => stripe(i))}
       </div>
