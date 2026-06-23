@@ -163,6 +163,7 @@ export const RD_RESTAURANTS: Restaurant[] = [
   { name: "Hand Roll", image: "/handroll.jpg", href: "https://gi-jin.com/" },
   { name: "Sea Monkey", image: "/seamonkey.jpg", href: "https://www.seamonkeypgh.com/" },
   { name: "Rib Room", image: "/ribroom.jpg", href: "https://ribroompgh.com/" },
+  { name: "Pre Amp", image: "/preamplogo.png", href: "/" },
 ];
 
 export interface QuizQuestion {

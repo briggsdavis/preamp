@@ -14,7 +14,7 @@ function DesktopItem({ item }: { item: NavItem }) {
         to={item.to!}
         className={({ isActive }) =>
           cn(
-            "relative px-1 py-2 text-sm font-medium tracking-wide text-espresso/80 transition-colors hover:text-terracotta",
+            "relative px-1 py-2 text-sm font-medium lowercase tracking-wide text-espresso/80 transition-colors hover:text-terracotta",
             isActive && "text-terracotta",
           )
         }
@@ -31,18 +31,10 @@ function DesktopItem({ item }: { item: NavItem }) {
       onMouseLeave={() => setOpen(false)}
     >
       <button
-        className="flex items-center gap-1 px-1 py-2 text-sm font-medium tracking-wide text-espresso/80 transition-colors hover:text-terracotta"
+        className="flex items-center gap-1 px-1 py-2 text-sm font-medium lowercase tracking-wide text-espresso/80 transition-colors hover:text-terracotta"
         aria-expanded={open}
       >
         {item.label}
-        <span
-          className={cn(
-            "text-[10px] transition-transform duration-200",
-            open && "rotate-180",
-          )}
-        >
-          ▾
-        </span>
       </button>
       <AnimatePresence>
         {open && (
@@ -149,7 +141,7 @@ export function Navbar() {
           ))}
           <Link
             to="/menu/coffee"
-            className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
+            className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold lowercase text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
           >
             Order
           </Link>
@@ -197,13 +189,13 @@ export function Navbar() {
                   {item.to ? (
                     <Link
                       to={item.to}
-                      className="block font-groovy text-lg text-espresso"
+                      className="block font-groovy text-lg lowercase text-espresso"
                     >
                       {item.label}
                     </Link>
                   ) : (
                     <>
-                      <p className="font-groovy text-lg text-espresso">
+                      <p className="font-groovy text-lg lowercase text-espresso">
                         {item.label}
                       </p>
                       <div className="mt-1 flex flex-col gap-1 pl-3">
@@ -223,7 +215,7 @@ export function Navbar() {
               ))}
               <Link
                 to="/menu/coffee"
-                className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold text-cream"
+                className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold lowercase text-cream"
               >
                 Order
               </Link>
