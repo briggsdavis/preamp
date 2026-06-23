@@ -9,7 +9,7 @@ function DrinkCard({ drink }: { drink: Drink }) {
     <motion.article
       whileHover={{ y: -10 }}
       transition={{ type: "spring", stiffness: 220, damping: 18 }}
-      className="group w-[300px] shrink-0 rounded-3xl border border-espresso/10 bg-cream p-7 shadow-sm transition-shadow hover:shadow-2xl hover:shadow-maroon/15"
+      className="group flex h-full w-[300px] shrink-0 flex-col rounded-3xl border border-espresso/10 bg-cream p-7 shadow-sm transition-shadow hover:shadow-2xl hover:shadow-maroon/15"
     >
       {/* Vinyl-style disc that spins on hover */}
       <div className="relative mx-auto grid h-40 w-40 place-items-center">
@@ -45,7 +45,7 @@ function DrinkCard({ drink }: { drink: Drink }) {
         href={SITE.orderUrl}
         target="_blank"
         rel="noreferrer"
-        className="mt-5 block rounded-full bg-terracotta px-5 py-2.5 text-center text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
+        className="mt-auto block rounded-full bg-terracotta px-5 py-2.5 text-center text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
       >
         Order
       </a>
