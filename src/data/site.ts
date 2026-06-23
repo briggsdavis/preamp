@@ -49,7 +49,7 @@ export const NAV: NavItem[] = [
   {
     label: "More",
     children: [
-      { label: "Retail", to: "/retail" },
+      { label: "Merch", to: "/retail" },
       { label: "Events", to: "/events" },
       { label: "Hiring", to: "/hiring" },
       {

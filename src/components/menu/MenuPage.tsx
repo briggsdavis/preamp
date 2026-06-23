@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
-import type { MenuItem, Review } from "@/data/menu";
+import type { MenuItem, MenuSection, Review } from "@/data/menu";
 
 /** Per-item interaction state we manage client-side: like toggle + reviews. */
 interface ItemState {
@@ -312,19 +313,24 @@ function ItemModal({
   );
 }
 
-/** Shared menu page: hero band, grid of cards, and the detail modal. */
+/** Shared menu page: hero band, grouped sections of cards, and the modal. */
 export function MenuPage({
   kicker,
   title,
-  items,
+  sections,
 }: {
   kicker: string;
   title: string;
-  items: MenuItem[];
+  sections: MenuSection[];
 }) {
+  const allItems = useMemo(
+    () => sections.flatMap((s) => s.items),
+    [sections],
+  );
+
   const [state, setState] = useState<StateMap>(() =>
     Object.fromEntries(
-      items.map((it) => [
+      allItems.map((it) => [
         it.id,
         { likes: it.likes, liked: false, reviews: it.reviews },
       ]),
@@ -333,8 +339,8 @@ export function MenuPage({
   const [openId, setOpenId] = useState<string | null>(null);
 
   const openItem = useMemo(
-    () => items.find((it) => it.id === openId) ?? null,
-    [items, openId],
+    () => allItems.find((it) => it.id === openId) ?? null,
+    [allItems, openId],
   );
 
   function toggleLike(id: string) {
@@ -379,31 +385,46 @@ export function MenuPage({
             </h1>
           </header>
 
-          <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((item) => (
-              <MenuCard
-                key={item.id}
-                item={item}
-                state={state[item.id]}
-                onToggleLike={() => toggleLike(item.id)}
-                onOpen={() => setOpenId(item.id)}
-              />
+          <div className="space-y-16">
+            {sections.map((section) => (
+              <div key={section.title}>
+                <h2 className="mb-6 flex items-center gap-4 font-display text-3xl text-espresso md:text-4xl">
+                  {section.title}
+                  <span className="h-px flex-1 bg-espresso/15" />
+                </h2>
+                <div className="grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
+                  {section.items.map((item) => (
+                    <MenuCard
+                      key={item.id}
+                      item={item}
+                      state={state[item.id]}
+                      onToggleLike={() => toggleLike(item.id)}
+                      onOpen={() => setOpenId(item.id)}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <AnimatePresence>
-        {openItem && (
-          <ItemModal
-            item={openItem}
-            state={state[openItem.id]}
-            onToggleLike={() => toggleLike(openItem.id)}
-            onAddReview={(r) => addReview(openItem.id, r)}
-            onClose={() => setOpenId(null)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Modal is portaled to <body> so its fixed positioning is relative to
+          the viewport, not the transformed PageWrapper ancestor. */}
+      {createPortal(
+        <AnimatePresence>
+          {openItem && (
+            <ItemModal
+              item={openItem}
+              state={state[openItem.id]}
+              onToggleLike={() => toggleLike(openItem.id)}
+              onAddReview={(r) => addReview(openItem.id, r)}
+              onClose={() => setOpenId(null)}
+            />
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </PageWrapper>
   );
 }
