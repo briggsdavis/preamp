@@ -11,7 +11,7 @@ const fieldClass =
 const labelClass = "mb-2 block font-semibold text-espresso";
 
 const sectionTitleClass =
-  "grooved text-4xl md:text-5xl";
+  "font-display text-4xl text-orange md:text-5xl";
 
 const DAYS = [
   "Monday",
@@ -156,7 +156,9 @@ export function Hiring() {
             className="rounded-[2rem] border-4 border-sand bg-cream p-7 shadow-2xl shadow-maroon/15 md:p-12"
           >
             <header className="text-center">
-              <h2 className="grooved text-5xl md:text-6xl">Send Your Resume</h2>
+              <h2 className="font-display text-5xl text-orange md:text-6xl">
+                Send Your Resume
+              </h2>
               <p className="mt-4 text-lg text-espresso/80">
                 Upload your resume and we will get back to you as soon as
                 possible.
@@ -165,7 +167,7 @@ export function Hiring() {
 
             {sent ? (
               <div className="py-16 text-center">
-                <p className="grooved text-5xl">Thank You!</p>
+                <p className="font-display text-5xl text-orange">Thank You!</p>
                 <p className="mt-4 text-lg text-espresso/80">
                   Your application is in. We'll be in touch soon.
                 </p>

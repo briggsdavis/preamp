@@ -121,12 +121,12 @@ export function Contact() {
               whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
               viewport={{ once: true }}
               transition={{ duration: 0.9 }}
-              className="relative min-h-[520px] overflow-hidden rounded-3xl border-4 border-cream/60 shadow-2xl"
+              className="relative min-h-[480px] overflow-hidden rounded-3xl shadow-2xl md:min-h-0"
             >
               <img
                 src="/contactdecor.jpg"
                 alt="Pre Amp Coffee Studio"
-                className="h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-espresso/70 via-transparent to-transparent" />
 
