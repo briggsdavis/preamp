@@ -90,19 +90,84 @@ function FeatureSection({
   );
 }
 
+/** Line icons for the value cards — inherit color via currentColor. */
+function PrecisionIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="8.5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none" />
+      <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
+    </svg>
+  );
+}
+
+function WarmthIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* rising steam */}
+      <path d="M8.5 2.2c-.7.9-.7 1.9 0 2.8M12 2.2c-.7.9-.7 1.9 0 2.8M15.5 2.2c-.7.9-.7 1.9 0 2.8" />
+      {/* mug */}
+      <path d="M4 8.5h12.5v4.5a5.5 5.5 0 0 1-5.5 5.5H9.5A5.5 5.5 0 0 1 4 13V8.5z" />
+      {/* handle */}
+      <path d="M16.5 9.5h2.2a2.4 2.4 0 0 1 0 4.8h-2.2" />
+      {/* saucer */}
+      <path d="M5 21h11" />
+    </svg>
+  );
+}
+
+function RhythmIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.6}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 17V5l10-2v12" />
+      <circle cx="6.5" cy="17" r="2.5" />
+      <circle cx="16.5" cy="15" r="2.5" />
+      <path d="M9 9l10-2" />
+    </svg>
+  );
+}
+
 const VALUES = [
   {
-    glyph: "◎",
+    Icon: PrecisionIcon,
     title: "Precision",
     body: "Every espresso shot is treated like a fine spirit — house-made syrups, unique infusions, balanced like a master bartender would.",
   },
   {
-    glyph: "☕",
+    Icon: WarmthIcon,
     title: "Warmth",
     body: "Our space hums with the aroma of beans roasted to perfection, welcoming every kind of coffee lover up to the bar.",
   },
   {
-    glyph: "♪",
+    Icon: RhythmIcon,
     title: "Rhythm",
     body: "Vinyl spinning all day. Brews and beats, woven together so every visit hits the perfect note.",
   },
@@ -225,8 +290,8 @@ export function About() {
                 transition={{ duration: 0.6, delay: i * 0.1 }}
                 className="group rounded-3xl border border-cream/10 bg-espresso-soft/60 p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:border-gold/40 hover:bg-espresso-soft"
               >
-                <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 text-3xl text-gold transition-transform duration-300 group-hover:scale-110 group-hover:bg-gold/25">
-                  {v.glyph}
+                <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 text-gold transition-transform duration-300 group-hover:scale-110 group-hover:bg-gold/25">
+                  <v.Icon className="h-8 w-8" />
                 </span>
                 <h3 className="mt-5 font-display text-2xl text-cream">
                   {v.title}
