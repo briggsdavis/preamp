@@ -4,6 +4,8 @@ import { AnimatePresence } from "framer-motion";
 
 import { Layout } from "@/components/site/Layout";
 import { Home } from "@/pages/Home";
+import { MenuCoffee } from "@/pages/MenuCoffee";
+import { MenuFood } from "@/pages/MenuFood";
 import { Contact } from "@/pages/Contact";
 import { Events } from "@/pages/Events";
 import { Hiring } from "@/pages/Hiring";
@@ -27,8 +29,8 @@ export default function App() {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home />} />
-          <Route path="/menu/coffee" element={<NotDeveloped />} />
-          <Route path="/menu/food" element={<NotDeveloped />} />
+          <Route path="/menu/coffee" element={<MenuCoffee />} />
+          <Route path="/menu/food" element={<MenuFood />} />
           <Route path="/about" element={<NotDeveloped />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/retail" element={<NotDeveloped />} />
