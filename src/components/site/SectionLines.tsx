@@ -6,6 +6,8 @@ interface SectionLinesProps {
   count?: number;
   /** Overall opacity of the motif (kept low so it stays subtle). */
   opacity?: number;
+  /** Slowly slide the lines sideways like a conveyor belt. */
+  drift?: "left" | "right" | "none";
   className?: string;
 }
 
@@ -17,6 +19,7 @@ interface SectionLinesProps {
 export function SectionLines({
   count = 30,
   opacity = 0.07,
+  drift = "none",
   className,
 }: SectionLinesProps) {
   return (
@@ -25,7 +28,7 @@ export function SectionLines({
       className={cn("pointer-events-none absolute inset-0 -z-0", className)}
       style={{ opacity }}
     >
-      <RippleStripes count={count} fade="none" />
+      <RippleStripes count={count} fade="none" drift={drift} />
     </div>
   );
 }

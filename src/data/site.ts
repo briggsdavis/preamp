@@ -19,11 +19,16 @@ export const SITE = {
   mapsEmbed:
     "https://www.google.com/maps?q=5840+Forbes+Ave,+Pittsburgh,+PA+15217&output=embed",
   mapsLink: "https://www.google.com/maps/search/?api=1&query=5840+Forbes+Ave+Pittsburgh+PA+15217",
+  // TODO: confirm the real online-ordering URL — placeholder based on the Toast
+  // ordering domain used for the gift cards. Swap freely.
+  orderUrl: "https://order.toasttab.com/online/pre-amp-new-5840-forbes-avenue",
 } as const;
 
 export interface NavLink {
   label: string;
   to: string;
+  /** When true, `to` is an external URL that opens in a new tab. */
+  external?: boolean;
 }
 export interface NavItem {
   label: string;
@@ -36,7 +41,6 @@ export const NAV: NavItem[] = [
     label: "Menu",
     children: [
       { label: "Coffee", to: "/menu/coffee" },
-      { label: "Drip", to: "/menu/drip" },
       { label: "Food", to: "/menu/food" },
     ],
   },
@@ -47,7 +51,12 @@ export const NAV: NavItem[] = [
     children: [
       { label: "Retail", to: "/retail" },
       { label: "Events", to: "/events" },
-      { label: "Gift Cards", to: "/gift-cards" },
+      { label: "Hiring", to: "/hiring" },
+      {
+        label: "Gift Card",
+        to: "https://order.toasttab.com/egiftcards/pre-amp-new-5840-forbes-avenue",
+        external: true,
+      },
     ],
   },
 ];
@@ -163,6 +172,7 @@ export const RD_RESTAURANTS: Restaurant[] = [
   { name: "Hand Roll", image: "/handroll.jpg", href: "https://gi-jin.com/" },
   { name: "Sea Monkey", image: "/seamonkey.jpg", href: "https://www.seamonkeypgh.com/" },
   { name: "Rib Room", image: "/ribroom.jpg", href: "https://ribroompgh.com/" },
+  { name: "Pre Amp", image: "/preamplogo.png", href: "/" },
 ];
 
 export interface QuizQuestion {

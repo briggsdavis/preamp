@@ -11,7 +11,7 @@ export function Footer() {
       {/* Taller band with breathing room up top so the rippling ovals can
           pulse upward without being clipped at the footer edge. */}
       <div className="absolute inset-x-0 top-0 h-36 pt-5 opacity-40">
-        <RippleStripes count={20} fade="none" />
+        <RippleStripes count={110} fade="none" variant="wave" gap={3} />
       </div>
 
       <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pb-12 pt-56 md:grid-cols-4 md:px-8">
@@ -65,12 +65,23 @@ export function Footer() {
             <ul className="mt-3 space-y-2">
               {group.children!.map((c) => (
                 <li key={c.to}>
-                  <Link
-                    to={c.to}
-                    className="text-sm text-cream/75 transition-colors hover:text-gold"
-                  >
-                    {c.label}
-                  </Link>
+                  {c.external ? (
+                    <a
+                      href={c.to}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm text-cream/75 transition-colors hover:text-gold"
+                    >
+                      {c.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={c.to}
+                      className="text-sm text-cream/75 transition-colors hover:text-gold"
+                    >
+                      {c.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

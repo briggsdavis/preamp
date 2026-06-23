@@ -18,7 +18,7 @@ export function Marquee() {
   const line = [...ITEMS, ...ITEMS];
   return (
     <Reveal y={0}>
-      <div className="overflow-hidden border-y-2 border-espresso bg-terracotta py-3">
+      <div className="overflow-hidden border-y-2 border-gold bg-terracotta py-3">
         <div className="animate-marquee flex w-max gap-8 whitespace-nowrap">
           {line.map((item, i) => (
             <span

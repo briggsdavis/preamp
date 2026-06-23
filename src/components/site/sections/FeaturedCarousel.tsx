@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
-import { FEATURED, type Drink } from "@/data/site";
+import { FEATURED, SITE, type Drink } from "@/data/site";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 
 function DrinkCard({ drink }: { drink: Drink }) {
@@ -9,7 +9,7 @@ function DrinkCard({ drink }: { drink: Drink }) {
     <motion.article
       whileHover={{ y: -10 }}
       transition={{ type: "spring", stiffness: 220, damping: 18 }}
-      className="group w-[300px] shrink-0 rounded-3xl border border-espresso/10 bg-cream p-7 shadow-sm transition-shadow hover:shadow-2xl hover:shadow-maroon/15"
+      className="group flex w-[300px] shrink-0 flex-col rounded-3xl border border-espresso/10 bg-cream p-7 shadow-sm transition-shadow hover:shadow-2xl hover:shadow-maroon/15"
     >
       {/* Vinyl-style disc that spins on hover */}
       <div className="relative mx-auto grid h-40 w-40 place-items-center">
@@ -40,6 +40,15 @@ function DrinkCard({ drink }: { drink: Drink }) {
       <p className="mt-3 text-xs uppercase tracking-wide text-espresso/45">
         {drink.notes}
       </p>
+
+      <a
+        href={SITE.orderUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-auto block rounded-full bg-terracotta px-5 py-2.5 text-center text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
+      >
+        Order
+      </a>
     </motion.article>
   );
 }
@@ -142,7 +151,7 @@ export function FeaturedCarousel() {
           Now Pouring
         </p>
         <h2 className="mt-3 font-groovy text-4xl text-espresso md:text-5xl">
-          Featured on the bar
+          Best Sellers
         </h2>
       </motion.div>
 

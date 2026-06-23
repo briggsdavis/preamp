@@ -34,7 +34,7 @@ export function Testimonials() {
           On the record
         </p>
         <h2 className="mt-3 font-groovy text-4xl text-espresso md:text-5xl">
-          What the regulars say
+          Reviews
         </h2>
       </motion.div>
 
