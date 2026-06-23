@@ -145,7 +145,7 @@ export function Hiring() {
 
       {/* Beige application section with squiggly line + beige form modal */}
       <section className="relative overflow-hidden bg-cream-deep py-20 md:py-28">
-        <SquiggleLine side="left" />
+        <SquiggleLine side="left" rows={6} cornerRadius={120} marginY={120} />
 
         <div className="relative mx-auto max-w-3xl px-5 md:px-8">
           <motion.div
@@ -173,8 +173,8 @@ export function Hiring() {
             ) : (
               <form onSubmit={handleSubmit} className="mt-12 space-y-12">
                 {/* Contact Info */}
-                <fieldset className="space-y-5">
-                  <legend className={sectionTitleClass}>Contact Info</legend>
+                <div className="space-y-5">
+                  <h3 className={sectionTitleClass}>Contact Info</h3>
                   <input
                     required
                     name="firstName"
@@ -238,11 +238,11 @@ export function Hiring() {
                       000-000-0000 or (000) 000-0000
                     </p>
                   </div>
-                </fieldset>
+                </div>
 
                 {/* Job Details */}
-                <fieldset className="space-y-5">
-                  <legend className={sectionTitleClass}>Job Details</legend>
+                <div className="space-y-5">
+                  <h3 className={sectionTitleClass}>Job Details</h3>
                   <div>
                     <label className={labelClass}>
                       What Position Are You Applying For? (Required)
@@ -269,11 +269,11 @@ export function Hiring() {
                     placeholder="Desired Salary (Required)"
                     className={fieldClass}
                   />
-                </fieldset>
+                </div>
 
                 {/* Availability */}
-                <fieldset className="space-y-6">
-                  <legend className={sectionTitleClass}>Availability</legend>
+                <div className="space-y-6">
+                  <h3 className={sectionTitleClass}>Availability</h3>
                   <input
                     required
                     name="hours"
@@ -317,16 +317,14 @@ export function Hiring() {
                       <Radio name="transportation" value="no" label="No" />
                     </div>
                   </div>
-                </fieldset>
+                </div>
 
                 {/* Employment History */}
-                <fieldset className="space-y-10">
-                  <legend className={sectionTitleClass}>
-                    Employment History
-                  </legend>
+                <div className="space-y-10">
+                  <h3 className={sectionTitleClass}>Employment History</h3>
                   <EmployerBlock index={1} />
                   <EmployerBlock index={2} />
-                </fieldset>
+                </div>
 
                 {/* Resume upload */}
                 <div>

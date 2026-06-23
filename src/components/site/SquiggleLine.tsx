@@ -29,6 +29,9 @@ interface SquiggleLineProps {
   /** Distance the top/bottom runs sit from the section edges, in px. Keeps the
    * runs up in the section padding so they clear the content. */
   marginY?: number;
+  /** When set (>1), the ribbon serpentines left↔right across this many
+   * horizontal rows instead of framing the section edges. */
+  rows?: number;
 }
 
 interface Pt {
@@ -75,6 +78,50 @@ function buildWaypoints(
     { x: start, y: botY }, // bottom run back across
     { x: start, y: botY + overshoot }, // bleed off the bottom
   ];
+
+  return { points, effR };
+}
+
+/**
+ * Build the centre-line as a serpentine: horizontal runs stacked down the
+ * section, joined by rounded U-turns that alternate between the left and right
+ * gutters, so the ribbon snakes left↔right as it travels down. The ends bleed
+ * off the top and bottom edges.
+ */
+function buildSerpentine(
+  W: number,
+  H: number,
+  R: number,
+  bundleHalf: number,
+  strokeWidth: number,
+  marginY: number,
+  rows: number,
+  startLeft: boolean,
+): { points: Pt[]; effR: number } {
+  const insetX = bundleHalf + strokeWidth + 2;
+  const xL = insetX;
+  const xR = W - insetX;
+
+  const topY = marginY;
+  const botY = H - marginY;
+  const rowGap = rows > 1 ? (botY - topY) / (rows - 1) : botY - topY;
+  const effR = Math.min(R, rowGap / 2 - 6, (xR - xL) / 2 - 6);
+  const overshoot = effR + 90;
+
+  const firstX = startLeft ? xL : xR;
+  const points: Pt[] = [{ x: firstX, y: topY - overshoot }]; // bleed in from top
+
+  for (let i = 0; i < rows; i++) {
+    const y = topY + i * rowGap;
+    const leftToRight = startLeft ? i % 2 === 0 : i % 2 === 1;
+    const a = leftToRight ? xL : xR;
+    const b = leftToRight ? xR : xL;
+    points.push({ x: a, y }); // start of the run
+    points.push({ x: b, y }); // across to the other gutter
+  }
+
+  const last = points[points.length - 1];
+  points.push({ x: last.x, y: botY + overshoot }); // bleed off the bottom
 
   return { points, effR };
 }
@@ -130,6 +177,7 @@ export function SquiggleLine({
   gap = 9,
   strokeWidth = 3,
   marginY = 52,
+  rows,
 }: SquiggleLineProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
@@ -157,17 +205,29 @@ export function SquiggleLine({
 
   const paths = useMemo(() => {
     if (size.w < 10 || size.h < 10) return null;
-    const { points, effR } = buildWaypoints(
-      size.w,
-      size.h,
-      cornerRadius,
-      bundleHalf,
-      strokeWidth,
-      marginY,
-      side !== "right",
-    );
+    const { points, effR } =
+      rows && rows > 1
+        ? buildSerpentine(
+            size.w,
+            size.h,
+            cornerRadius,
+            bundleHalf,
+            strokeWidth,
+            marginY,
+            rows,
+            side !== "right",
+          )
+        : buildWaypoints(
+            size.w,
+            size.h,
+            cornerRadius,
+            bundleHalf,
+            strokeWidth,
+            marginY,
+            side !== "right",
+          );
     return RIBBON.map((_, i) => strandPath(points, effR, (i - mid) * gap));
-  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, gap, mid, side]);
+  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, gap, mid, side, rows]);
 
   // Draw the ribbon on as the section scrolls through the viewport.
   const { scrollYProgress } = useScroll({
