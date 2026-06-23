@@ -412,7 +412,7 @@ export function About() {
             whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.8 }}
-            className="grid grid-cols-2 gap-4"
+            className="grid grid-cols-2 items-start gap-4"
           >
             <div className="group overflow-hidden rounded-3xl shadow-2xl shadow-black/30">
               <img
