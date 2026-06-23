@@ -126,6 +126,32 @@ body {
   }
 }
 
+/* Conveyor drift for the stripe panels: slides the duplicated set sideways
+   by exactly one half so it loops seamlessly while the stripes keep
+   oscillating in place. */
+@keyframes drift-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes drift-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.animate-drift-left {
+  animation: drift-left 45s linear infinite;
+}
+.animate-drift-right {
+  animation: drift-right 45s linear infinite;
+}
+
 /* Slow vinyl spin */
 @keyframes spin-slow {
   to {

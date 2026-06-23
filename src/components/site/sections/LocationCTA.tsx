@@ -7,7 +7,7 @@ export function LocationCTA() {
   return (
     <section id="visit" className="relative overflow-hidden bg-terracotta">
       <div className="absolute inset-0 opacity-25">
-        <RippleStripes count={26} fade="none" />
+        <RippleStripes count={26} fade="none" drift="left" />
       </div>
 
       <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-24 md:grid-cols-2 md:items-stretch md:px-8">

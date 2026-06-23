@@ -30,7 +30,7 @@ export function CoffeeQuiz() {
 
   return (
     <section className="relative overflow-hidden bg-espresso py-24 text-cream">
-      <SectionLines count={26} opacity={0.1} />
+      <SectionLines count={26} opacity={0.1} drift="right" />
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-6 md:grid-cols-2 md:px-8">
         <motion.div
           initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}

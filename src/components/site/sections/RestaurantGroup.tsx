@@ -101,6 +101,23 @@ export function RestaurantGroup() {
             <RestaurantTile key={r.name} r={r} i={i} />
           ))}
         </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "0px 0px -18% 0px" }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-12 text-center"
+        >
+          <a
+            href="https://richarddeshantz.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
+          >
+            Visit the restaurant group →
+          </a>
+        </motion.div>
       </div>
     </section>
   );

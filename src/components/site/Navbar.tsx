@@ -118,21 +118,24 @@ export function Navbar() {
       )}
       style={{ transitionDuration: entered ? undefined : "700ms" }}
     >
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 md:px-8">
+      <nav
+        className={cn(
+          "mx-auto flex max-w-7xl items-center justify-between px-5 transition-all duration-300 md:px-8",
+          // Expand a touch when scrolled all the way up to make room for the
+          // larger logo, then tuck back in once the page scrolls.
+          scrolled ? "py-4" : "py-5",
+        )}
+      >
         <Link to="/" className="group flex items-center gap-3">
           <img
             src="/preamplogo.png"
             alt={`${SITE.name} logo`}
-            className="h-10 w-10 object-contain transition-transform group-hover:-rotate-6"
+            className={cn(
+              "object-contain transition-all duration-300 group-hover:-rotate-6",
+              // ~15% larger at the very top, normal size once scrolled.
+              scrolled ? "h-10 w-10" : "h-[2.875rem] w-[2.875rem]",
+            )}
           />
-          <span className="leading-none">
-            <span className="block font-groovy text-lg tracking-wide text-espresso">
-              {SITE.name}
-            </span>
-            <span className="block text-[10px] uppercase tracking-[0.3em] text-terracotta">
-              {SITE.tagline}
-            </span>
-          </span>
         </Link>
 
         <div className="hidden items-center gap-7 md:flex">
