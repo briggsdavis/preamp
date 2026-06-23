@@ -19,7 +19,7 @@ export const SITE = {
   mapsEmbed:
     "https://www.google.com/maps?q=5840+Forbes+Ave,+Pittsburgh,+PA+15217&output=embed",
   mapsLink: "https://www.google.com/maps/search/?api=1&query=5840+Forbes+Ave+Pittsburgh+PA+15217",
-  // TODO: confirm the real online-ordering URL — placeholder based on the Toast
+  // TODO: confirm the real online-ordering URL - placeholder based on the Toast
   // ordering domain used for the gift cards. Swap freely.
   orderUrl: "https://order.toasttab.com/online/pre-amp-new-5840-forbes-avenue",
 } as const;
@@ -49,7 +49,7 @@ export const NAV: NavItem[] = [
   {
     label: "More",
     children: [
-      { label: "Retail", to: "/retail" },
+      { label: "Merch", to: "/retail" },
       { label: "Events", to: "/events" },
       { label: "Hiring", to: "/hiring" },
       {

@@ -146,10 +146,10 @@ body {
   }
 }
 .animate-drift-left {
-  animation: drift-left 45s linear infinite;
+  animation: drift-left 90s linear infinite;
 }
 .animate-drift-right {
-  animation: drift-right 45s linear infinite;
+  animation: drift-right 90s linear infinite;
 }
 
 /* Slow vinyl spin */
