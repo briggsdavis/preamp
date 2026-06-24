@@ -117,7 +117,7 @@ export function Contact() {
               className="relative min-h-[480px] overflow-hidden rounded-3xl shadow-2xl md:min-h-0"
             >
               <img
-                src="/contactdecor.jpg"
+                src="/images/contactdecor.jpg"
                 alt="Pre Amp Coffee Studio"
                 className="absolute inset-0 h-full w-full object-cover"
               />

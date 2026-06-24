@@ -18,7 +18,7 @@ export function Footer() {
         <Reveal className="md:col-span-1">
           <div className="flex items-center gap-3">
             <img
-              src="/preamplogo.png"
+              src="/images/preamplogo.png"
               alt="Pre Amp logo"
               className="h-12 w-12 object-contain"
             />

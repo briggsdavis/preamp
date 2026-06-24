@@ -128,7 +128,7 @@ export function Hiring() {
       {/* Hero banner - half the viewport */}
       <section className="relative flex h-[50vh] min-h-[360px] items-center justify-center overflow-hidden">
         <img
-          src="/hiringBG.jpg"
+          src="/images/hiringBG.jpg"
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
         />

@@ -24,7 +24,7 @@ export function Hero() {
       {/* Photographic ambience, slow parallax */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 -z-20 scale-110">
         <img
-          src="/preampdecor.jpg"
+          src="/images/preampdecor.jpg"
           alt=""
           className="h-full w-full object-cover"
         />
@@ -37,7 +37,7 @@ export function Hero() {
         className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-6 pt-28 text-center md:px-8"
       >
         <motion.img
-          src="/heroprimary.png"
+          src="/images/heroprimary.png"
           alt={SITE.name}
           initial={{ opacity: 0, y: 30, filter: "blur(14px)" }}
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}

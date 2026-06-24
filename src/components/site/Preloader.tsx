@@ -32,7 +32,7 @@ export function Preloader() {
         >
           {/* Flat-icon logo blurs in */}
           <motion.img
-            src="/preamplogo.png"
+            src="/images/preamplogo.png"
             alt="Pre Amp"
             initial={{ opacity: 0, scale: 0.85, filter: "blur(14px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
@@ -42,7 +42,7 @@ export function Preloader() {
 
           {/* Hero wordmark settles in just beneath it */}
           <motion.img
-            src="/heroprimary.png"
+            src="/images/heroprimary.png"
             alt="Pre Amp Coffee Studio"
             initial={{ opacity: 0, y: 12, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}

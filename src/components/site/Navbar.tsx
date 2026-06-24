@@ -138,7 +138,7 @@ export function Navbar() {
       >
         <Link to="/" className="group flex items-center gap-3">
           <img
-            src="/preamplogo.png"
+            src="/images/preamplogo.png"
             alt={`${SITE.name} logo`}
             className={cn(
               "object-contain transition-all duration-300 group-hover:-rotate-6",

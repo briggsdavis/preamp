@@ -191,7 +191,7 @@ export function About() {
       >
         <motion.div style={{ y: bgY }} className="absolute inset-0 -z-10 scale-110">
           <img
-            src="/artworkheadon.jpg"
+            src="/images/artworkheadon.jpg"
             alt=""
             className="h-full w-full object-cover"
           />
@@ -307,7 +307,7 @@ export function About() {
       <FeatureSection
         kicker="Our Origin"
         title="Meet Danny Ryan"
-        image="/menu-coffeepouring.jpg"
+        image="/images/menu-coffeepouring.jpg"
         imageAlt="Pouring espresso at the Pre Amp bar"
       >
         <p>
@@ -333,7 +333,7 @@ export function About() {
       <FeatureSection
         kicker="The Coffee"
         title="Espresso, Treated Like a Spirit"
-        image="/menu-coffeeshot.jpg"
+        image="/images/menu-coffeeshot.jpg"
         imageAlt="A handcrafted espresso drink"
         reverse
         dark
@@ -354,7 +354,7 @@ export function About() {
       <FeatureSection
         kicker="The Kitchen"
         title="Made to Pair With Your Cup"
-        image="/menu-sandwich.jpg"
+        image="/images/menu-sandwich.jpg"
         imageAlt="A focaccia sandwich from the kitchen"
         cta={{ label: "See the Food →", to: "/menu/food" }}
       >
@@ -416,14 +416,14 @@ export function About() {
           >
             <div className="group overflow-hidden rounded-3xl shadow-2xl shadow-black/30">
               <img
-                src="/eventvinyls.jpg"
+                src="/images/eventvinyls.jpg"
                 alt="Vinyl records"
                 className="h-64 w-full object-cover transition-transform duration-[1.2s] group-hover:scale-110 md:h-80"
               />
             </div>
             <div className="group mt-8 overflow-hidden rounded-3xl shadow-2xl shadow-black/30">
               <img
-                src="/eventspeakers.jpg"
+                src="/images/eventspeakers.jpg"
                 alt="Speakers in the studio"
                 className="h-64 w-full object-cover transition-transform duration-[1.2s] group-hover:scale-110 md:h-80"
               />
