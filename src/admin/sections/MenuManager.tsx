@@ -39,6 +39,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
   const deleteSection = useMutation(api.menu.deleteSection);
   const reorderSections = useMutation(api.menu.reorderSections);
   const deleteItem = useMutation(api.menu.deleteItem);
+  const seed = useMutation(api.menu.seed);
 
   const [editing, setEditing] = useState<{
     item: ItemData | null;
@@ -79,9 +80,24 @@ export function MenuManager({ menu }: { menu: Menu }) {
 
       <div className="mt-8 space-y-8">
         {sections.length === 0 && (
-          <p className="text-espresso/60">
-            No sections yet. Add one to start building the {menu} menu.
-          </p>
+          <div className="rounded-2xl border-2 border-dashed border-sand p-6">
+            <p className="text-espresso/60">
+              No sections yet. Add one to start building the {menu} menu, or
+              seed the original coffee &amp; food menu in one click.
+            </p>
+            <button
+              type="button"
+              className={`${btn.secondary} mt-4`}
+              onClick={() =>
+                confirmThen(
+                  "Seed the original coffee & food menu? This only runs if the menu is empty.",
+                  () => void seed({}),
+                )
+              }
+            >
+              Seed original menu
+            </button>
+          </div>
         )}
 
         {sections.map((section, index) => (
