@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 import { Layout } from "@/components/site/Layout";
+import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 import { AdminApp } from "@/admin/AdminApp";
 import { Home } from "@/pages/Home";
 import { MenuCoffee } from "@/pages/MenuCoffee";
@@ -13,6 +14,18 @@ import { Contact } from "@/pages/Contact";
 import { Events } from "@/pages/Events";
 import { Hiring } from "@/pages/Hiring";
 import { NotDeveloped } from "@/pages/NotDeveloped";
+
+/** Shown if the menu's Convex query fails (e.g. backend not deployed). */
+function MenuUnavailable() {
+  return (
+    <div className="bg-cream px-5 pb-20 pt-40 text-center">
+      <h1 className="font-display text-4xl text-espresso">Menu</h1>
+      <p className="mt-4 text-espresso/60">
+        We couldn't load the menu right now. Please check back soon.
+      </p>
+    </div>
+  );
+}
 
 /**
  * Route table for Pre Amp Coffee Studio. Only the home page is built out;
@@ -37,8 +50,22 @@ export default function App() {
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home />} />
-          <Route path="/menu/coffee" element={<MenuCoffee />} />
-          <Route path="/menu/food" element={<MenuFood />} />
+          <Route
+            path="/menu/coffee"
+            element={
+              <ErrorBoundary fallback={<MenuUnavailable />}>
+                <MenuCoffee />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/menu/food"
+            element={
+              <ErrorBoundary fallback={<MenuUnavailable />}>
+                <MenuFood />
+              </ErrorBoundary>
+            }
+          />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/retail" element={<Merch />} />

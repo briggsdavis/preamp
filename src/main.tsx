@@ -5,7 +5,31 @@ import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 
 import App from "@/App";
+import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 import "@/styles/index.css";
+
+const appCrashFallback = (
+  <div
+    style={{
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "0.75rem",
+      background: "#1c1411",
+      color: "#fdf7ef",
+      fontFamily: "system-ui, sans-serif",
+      textAlign: "center",
+      padding: "2rem",
+    }}
+  >
+    <p style={{ fontSize: "1.25rem", fontWeight: 600 }}>
+      Something went wrong loading the page.
+    </p>
+    <p style={{ opacity: 0.8 }}>Please refresh to try again.</p>
+  </div>
+);
 
 const convexUrl = import.meta.env.VITE_CONVEX_URL;
 if (!convexUrl) {
@@ -27,10 +51,12 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ConvexAuthProvider client={convex}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </ConvexAuthProvider>
+    <ErrorBoundary fallback={appCrashFallback}>
+      <ConvexAuthProvider client={convex}>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </ConvexAuthProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );
