@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 import { Layout } from "@/components/site/Layout";
+import { AdminApp } from "@/admin/AdminApp";
 import { Home } from "@/pages/Home";
 import { MenuCoffee } from "@/pages/MenuCoffee";
 import { MenuFood } from "@/pages/MenuFood";
@@ -25,6 +26,11 @@ export default function App() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [location.pathname]);
+
+  // The admin app renders on its own, without the public navbar/footer chrome.
+  if (location.pathname.startsWith("/admin")) {
+    return <AdminApp />;
+  }
 
   return (
     <Layout>
