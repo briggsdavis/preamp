@@ -313,29 +313,46 @@ function ItemModal({
   );
 }
 
+/** Per-item like/review state seeded from an item's stored values. */
+function seedState(item: MenuItem): ItemState {
+  return { likes: item.likes, liked: false, reviews: item.reviews };
+}
+
 /** Shared menu page: hero band, grouped sections of cards, and the modal. */
 export function MenuPage({
   kicker,
   title,
   sections,
+  loading = false,
+  pdf = null,
 }: {
   kicker: string;
   title: string;
   sections: MenuSection[];
+  loading?: boolean;
+  pdf?: { url: string | null; name: string } | null;
 }) {
   const allItems = useMemo(
     () => sections.flatMap((s) => s.items),
     [sections],
   );
 
-  const [state, setState] = useState<StateMap>(() =>
-    Object.fromEntries(
-      allItems.map((it) => [
-        it.id,
-        { likes: it.likes, liked: false, reviews: it.reviews },
-      ]),
-    ),
-  );
+  // Items can arrive asynchronously (from Convex), so merge any newly-seen
+  // items into the like/review state as they appear rather than only at mount.
+  const [state, setState] = useState<StateMap>({});
+  useEffect(() => {
+    setState((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const it of allItems) {
+        if (!next[it.id]) {
+          next[it.id] = seedState(it);
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [allItems]);
   const [openId, setOpenId] = useState<string | null>(null);
 
   const openItem = useMemo(
@@ -346,6 +363,7 @@ export function MenuPage({
   function toggleLike(id: string) {
     setState((prev) => {
       const s = prev[id];
+      if (!s) return prev;
       return {
         ...prev,
         [id]: {
@@ -358,10 +376,11 @@ export function MenuPage({
   }
 
   function addReview(id: string, review: Review) {
-    setState((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], reviews: [review, ...prev[id].reviews] },
-    }));
+    setState((prev) => {
+      const s = prev[id];
+      if (!s) return prev;
+      return { ...prev, [id]: { ...s, reviews: [review, ...s.reviews] } };
+    });
   }
 
   // Lock body scroll while the modal is open.
@@ -383,7 +402,26 @@ export function MenuPage({
             <h1 className="mt-3 font-display text-5xl text-espresso md:text-7xl">
               {title}
             </h1>
+            {pdf?.url && (
+              <a
+                href={pdf.url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-block rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-all hover:-translate-y-0.5 hover:bg-maroon"
+              >
+                Download PDF Menu →
+              </a>
+            )}
           </header>
+
+          {loading && sections.length === 0 && (
+            <p className="text-center text-espresso/60">Loading the menu…</p>
+          )}
+          {!loading && sections.length === 0 && (
+            <p className="text-center text-espresso/60">
+              The menu is being updated. Check back soon!
+            </p>
+          )}
 
           <div className="space-y-16">
             {sections.map((section) => (
@@ -397,7 +435,7 @@ export function MenuPage({
                     <MenuCard
                       key={item.id}
                       item={item}
-                      state={state[item.id]}
+                      state={state[item.id] ?? seedState(item)}
                       onToggleLike={() => toggleLike(item.id)}
                       onOpen={() => setOpenId(item.id)}
                     />
@@ -416,7 +454,7 @@ export function MenuPage({
           {openItem && (
             <ItemModal
               item={openItem}
-              state={state[openItem.id]}
+              state={state[openItem.id] ?? seedState(openItem)}
               onToggleLike={() => toggleLike(openItem.id)}
               onAddReview={(r) => addReview(openItem.id, r)}
               onClose={() => setOpenId(null)}

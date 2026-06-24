@@ -16,10 +16,22 @@ import { ConvexError } from "convex/values";
  * Docs: https://labs.convex.dev/auth
  */
 
+/**
+ * Read an environment variable via `globalThis` so this file typechecks in the
+ * frontend program too (which has no Node `process` global). At runtime in the
+ * Convex deployment, `process.env` is populated as usual.
+ */
+function readEnv(name: string): string {
+  const g = globalThis as {
+    process?: { env?: Record<string, string | undefined> };
+  };
+  return g.process?.env?.[name] ?? "";
+}
+
 /** Parse the comma-separated `ADMIN_EMAILS` allowlist into a normalized set. */
 function allowedAdminEmails(): Set<string> {
   return new Set(
-    (process.env.ADMIN_EMAILS ?? "")
+    readEnv("ADMIN_EMAILS")
       .split(",")
       .map((email: string) => email.trim().toLowerCase())
       .filter(Boolean),
