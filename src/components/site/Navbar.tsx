@@ -117,7 +117,7 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 backdrop-blur-md transition-all duration-300",
+        "fixed inset-x-0 top-[var(--preamp-ann-h,0px)] z-50 backdrop-blur-md transition-all duration-300",
         scrolled
           ? "bg-cream/95 shadow-sm shadow-maroon/10"
           : "bg-cream/80 shadow-sm shadow-maroon/5",
