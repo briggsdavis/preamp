@@ -42,6 +42,14 @@ export const deleteContact = mutation({
 
 // --- Hiring applications -----------------------------------------------------
 
+/** Public: upload URL for an applicant's resume (no auth required). */
+export const generateResumeUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.storage.generateUploadUrl();
+  },
+});
+
 export const submitHiring = mutation({
   args: {
     firstName: v.string(),

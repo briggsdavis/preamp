@@ -1,5 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
+import { useMutation } from "convex/react";
+import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
@@ -115,12 +118,92 @@ function EmployerBlock({ index }: { index: number }) {
 }
 
 export function Hiring() {
+  const submitHiring = useMutation(api.inquiries.submitHiring);
+  const generateResumeUploadUrl = useMutation(
+    api.inquiries.generateResumeUploadUrl,
+  );
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSent(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    const str = (name: string) => String(fd.get(name) ?? "").trim();
+
+    setSending(true);
+    setError(null);
+    try {
+      // Upload the resume (if provided) to Convex storage.
+      let resumeStorageId: Id<"_storage"> | undefined;
+      let resumeName: string | undefined;
+      const resume = fd.get("resume");
+      if (resume instanceof File && resume.size > 0) {
+        const url = await generateResumeUploadUrl();
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": resume.type },
+          body: resume,
+        });
+        if (!res.ok) throw new Error("resume upload failed");
+        resumeStorageId = (
+          (await res.json()) as { storageId: Id<"_storage"> }
+        ).storageId;
+        resumeName = resume.name;
+      }
+
+      // Per-day availability (AM/PM checkboxes).
+      const availability: Record<string, string[]> = {};
+      for (const day of DAYS) {
+        const slots: string[] = [];
+        if (fd.get(`avail-${day}-am`)) slots.push("AM");
+        if (fd.get(`avail-${day}-pm`)) slots.push("PM");
+        if (slots.length) availability[day] = slots;
+      }
+
+      // Employment history blocks.
+      const employers = [1, 2]
+        .map((i) => ({
+          company: str(`emp${i}Company`),
+          phone: str(`emp${i}Phone`),
+          start: str(`emp${i}Start`),
+          end: str(`emp${i}End`),
+          position: str(`emp${i}Position`),
+          mayContact: str(`emp${i}Contact`),
+        }))
+        .filter((emp) => emp.company);
+
+      await submitHiring({
+        firstName: str("firstName"),
+        lastName: str("lastName"),
+        email: str("email"),
+        phone: str("phone"),
+        city: str("city"),
+        state: str("state"),
+        position: str("position"),
+        desiredSalary: str("salary"),
+        hoursDesired: str("hours"),
+        transportation: str("transportation"),
+        resumeStorageId,
+        resumeName,
+        details: {
+          address: {
+            street: str("street"),
+            street2: str("street2"),
+            zip: str("zip"),
+          },
+          availability,
+          restrictions: str("restrictions"),
+          employers,
+        },
+      });
+      setSent(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch {
+      setError("Something went wrong submitting your application. Try again.");
+      setSending(false);
+    }
   }
 
   return (
@@ -341,11 +424,17 @@ export function Hiring() {
                   />
                 </div>
 
+                {error && (
+                  <p className="text-center font-semibold text-maroon">
+                    {error}
+                  </p>
+                )}
                 <button
                   type="submit"
-                  className="w-full rounded-full bg-orange px-7 py-4 text-lg font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-terracotta"
+                  disabled={sending}
+                  className="w-full rounded-full bg-orange px-7 py-4 text-lg font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-terracotta disabled:opacity-60"
                 >
-                  Submit Application →
+                  {sending ? "Submitting…" : "Submit Application →"}
                 </button>
               </form>
             )}
