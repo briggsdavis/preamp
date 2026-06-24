@@ -1,4 +1,6 @@
 import { mutation, query } from "./_generated/server";
+import type { QueryCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { ConvexError } from "convex/values";
 import { requireAdmin } from "./admin";
@@ -114,9 +116,9 @@ const popupFields = {
 };
 
 /** Resolve a pop-up's media storage ids to served URLs. */
-async function withMediaUrls(ctx: any, popup: any) {
+async function withMediaUrls(ctx: QueryCtx, popup: Doc<"popups">) {
   const media = await Promise.all(
-    popup.media.map(async (m: { storageId: any; type: string }) => ({
+    popup.media.map(async (m) => ({
       type: m.type,
       url: await ctx.storage.getUrl(m.storageId),
       storageId: m.storageId,

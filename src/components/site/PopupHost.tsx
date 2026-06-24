@@ -30,6 +30,16 @@ type Popup = {
   showOn: "all" | string[];
 };
 
+const PV_KEY = "preamp-pageviews";
+
+function pageViewCount(): number {
+  try {
+    return Number(sessionStorage.getItem(PV_KEY) ?? "0");
+  } catch {
+    return 0;
+  }
+}
+
 export function PopupHost() {
   const popups = useQuery(api.marketing.listActivePopups) as
     | Popup[]
@@ -37,10 +47,14 @@ export function PopupHost() {
   const { pathname } = useLocation();
   const pageKey = pageKeyForPath(pathname);
 
-  // Count pages viewed this visit (drives the "second page" trigger).
-  const [pageViews, setPageViews] = useState(0);
+  // Count pages viewed this visit (drives the "second page" trigger). Kept in
+  // session storage so we never call setState inside an effect.
   useEffect(() => {
-    setPageViews((v) => v + 1);
+    try {
+      sessionStorage.setItem(PV_KEY, String(pageViewCount() + 1));
+    } catch {
+      /* storage unavailable */
+    }
   }, [pathname]);
 
   if (!popups) return null;
@@ -50,7 +64,7 @@ export function PopupHost() {
   return (
     <>
       {visible.map((popup) => (
-        <PopupItem key={popup._id} popup={popup} pageViews={pageViews} />
+        <PopupItem key={popup._id} popup={popup} pathname={pathname} />
       ))}
     </>
   );
@@ -93,10 +107,10 @@ function markSeen(popup: Popup) {
 
 function PopupItem({
   popup,
-  pageViews,
+  pathname,
 }: {
   popup: Popup;
-  pageViews: number;
+  pathname: string;
 }) {
   const captureEmail = useMutation(api.inquiries.captureEmail);
   const [open, setOpen] = useState(false);
@@ -151,13 +165,13 @@ function PopupItem({
         return () => document.removeEventListener("click", onClick);
       }
       case "second-page": {
-        if (pageViews >= 2) reveal();
+        if (pageViewCount() >= 2) reveal();
         return;
       }
       default:
         return;
     }
-  }, [armed, open, popup, pageViews]);
+  }, [armed, open, popup, pathname]);
 
   if (!open) return null;
 

@@ -12,7 +12,13 @@ interface ItemState {
   reviews: Review[];
 }
 
-type StateMap = Record<string, ItemState>;
+/** A visitor's client-side tweaks for one item: like toggle + added reviews. */
+interface Override {
+  liked: boolean;
+  added: Review[];
+}
+
+type OverrideMap = Record<string, Override>;
 
 /** A small heart toggle with the current like count beside it. */
 function HeartButton({
@@ -313,9 +319,18 @@ function ItemModal({
   );
 }
 
-/** Per-item like/review state seeded from an item's stored values. */
-function seedState(item: MenuItem): ItemState {
-  return { likes: item.likes, liked: false, reviews: item.reviews };
+/**
+ * Combine an item's stored like/review values with any client-side override.
+ * Overrides (rather than a state map seeded in an effect) let items that load
+ * asynchronously from Convex pick up the right values during render.
+ */
+function viewState(item: MenuItem, override?: Override): ItemState {
+  const liked = override?.liked ?? false;
+  return {
+    liked,
+    likes: item.likes + (liked ? 1 : 0),
+    reviews: [...(override?.added ?? []), ...item.reviews],
+  };
 }
 
 /** Shared menu page: hero band, grouped sections of cards, and the modal. */
@@ -337,22 +352,8 @@ export function MenuPage({
     [sections],
   );
 
-  // Items can arrive asynchronously (from Convex), so merge any newly-seen
-  // items into the like/review state as they appear rather than only at mount.
-  const [state, setState] = useState<StateMap>({});
-  useEffect(() => {
-    setState((prev) => {
-      let changed = false;
-      const next = { ...prev };
-      for (const it of allItems) {
-        if (!next[it.id]) {
-          next[it.id] = seedState(it);
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [allItems]);
+  // Per-item like/review tweaks the visitor makes, layered over stored values.
+  const [overrides, setOverrides] = useState<OverrideMap>({});
   const [openId, setOpenId] = useState<string | null>(null);
 
   const openItem = useMemo(
@@ -361,25 +362,16 @@ export function MenuPage({
   );
 
   function toggleLike(id: string) {
-    setState((prev) => {
-      const s = prev[id];
-      if (!s) return prev;
-      return {
-        ...prev,
-        [id]: {
-          ...s,
-          liked: !s.liked,
-          likes: s.likes + (s.liked ? -1 : 1),
-        },
-      };
+    setOverrides((prev) => {
+      const cur = prev[id] ?? { liked: false, added: [] };
+      return { ...prev, [id]: { ...cur, liked: !cur.liked } };
     });
   }
 
   function addReview(id: string, review: Review) {
-    setState((prev) => {
-      const s = prev[id];
-      if (!s) return prev;
-      return { ...prev, [id]: { ...s, reviews: [review, ...s.reviews] } };
+    setOverrides((prev) => {
+      const cur = prev[id] ?? { liked: false, added: [] };
+      return { ...prev, [id]: { ...cur, added: [review, ...cur.added] } };
     });
   }
 
@@ -435,7 +427,7 @@ export function MenuPage({
                     <MenuCard
                       key={item.id}
                       item={item}
-                      state={state[item.id] ?? seedState(item)}
+                      state={viewState(item, overrides[item.id])}
                       onToggleLike={() => toggleLike(item.id)}
                       onOpen={() => setOpenId(item.id)}
                     />
@@ -454,7 +446,7 @@ export function MenuPage({
           {openItem && (
             <ItemModal
               item={openItem}
-              state={state[openItem.id] ?? seedState(openItem)}
+              state={viewState(openItem, overrides[openItem.id])}
               onToggleLike={() => toggleLike(openItem.id)}
               onAddReview={(r) => addReview(openItem.id, r)}
               onClose={() => setOpenId(null)}

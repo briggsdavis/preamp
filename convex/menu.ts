@@ -4,6 +4,7 @@ import { requireAdmin } from "./admin";
 import { menuKind } from "./schema";
 import { COFFEE_SEED, FOOD_SEED, type SeedSection } from "./seedData";
 import type { Doc, Id } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
 
 /**
  * Menu data: one public read endpoint (used by both the live site and the
@@ -250,7 +251,7 @@ export const removeMenuPdf = mutation({
 // --- Seed -------------------------------------------------------------------
 
 async function seedMenu(
-  ctx: { db: any },
+  ctx: MutationCtx,
   menu: "coffee" | "food",
   sections: SeedSection[],
 ) {
