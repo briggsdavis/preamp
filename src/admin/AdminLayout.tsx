@@ -5,6 +5,7 @@ import { MenuManager } from "@/admin/sections/MenuManager";
 import { Inquiries } from "@/admin/sections/Inquiries";
 import { Announcements } from "@/admin/sections/Announcements";
 import { Popups } from "@/admin/sections/Popups";
+import { Events } from "@/admin/sections/Events";
 import { PagePlaceholder } from "@/admin/sections/PagePlaceholder";
 
 /**
@@ -36,6 +37,10 @@ const NAV: NavGroup[] = [
   {
     label: "Inquiries",
     items: [{ id: "inquiries", label: "All Inquiries" }],
+  },
+  {
+    label: "Events",
+    items: [{ id: "events", label: "All Events" }],
   },
   {
     label: "Marketing",
@@ -180,6 +185,8 @@ function Panel({ selected }: { selected: string }) {
       return <MenuManager menu="food" />;
     case "inquiries":
       return <Inquiries />;
+    case "events":
+      return <Events />;
     case "announcements":
       return <Announcements />;
     case "popups":

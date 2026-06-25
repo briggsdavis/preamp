@@ -1,39 +1,19 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
 
-/** Placeholder upcoming events - newest/soonest first. Swap for real data. */
-interface EventItem {
+/** An event as returned by the public Convex query. */
+interface EventDoc {
+  _id: string;
   title: string;
-  date: Date;
   description: string;
-  image: string;
+  startsAt: number;
+  images: string[];
 }
-
-const EVENTS: EventItem[] = [
-  {
-    title: "Vinyl Night: Soul & Funk",
-    date: new Date(2026, 5, 27, 19, 0),
-    description:
-      "Crate-diggers welcome. We're spinning soul and funk all night with a guest selector behind the bar, so pull up a stool and stay a while.",
-    image: "/images/eventvinyls.jpg",
-  },
-  {
-    title: "Single-Origin Cupping",
-    date: new Date(2026, 6, 4, 10, 0),
-    description:
-      "A guided tasting through our latest rotating origins. Learn to taste like the bar does, and take home a bag of your favorite.",
-    image: "/images/eventbeans.jpg",
-  },
-  {
-    title: "Live Set: Late Night Listening",
-    date: new Date(2026, 6, 11, 20, 0),
-    description:
-      "An intimate after-hours listening session on the big speakers. Limited seating, espresso martinis, and ambient grooves.",
-    image: "/images/eventspeakers.jpg",
-  },
-];
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const MONTHS = [
@@ -71,8 +51,141 @@ function formatEventTime(d: Date) {
   });
 }
 
-/** Month-grid calendar styled to match the brand. Highlights today. */
-function Calendar() {
+/** A simple image carousel with arrows + dots. */
+function Carousel({
+  images,
+  alt,
+  className,
+}: {
+  images: string[];
+  alt: string;
+  className?: string;
+}) {
+  const [i, setI] = useState(0);
+  if (images.length === 0) {
+    return <div className={`bg-cream-deep ${className ?? ""}`} />;
+  }
+  const go = (dir: number) =>
+    setI((cur) => (cur + dir + images.length) % images.length);
+
+  return (
+    <div className={`relative overflow-hidden ${className ?? ""}`}>
+      <img src={images[i]} alt={alt} className="h-full w-full object-cover" />
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(-1);
+            }}
+            aria-label="Previous image"
+            className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-espresso/60 text-cream transition-colors hover:bg-espresso"
+          >
+            ‹
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(1);
+            }}
+            aria-label="Next image"
+            className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-espresso/60 text-cream transition-colors hover:bg-espresso"
+          >
+            ›
+          </button>
+          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5">
+            {images.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setI(idx);
+                }}
+                aria-label={`Image ${idx + 1}`}
+                className={`h-2 w-2 rounded-full transition-colors ${
+                  idx === i ? "bg-cream" : "bg-cream/40"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Detail modal opened from the calendar. */
+function EventModal({
+  event,
+  onClose,
+}: {
+  event: EventDoc;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  const date = new Date(event.startsAt);
+
+  return createPortal(
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-espresso/70 p-4 backdrop-blur-sm"
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 16 }}
+        transition={{ type: "spring", damping: 26, stiffness: 260 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg overflow-hidden rounded-3xl bg-cream shadow-2xl"
+      >
+        {event.images.length > 0 && (
+          <Carousel images={event.images} alt={event.title} className="h-64" />
+        )}
+        <div className="p-6">
+          <p className="font-groovy text-sm uppercase tracking-[0.2em] text-terracotta">
+            {formatEventDate(date)} · {formatEventTime(date)}
+          </p>
+          <h3 className="mt-2 font-display text-3xl text-espresso">
+            {event.title}
+          </h3>
+          <p className="mt-3 text-espresso/80">{event.description}</p>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-6 rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-colors hover:bg-maroon"
+          >
+            Close
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>,
+    document.body,
+  );
+}
+
+/** Month-grid calendar with clickable event chips. Highlights today. */
+function Calendar({
+  events,
+  onSelect,
+}: {
+  events: EventDoc[];
+  onSelect: (e: EventDoc) => void;
+}) {
   const today = new Date();
   const [view, setView] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
@@ -135,7 +248,6 @@ function Calendar() {
 
       {/* Grid */}
       <div className="overflow-hidden rounded-lg border border-espresso/15">
-        {/* Weekday header */}
         <div className="grid grid-cols-7 bg-brick">
           {WEEKDAYS.map((d) => (
             <div
@@ -147,11 +259,13 @@ function Calendar() {
           ))}
         </div>
 
-        {/* Date cells */}
         <div className="grid grid-cols-7">
           {cells.map((d, i) => {
             const inMonth = d.getMonth() === month;
             const isToday = sameDay(d, today);
+            const dayEvents = events.filter((ev) =>
+              sameDay(new Date(ev.startsAt), d),
+            );
             return (
               <div
                 key={i}
@@ -174,6 +288,19 @@ function Calendar() {
                     </span>
                   )}
                 </div>
+                <div className="mt-1 space-y-1">
+                  {dayEvents.map((ev) => (
+                    <button
+                      key={ev._id}
+                      type="button"
+                      onClick={() => onSelect(ev)}
+                      title={ev.title}
+                      className="block w-full truncate rounded bg-brick px-1.5 py-1 text-left text-xs font-semibold text-cream transition-colors hover:bg-maroon"
+                    >
+                      {formatEventTime(new Date(ev.startsAt))} · {ev.title}
+                    </button>
+                  ))}
+                </div>
               </div>
             );
           })}
@@ -183,45 +310,58 @@ function Calendar() {
   );
 }
 
-/** List of upcoming events - image left, details right. Soonest first. */
-function UpcomingEvents() {
-  const sorted = [...EVENTS].sort((a, b) => a.date.getTime() - b.date.getTime());
+/** List of upcoming events - image carousel left, details right. */
+function UpcomingEvents({ events }: { events: EventDoc[] }) {
+  const sorted = [...events].sort((a, b) => a.startsAt - b.startsAt);
+
+  if (sorted.length === 0) {
+    return (
+      <p className="text-center text-espresso/60">
+        No upcoming events right now. Check back soon!
+      </p>
+    );
+  }
 
   return (
     <div className="space-y-8">
-      {sorted.map((ev, i) => (
-        <motion.article
-          key={ev.title}
-          initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
-          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: i * 0.05 }}
-          className="grid gap-6 overflow-hidden rounded-2xl border-2 border-sand bg-cream shadow-lg shadow-maroon/10 sm:grid-cols-[260px_1fr]"
-        >
-          <div className="h-48 sm:h-full">
-            <img
-              src={ev.image}
+      {sorted.map((ev, i) => {
+        const date = new Date(ev.startsAt);
+        return (
+          <motion.article
+            key={ev._id}
+            initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
+            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: i * 0.05 }}
+            className="grid gap-6 overflow-hidden rounded-2xl border-2 border-sand bg-cream shadow-lg shadow-maroon/10 sm:grid-cols-[260px_1fr]"
+          >
+            <Carousel
+              images={ev.images}
               alt={ev.title}
-              className="h-full w-full object-cover"
+              className="h-48 sm:h-full"
             />
-          </div>
-          <div className="p-6 md:p-8">
-            <p className="font-groovy text-sm uppercase tracking-[0.2em] text-terracotta">
-              {formatEventDate(ev.date)} · {formatEventTime(ev.date)}
-            </p>
-            <h3 className="mt-2 font-display text-3xl text-espresso">
-              {ev.title}
-            </h3>
-            <p className="mt-3 text-espresso/80">{ev.description}</p>
-          </div>
-        </motion.article>
-      ))}
+            <div className="p-6 md:p-8">
+              <p className="font-groovy text-sm uppercase tracking-[0.2em] text-terracotta">
+                {formatEventDate(date)} · {formatEventTime(date)}
+              </p>
+              <h3 className="mt-2 font-display text-3xl text-espresso">
+                {ev.title}
+              </h3>
+              <p className="mt-3 text-espresso/80">{ev.description}</p>
+            </div>
+          </motion.article>
+        );
+      })}
     </div>
   );
 }
 
 export function Events() {
+  const data = useQuery(api.events.list) as EventDoc[] | undefined;
   const [tab, setTab] = useState<"events" | "calendar">("events");
+  const [selected, setSelected] = useState<EventDoc | null>(null);
+
+  const events = data ?? [];
 
   return (
     <PageWrapper>
@@ -274,9 +414,21 @@ export function Events() {
             </div>
           </div>
 
-          {tab === "events" ? <UpcomingEvents /> : <Calendar />}
+          {data === undefined ? (
+            <p className="text-center text-espresso/60">Loading events…</p>
+          ) : tab === "events" ? (
+            <UpcomingEvents events={events} />
+          ) : (
+            <Calendar events={events} onSelect={setSelected} />
+          )}
         </div>
       </section>
+
+      <AnimatePresence>
+        {selected && (
+          <EventModal event={selected} onClose={() => setSelected(null)} />
+        )}
+      </AnimatePresence>
     </PageWrapper>
   );
 }

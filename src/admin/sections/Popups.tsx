@@ -51,6 +51,7 @@ type Popup = {
   emailCapture: boolean;
   showOn: "all" | string[];
   active: boolean;
+  backdropBlur?: boolean;
 };
 
 const MAX_IMAGES = 5;
@@ -206,6 +207,9 @@ function PopupForm({
   const [emailCapture, setEmailCapture] = useState(
     existing?.emailCapture ?? false,
   );
+  const [backdropBlur, setBackdropBlur] = useState(
+    existing?.backdropBlur ?? true,
+  );
   const [allPages, setAllPages] = useState(
     existing ? existing.showOn === "all" : true,
   );
@@ -278,6 +282,7 @@ function PopupForm({
           ? { type: "time" as const, seconds }
           : { type: "action" as const, action },
       emailCapture,
+      backdropBlur,
       showOn: (allPages ? "all" : pages) as "all" | string[],
     };
     try {
@@ -505,6 +510,16 @@ function PopupForm({
             className="h-5 w-5 accent-brick"
           />
           Collect email addresses in this pop-up
+        </label>
+
+        <label className="flex items-center gap-2 text-sm font-semibold text-espresso">
+          <input
+            type="checkbox"
+            checked={backdropBlur}
+            onChange={(e) => setBackdropBlur(e.target.checked)}
+            className="h-5 w-5 accent-brick"
+          />
+          Blur &amp; dim the background (centered pop-ups only)
         </label>
 
         <div>
