@@ -10,7 +10,7 @@ type ConvexItem = {
   name: string;
   price: string;
   description: string;
-  imageUrl: string | null;
+  images: { url: string | null }[];
   likes: number;
   reviews: Review[];
 };
@@ -28,14 +28,20 @@ export function toMenuSections(
   if (!sections) return [];
   return sections.map((section) => ({
     title: section.title,
-    items: section.items.map((item) => ({
-      id: item._id,
-      name: item.name,
-      price: item.price,
-      description: item.description,
-      image: item.imageUrl ?? FALLBACK_IMAGE,
-      likes: item.likes,
-      reviews: item.reviews,
-    })),
+    items: section.items.map((item) => {
+      const urls = item.images
+        .map((img) => img.url)
+        .filter((u): u is string => !!u);
+      return {
+        id: item._id,
+        name: item.name,
+        price: item.price,
+        description: item.description,
+        image: urls[0] ?? FALLBACK_IMAGE,
+        images: urls,
+        likes: item.likes,
+        reviews: item.reviews,
+      };
+    }),
   }));
 }

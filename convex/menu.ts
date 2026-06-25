@@ -4,22 +4,38 @@ import { requireAdmin } from "./admin";
 import { menuKind } from "./schema";
 import { COFFEE_SEED, FOOD_SEED, type SeedSection } from "./seedData";
 import type { Doc, Id } from "./_generated/dataModel";
-import type { MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 
 /**
  * Menu data: one public read endpoint (used by both the live site and the
  * admin), plus admin-only mutations for sections, items, and the menu PDF.
  */
 
-/** Resolve a menu item's image to a servable URL (uploaded file or seed path). */
-async function itemImageUrl(
-  ctx: { storage: { getUrl: (id: Id<"_storage">) => Promise<string | null> } },
+/**
+ * Resolve a menu item's images to servable URLs (first = primary). Falls back
+ * to the legacy single-image fields for rows created before multi-image.
+ */
+async function itemImages(
+  ctx: QueryCtx,
   item: Doc<"menuItems">,
-): Promise<string | null> {
-  if (item.imageStorageId) {
-    return await ctx.storage.getUrl(item.imageStorageId);
-  }
-  return item.image ?? null;
+): Promise<{ url: string | null; storageId?: Id<"_storage">; path?: string }[]> {
+  const refs =
+    item.images && item.images.length > 0
+      ? item.images
+      : item.imageStorageId
+        ? [{ storageId: item.imageStorageId }]
+        : item.image
+          ? [{ path: item.image }]
+          : [];
+  return await Promise.all(
+    refs.map(async (ref) => ({
+      url: ref.storageId
+        ? await ctx.storage.getUrl(ref.storageId)
+        : (ref.path ?? null),
+      storageId: ref.storageId,
+      path: ref.path,
+    })),
+  );
 }
 
 /**
@@ -61,7 +77,7 @@ export const getMenu = query({
             name: item.name,
             price: item.price,
             description: item.description,
-            imageUrl: await itemImageUrl(ctx, item),
+            images: await itemImages(ctx, item),
             likes: item.likes,
             reviews: item.reviews,
             order: item.order,
@@ -144,8 +160,12 @@ const itemFields = {
   name: v.string(),
   price: v.string(),
   description: v.string(),
-  imageStorageId: v.optional(v.id("_storage")),
-  image: v.optional(v.string()),
+  images: v.array(
+    v.object({
+      storageId: v.optional(v.id("_storage")),
+      path: v.optional(v.string()),
+    }),
+  ),
 };
 
 export const createItem = mutation({
@@ -165,8 +185,7 @@ export const createItem = mutation({
       name: args.name,
       price: args.price,
       description: args.description,
-      imageStorageId: args.imageStorageId,
-      image: args.image,
+      images: args.images,
       likes: 0,
       reviews: [],
       order,
@@ -178,10 +197,12 @@ export const updateItem = mutation({
   args: { itemId: v.id("menuItems"), ...itemFields },
   handler: async (ctx, { itemId, ...fields }) => {
     await requireAdmin(ctx);
-    // When a new image is uploaded, drop the old seed path so it doesn't win.
-    const patch: Record<string, unknown> = { ...fields };
-    if (fields.imageStorageId) patch.image = undefined;
-    await ctx.db.patch(itemId, patch);
+    // Persist the images array and clear any legacy single-image fields.
+    await ctx.db.patch(itemId, {
+      ...fields,
+      image: undefined,
+      imageStorageId: undefined,
+    });
   },
 });
 
@@ -270,7 +291,7 @@ async function seedMenu(
         name: item.name,
         price: item.price,
         description: item.description,
-        image: item.image,
+        images: [{ path: item.image }],
         likes: item.likes,
         reviews: item.reviews,
         order: i,

@@ -141,6 +141,11 @@ function ItemModal({
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [imgIndex, setImgIndex] = useState(0);
+
+  const imgs =
+    item.images && item.images.length > 0 ? item.images : [item.image];
+  const shownImg = imgs[Math.min(imgIndex, imgs.length - 1)];
 
   // Close on Escape.
   useEffect(() => {
@@ -184,10 +189,10 @@ function ItemModal({
         onClick={(e) => e.stopPropagation()}
         className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-cream shadow-2xl"
       >
-        {/* Image header */}
+        {/* Image header (carousel when there are multiple images) */}
         <div className="relative h-56 shrink-0 sm:h-64">
           <img
-            src={item.image}
+            src={shownImg}
             alt={item.name}
             className="h-full w-full object-cover"
           />
@@ -200,6 +205,43 @@ function ItemModal({
           >
             ✕
           </button>
+          {imgs.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={() =>
+                  setImgIndex((i) => (i - 1 + imgs.length) % imgs.length)
+                }
+                aria-label="Previous image"
+                className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-espresso/60 text-cream transition-colors hover:bg-espresso"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={() => setImgIndex((i) => (i + 1) % imgs.length)}
+                aria-label="Next image"
+                className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-espresso/60 text-cream transition-colors hover:bg-espresso"
+              >
+                ›
+              </button>
+              <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5">
+                {imgs.map((_, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setImgIndex(idx)}
+                    aria-label={`Image ${idx + 1}`}
+                    className={`h-2 w-2 rounded-full transition-colors ${
+                      idx === Math.min(imgIndex, imgs.length - 1)
+                        ? "bg-cream"
+                        : "bg-cream/40"
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
           <div className="absolute bottom-4 right-4">
             <HeartButton
               liked={state.liked}
@@ -298,8 +340,7 @@ function ItemModal({
 
               {submitted && !showForm && (
                 <p className="mt-4 rounded-xl border border-brick/20 bg-brick/5 px-4 py-3 text-sm font-semibold text-brick">
-                  Thanks! Your review was submitted and will appear once it's
-                  approved.
+                  Thanks for your review!
                 </p>
               )}
 
@@ -412,12 +453,12 @@ export function MenuPage({
             </h1>
             {pdf?.url && (
               <a
-                href={pdf.url}
+                href={`/menu-pdf?src=${encodeURIComponent(pdf.url)}`}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-5 inline-block rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-all hover:-translate-y-0.5 hover:bg-maroon"
               >
-                Download PDF Menu →
+                View Menu PDF →
               </a>
             )}
           </header>

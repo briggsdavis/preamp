@@ -15,7 +15,8 @@ export interface MenuItem {
   name: string;
   price: string;
   description: string;
-  image: string;
+  image: string; // primary image (first of `images`)
+  images?: string[]; // all images, primary first
   likes: number;
   reviews: Review[];
 }
