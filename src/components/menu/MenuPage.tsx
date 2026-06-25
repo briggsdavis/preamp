@@ -1,21 +1,22 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@convex/_generated/api";
+import type { Id } from "@convex/_generated/dataModel";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
-import type { MenuItem, MenuSection, Review } from "@/data/menu";
+import type { MenuItem, MenuSection } from "@/data/menu";
 
-/** Per-item interaction state we manage client-side: like toggle + reviews. */
+/** Per-item interaction state managed client-side: like toggle + count. */
 interface ItemState {
   likes: number;
   liked: boolean;
-  reviews: Review[];
 }
 
-/** A visitor's client-side tweaks for one item: like toggle + added reviews. */
+/** A visitor's client-side like toggle for one item. */
 interface Override {
   liked: boolean;
-  added: Review[];
 }
 
 type OverrideMap = Record<string, Override>;
@@ -114,25 +115,32 @@ function MenuCard({
   );
 }
 
-/** The detail modal for one item, with reviews. */
+/** The detail modal for one item. Reviews are backend-moderated when enabled. */
 function ItemModal({
   item,
   state,
+  reviewsEnabled,
   onToggleLike,
-  onAddReview,
   onClose,
 }: {
   item: MenuItem;
   state: ItemState;
+  reviewsEnabled: boolean;
   onToggleLike: () => void;
-  onAddReview: (review: Review) => void;
   onClose: () => void;
 }) {
+  const reviews = useQuery(
+    api.reviews.listApprovedForItem,
+    reviewsEnabled ? { menuItemId: item.id as Id<"menuItems"> } : "skip",
+  );
+  const submitReview = useMutation(api.reviews.submit);
+
   const [showForm, setShowForm] = useState(false);
   const [showReviews, setShowReviews] = useState(false);
   const [name, setName] = useState("");
   const [rating, setRating] = useState(5);
   const [text, setText] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   // Close on Escape.
   useEffect(() => {
@@ -141,16 +149,24 @@ function ItemModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!name.trim() || !text.trim()) return;
-    onAddReview({ name: name.trim(), rating, text: text.trim() });
+    await submitReview({
+      menuItemId: item.id as Id<"menuItems">,
+      menuItemName: item.name,
+      name: name.trim(),
+      rating,
+      text: text.trim(),
+    });
     setName("");
     setText("");
     setRating(5);
     setShowForm(false);
-    setShowReviews(true);
+    setSubmitted(true);
   }
+
+  const reviewCount = reviews?.length ?? 0;
 
   return (
     <motion.div
@@ -207,130 +223,137 @@ function ItemModal({
           </p>
           <p className="mt-4 text-lg text-espresso/85">{item.description}</p>
 
-          {/* Action buttons */}
-          <div className="mt-7 flex flex-wrap gap-3 border-t border-espresso/10 pt-6">
-            <button
-              type="button"
-              onClick={() => setShowForm((v) => !v)}
-              className="rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-all hover:-translate-y-0.5 hover:bg-maroon"
-            >
-              Reviews
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowReviews((v) => !v)}
-              className="rounded-full border-2 border-brick px-6 py-2.5 font-semibold text-brick transition-all hover:-translate-y-0.5 hover:bg-brick/10"
-            >
-              {showReviews ? "Hide Reviews" : `See Reviews (${state.reviews.length})`}
-            </button>
-          </div>
-
-          {/* Leave a review */}
-          <AnimatePresence initial={false}>
-            {showForm && (
-              <motion.form
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                onSubmit={handleSubmit}
-                className="mt-5 space-y-3 overflow-hidden"
-              >
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  className="w-full rounded-xl border-2 border-sand bg-white px-4 py-2.5 text-espresso placeholder:text-espresso/55 outline-none focus:border-gold"
-                />
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-espresso/70">
-                    Rating:
-                  </span>
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <button
-                      key={n}
-                      type="button"
-                      onClick={() => setRating(n)}
-                      aria-label={`${n} star${n > 1 ? "s" : ""}`}
-                      className={`text-2xl leading-none transition-colors ${
-                        n <= rating ? "text-gold" : "text-espresso/25"
-                      }`}
-                    >
-                      ★
-                    </button>
-                  ))}
-                </div>
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder="Share your thoughts…"
-                  rows={3}
-                  className="w-full resize-none rounded-xl border-2 border-sand bg-white px-4 py-2.5 text-espresso placeholder:text-espresso/55 outline-none focus:border-gold"
-                />
+          {reviewsEnabled && (
+            <>
+              {/* Action buttons */}
+              <div className="mt-7 flex flex-wrap gap-3 border-t border-espresso/10 pt-6">
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={() => setShowForm((v) => !v)}
                   className="rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-all hover:-translate-y-0.5 hover:bg-maroon"
                 >
-                  Submit Review →
+                  Leave a Review
                 </button>
-              </motion.form>
-            )}
-          </AnimatePresence>
+                <button
+                  type="button"
+                  onClick={() => setShowReviews((v) => !v)}
+                  className="rounded-full border-2 border-brick px-6 py-2.5 font-semibold text-brick transition-all hover:-translate-y-0.5 hover:bg-brick/10"
+                >
+                  {showReviews
+                    ? "Hide Reviews"
+                    : `See Reviews (${reviewCount})`}
+                </button>
+              </div>
 
-          {/* Reviews list */}
-          <AnimatePresence initial={false}>
-            {showReviews && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-6 overflow-hidden"
-              >
-                <h3 className="font-groovy text-sm uppercase tracking-[0.2em] text-espresso/60">
-                  Reviews
-                </h3>
-                {state.reviews.length === 0 ? (
-                  <p className="mt-3 text-espresso/60">
-                    No reviews yet. Be the first!
-                  </p>
-                ) : (
-                  <ul className="mt-3 space-y-4">
-                    {state.reviews.map((r, i) => (
-                      <li
-                        key={i}
-                        className="rounded-2xl border border-espresso/10 bg-cream-deep/50 p-4"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-espresso">
-                            {r.name}
-                          </span>
-                          <Stars rating={r.rating} />
-                        </div>
-                        <p className="mt-1.5 text-espresso/80">{r.text}</p>
-                      </li>
-                    ))}
-                  </ul>
+              {/* Leave a review */}
+              <AnimatePresence initial={false}>
+                {showForm && (
+                  <motion.form
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    onSubmit={handleSubmit}
+                    className="mt-5 space-y-3 overflow-hidden"
+                  >
+                    <input
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name"
+                      className="w-full rounded-xl border-2 border-sand bg-white px-4 py-2.5 text-espresso placeholder:text-espresso/55 outline-none focus:border-gold"
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-espresso/70">
+                        Rating:
+                      </span>
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setRating(n)}
+                          aria-label={`${n} star${n > 1 ? "s" : ""}`}
+                          className={`text-2xl leading-none transition-colors ${
+                            n <= rating ? "text-gold" : "text-espresso/25"
+                          }`}
+                        >
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                    <textarea
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      placeholder="Share your thoughts…"
+                      rows={3}
+                      className="w-full resize-none rounded-xl border-2 border-sand bg-white px-4 py-2.5 text-espresso placeholder:text-espresso/55 outline-none focus:border-gold"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-all hover:-translate-y-0.5 hover:bg-maroon"
+                    >
+                      Submit Review →
+                    </button>
+                  </motion.form>
                 )}
-              </motion.div>
-            )}
-          </AnimatePresence>
+              </AnimatePresence>
+
+              {submitted && !showForm && (
+                <p className="mt-4 rounded-xl border border-brick/20 bg-brick/5 px-4 py-3 text-sm font-semibold text-brick">
+                  Thanks! Your review was submitted and will appear once it's
+                  approved.
+                </p>
+              )}
+
+              {/* Reviews list */}
+              <AnimatePresence initial={false}>
+                {showReviews && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-6 overflow-hidden"
+                  >
+                    <h3 className="font-groovy text-sm uppercase tracking-[0.2em] text-espresso/60">
+                      Reviews
+                    </h3>
+                    {reviews === undefined ? (
+                      <p className="mt-3 text-espresso/60">Loading…</p>
+                    ) : reviews.length === 0 ? (
+                      <p className="mt-3 text-espresso/60">
+                        No reviews yet. Be the first!
+                      </p>
+                    ) : (
+                      <ul className="mt-3 space-y-4">
+                        {reviews.map((r, i) => (
+                          <li
+                            key={i}
+                            className="rounded-2xl border border-espresso/10 bg-cream-deep/50 p-4"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-semibold text-espresso">
+                                {r.name}
+                              </span>
+                              <Stars rating={r.rating} />
+                            </div>
+                            <p className="mt-1.5 text-espresso/80">{r.text}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </>
+          )}
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
-/**
- * Combine an item's stored like/review values with any client-side override.
- * Overrides (rather than a state map seeded in an effect) let items that load
- * asynchronously from Convex pick up the right values during render.
- */
+/** Combine an item's stored like count with the visitor's client-side toggle. */
 function viewState(item: MenuItem, override?: Override): ItemState {
   const liked = override?.liked ?? false;
-  return {
-    liked,
-    likes: item.likes + (liked ? 1 : 0),
-    reviews: [...(override?.added ?? []), ...item.reviews],
-  };
+  return { liked, likes: item.likes + (liked ? 1 : 0) };
 }
 
 /** Shared menu page: hero band, grouped sections of cards, and the modal. */
@@ -340,19 +363,22 @@ export function MenuPage({
   sections,
   loading = false,
   pdf = null,
+  reviewsEnabled = false,
 }: {
   kicker: string;
   title: string;
   sections: MenuSection[];
   loading?: boolean;
   pdf?: { url: string | null; name: string } | null;
+  /** When true, the item modal shows backend-moderated reviews + submission. */
+  reviewsEnabled?: boolean;
 }) {
   const allItems = useMemo(
     () => sections.flatMap((s) => s.items),
     [sections],
   );
 
-  // Per-item like/review tweaks the visitor makes, layered over stored values.
+  // Per-item like toggles the visitor makes, layered over stored values.
   const [overrides, setOverrides] = useState<OverrideMap>({});
   const [openId, setOpenId] = useState<string | null>(null);
 
@@ -362,17 +388,7 @@ export function MenuPage({
   );
 
   function toggleLike(id: string) {
-    setOverrides((prev) => {
-      const cur = prev[id] ?? { liked: false, added: [] };
-      return { ...prev, [id]: { ...cur, liked: !cur.liked } };
-    });
-  }
-
-  function addReview(id: string, review: Review) {
-    setOverrides((prev) => {
-      const cur = prev[id] ?? { liked: false, added: [] };
-      return { ...prev, [id]: { ...cur, added: [review, ...cur.added] } };
-    });
+    setOverrides((prev) => ({ ...prev, [id]: { liked: !prev[id]?.liked } }));
   }
 
   // Lock body scroll while the modal is open.
@@ -447,8 +463,8 @@ export function MenuPage({
             <ItemModal
               item={openItem}
               state={viewState(openItem, overrides[openItem.id])}
+              reviewsEnabled={reviewsEnabled}
               onToggleLike={() => toggleLike(openItem.id)}
-              onAddReview={(r) => addReview(openItem.id, r)}
               onClose={() => setOpenId(null)}
             />
           )}

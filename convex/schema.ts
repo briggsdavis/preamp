@@ -157,4 +157,24 @@ export default defineSchema({
       }),
     ),
   }).index("by_startsAt", ["startsAt"]),
+
+  // --- Reviews --------------------------------------------------------------
+  reviews: defineTable({
+    menuItemId: v.optional(v.id("menuItems")),
+    menuItemName: v.optional(v.string()), // denormalized for display/filter
+    name: v.string(),
+    rating: v.number(), // 1-5
+    text: v.string(),
+    // pending = awaiting moderation, approved = shown on the site,
+    // archived = hidden but kept.
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("archived"),
+    ),
+    featured: v.boolean(), // surfaced on the home page (subset of approved)
+  })
+    .index("by_status", ["status"])
+    .index("by_menuItem", ["menuItemId"])
+    .index("by_featured", ["featured"]),
 });
