@@ -69,7 +69,25 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/retail" element={<Merch />} />
-          <Route path="/events" element={<Events />} />
+          <Route
+            path="/events"
+            element={
+              <ErrorBoundary
+                fallback={
+                  <div className="bg-cream px-5 pb-20 pt-40 text-center">
+                    <h1 className="font-display text-4xl text-espresso">
+                      Events
+                    </h1>
+                    <p className="mt-4 text-espresso/60">
+                      We couldn't load events right now. Please check back soon.
+                    </p>
+                  </div>
+                }
+              >
+                <Events />
+              </ErrorBoundary>
+            }
+          />
           <Route path="/gift-cards" element={<NotDeveloped />} />
           <Route path="/hiring" element={<Hiring />} />
           <Route path="*" element={<NotDeveloped />} />

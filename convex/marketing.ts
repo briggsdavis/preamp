@@ -113,6 +113,7 @@ const popupFields = {
   }),
   emailCapture: v.boolean(),
   showOn,
+  backdropBlur: v.optional(v.boolean()),
 };
 
 /** Resolve a pop-up's media storage ids to served URLs. */

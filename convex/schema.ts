@@ -139,5 +139,22 @@ export default defineSchema({
     emailCapture: v.boolean(),
     showOn: v.union(v.literal("all"), v.array(v.string())),
     active: v.boolean(),
+    // When true (and position is "center"), dim + blur the page behind the
+    // pop-up. When false, the background stays fully visible.
+    backdropBlur: v.optional(v.boolean()),
   }),
+
+  // --- Events ---------------------------------------------------------------
+  events: defineTable({
+    title: v.string(),
+    description: v.string(),
+    startsAt: v.number(), // epoch ms (date + time)
+    // Up to 3 images; each is an uploaded file or a public path string (seed).
+    images: v.array(
+      v.object({
+        storageId: v.optional(v.id("_storage")),
+        path: v.optional(v.string()),
+      }),
+    ),
+  }).index("by_startsAt", ["startsAt"]),
 });

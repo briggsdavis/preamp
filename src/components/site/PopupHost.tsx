@@ -28,6 +28,7 @@ type Popup = {
   trigger: { type: "time" | "action"; seconds?: number; action?: string };
   emailCapture: boolean;
   showOn: "all" | string[];
+  backdropBlur?: boolean;
 };
 
 const PV_KEY = "preamp-pageviews";
@@ -281,16 +282,23 @@ function PopupItem({
           ))}
 
         {popup.buttonLabel && popup.buttonLink && (
-          <a
-            href={popup.buttonLink}
-            className="mt-4 inline-block rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-colors hover:bg-maroon"
-          >
-            {popup.buttonLabel}
-          </a>
+          <div className="mt-4 flex justify-center">
+            <a
+              href={popup.buttonLink}
+              className="rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-colors hover:bg-maroon"
+            >
+              {popup.buttonLabel}
+            </a>
+          </div>
         )}
       </div>
     </motion.div>
   );
+
+  // Centered pop-ups get a full-screen overlay so clicking outside closes them.
+  // When backdropBlur is on it dims + blurs the page; when off it's fully clear
+  // (a transparent click-catcher).
+  const blur = popup.backdropBlur ?? true;
 
   return (
     <AnimatePresence>
@@ -299,7 +307,11 @@ function PopupItem({
         onClick={showBackdrop ? () => setOpen(false) : undefined}
       >
         {showBackdrop && (
-          <div className="pointer-events-auto absolute inset-0 bg-espresso/60 backdrop-blur-sm" />
+          <div
+            className={`pointer-events-auto absolute inset-0 ${
+              blur ? "bg-espresso/60 backdrop-blur-sm" : "bg-transparent"
+            }`}
+          />
         )}
         <div className="relative">{card}</div>
       </div>
