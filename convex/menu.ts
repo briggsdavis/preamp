@@ -78,6 +78,7 @@ export const getMenu = query({
             price: item.price,
             description: item.description,
             images: await itemImages(ctx, item),
+            featured: item.featured ?? false,
             likes: item.likes,
             reviews: item.reviews,
             order: item.order,
@@ -227,6 +228,36 @@ export const deleteItem = mutation({
   handler: async (ctx, { itemId }) => {
     await requireAdmin(ctx);
     await ctx.db.delete(itemId);
+  },
+});
+
+/** Toggle whether an item appears in the home-page "Best Sellers" carousel. */
+export const setItemFeatured = mutation({
+  args: { itemId: v.id("menuItems"), featured: v.boolean() },
+  handler: async (ctx, { itemId, featured }) => {
+    await requireAdmin(ctx);
+    await ctx.db.patch(itemId, { featured });
+  },
+});
+
+/** Public: featured menu items (coffee + food) for the Best Sellers carousel. */
+export const listFeatured = query({
+  args: {},
+  handler: async (ctx) => {
+    const items = await ctx.db.query("menuItems").collect();
+    const featured = items.filter((item) => item.featured);
+    return await Promise.all(
+      featured.map(async (item) => {
+        const imgs = await itemImages(ctx, item);
+        return {
+          _id: item._id,
+          name: item.name,
+          price: item.price,
+          description: item.description,
+          image: imgs[0]?.url ?? null,
+        };
+      }),
+    );
   },
 });
 

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
+import { DialogProvider } from "@/admin/dialogs";
+
 import { MenuManager } from "@/admin/sections/MenuManager";
 import { Inquiries } from "@/admin/sections/Inquiries";
 import { Announcements } from "@/admin/sections/Announcements";
@@ -71,6 +73,7 @@ export function AdminLayout() {
   }
 
   return (
+    <DialogProvider>
     <div className="flex min-h-screen bg-cream-deep text-espresso">
       {/* Sidebar */}
       <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r-2 border-sand bg-cream">
@@ -151,6 +154,7 @@ export function AdminLayout() {
         <Panel selected={selected} />
       </main>
     </div>
+    </DialogProvider>
   );
 }
 

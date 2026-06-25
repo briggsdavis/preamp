@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
-import { field, label, btn, Modal, confirmThen } from "@/admin/ui";
+import { field, label, btn, Modal } from "@/admin/ui";
+import { useDialogs } from "@/admin/dialogs";
 import { PUBLIC_PAGES } from "@/lib/cms";
 
 /**
@@ -24,6 +25,7 @@ type Announcement = {
 };
 
 export function Announcements() {
+  const { confirmThen } = useDialogs();
   const rows = useQuery(api.marketing.listAnnouncements);
   const remove = useMutation(api.marketing.deleteAnnouncement);
   const setActive = useMutation(api.marketing.setAnnouncementActive);

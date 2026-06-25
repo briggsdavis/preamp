@@ -67,6 +67,9 @@ export default defineSchema({
     likes: v.number(),
     reviews: v.array(review),
     order: v.number(),
+    // Surfaced in the home-page "Best Sellers" carousel (does not change the
+    // item's position within its menu section).
+    featured: v.optional(v.boolean()),
   })
     .index("by_section", ["sectionId"])
     .index("by_menu", ["menu"]),

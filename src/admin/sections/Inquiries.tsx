@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
-import { field, btn, confirmThen } from "@/admin/ui";
+import { field, btn } from "@/admin/ui";
+import { useDialogs } from "@/admin/dialogs";
 
 /**
  * Inquiries dashboard with three tabs: contact-form submissions, hiring
@@ -62,6 +63,7 @@ export function Inquiries() {
 // --- Contact ----------------------------------------------------------------
 
 function ContactTab() {
+  const { confirmThen } = useDialogs();
   const rows = useQuery(api.inquiries.listContact);
   const del = useMutation(api.inquiries.deleteContact);
   const [q, setQ] = useState("");
@@ -131,6 +133,7 @@ function ContactTab() {
 // --- Hiring -----------------------------------------------------------------
 
 function HiringTab() {
+  const { confirmThen } = useDialogs();
   const rows = useQuery(api.inquiries.listHiring);
   const del = useMutation(api.inquiries.deleteHiring);
   const [q, setQ] = useState("");
@@ -277,6 +280,7 @@ function Details({ details }: { details: unknown }) {
 // --- Email captures ---------------------------------------------------------
 
 function CapturesTab() {
+  const { confirmThen } = useDialogs();
   const rows = useQuery(api.inquiries.listEmailCaptures);
   const del = useMutation(api.inquiries.deleteEmailCapture);
   const [q, setQ] = useState("");
