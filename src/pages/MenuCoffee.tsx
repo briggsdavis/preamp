@@ -13,6 +13,7 @@ export function MenuCoffee() {
       sections={toMenuSections(data?.sections)}
       loading={data === undefined}
       pdf={data?.pdf ?? null}
+      reviewsEnabled
     />
   );
 }

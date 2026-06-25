@@ -6,6 +6,7 @@ import { Inquiries } from "@/admin/sections/Inquiries";
 import { Announcements } from "@/admin/sections/Announcements";
 import { Popups } from "@/admin/sections/Popups";
 import { Events } from "@/admin/sections/Events";
+import { Reviews } from "@/admin/sections/Reviews";
 import { PagePlaceholder } from "@/admin/sections/PagePlaceholder";
 
 /**
@@ -41,6 +42,10 @@ const NAV: NavGroup[] = [
   {
     label: "Events",
     items: [{ id: "events", label: "All Events" }],
+  },
+  {
+    label: "Reviews",
+    items: [{ id: "reviews", label: "All Reviews" }],
   },
   {
     label: "Marketing",
@@ -187,6 +192,8 @@ function Panel({ selected }: { selected: string }) {
       return <Inquiries />;
     case "events":
       return <Events />;
+    case "reviews":
+      return <Reviews />;
     case "announcements":
       return <Announcements />;
     case "popups":

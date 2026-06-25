@@ -21,6 +21,7 @@ import type * as http from "../http.js";
 import type * as inquiries from "../inquiries.js";
 import type * as marketing from "../marketing.js";
 import type * as menu from "../menu.js";
+import type * as reviews from "../reviews.js";
 import type * as seedData from "../seedData.js";
 
 /**
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   inquiries: typeof inquiries;
   marketing: typeof marketing;
   menu: typeof menu;
+  reviews: typeof reviews;
   seedData: typeof seedData;
 }>;
 export declare const api: FilterApi<
