@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
-import { field, label, btn, Modal, confirmThen } from "@/admin/ui";
+import { field, label, btn, Modal } from "@/admin/ui";
+import { useDialogs } from "@/admin/dialogs";
 import {
   PUBLIC_PAGES,
   POPUP_POSITIONS,
@@ -57,6 +58,7 @@ type Popup = {
 const MAX_IMAGES = 5;
 
 export function Popups() {
+  const { confirmThen } = useDialogs();
   const rows = useQuery(api.marketing.listPopups);
   const remove = useMutation(api.marketing.deletePopup);
   const setActive = useMutation(api.marketing.setPopupActive);

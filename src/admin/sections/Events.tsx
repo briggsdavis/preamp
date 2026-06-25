@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
-import { field, label, btn, Modal, confirmThen } from "@/admin/ui";
+import { field, label, btn, Modal } from "@/admin/ui";
+import { useDialogs } from "@/admin/dialogs";
 import { useUpload } from "@/admin/useUpload";
 
 /**
@@ -45,6 +46,7 @@ function fmt(ms: number): string {
 }
 
 export function Events() {
+  const { confirmThen } = useDialogs();
   const rows = useQuery(api.events.adminList) as EventData[] | undefined;
   const remove = useMutation(api.events.remove);
   const seed = useMutation(api.events.seed);

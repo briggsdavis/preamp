@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
-import { field, label, btn, Modal, confirmThen } from "@/admin/ui";
+import { field, label, btn, Modal } from "@/admin/ui";
+import { useDialogs } from "@/admin/dialogs";
 import { useUpload } from "@/admin/useUpload";
 
 /**
@@ -34,10 +35,12 @@ type ItemData = {
   price: string;
   description: string;
   images: ItemImage[];
+  featured: boolean;
   likes: number;
 };
 
 export function MenuManager({ menu }: { menu: Menu }) {
+  const { confirmThen, prompt } = useDialogs();
   const data = useQuery(api.menu.getMenu, { menu });
 
   const createSection = useMutation(api.menu.createSection);
@@ -45,6 +48,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
   const deleteSection = useMutation(api.menu.deleteSection);
   const reorderSections = useMutation(api.menu.reorderSections);
   const deleteItem = useMutation(api.menu.deleteItem);
+  const setItemFeatured = useMutation(api.menu.setItemFeatured);
   const seed = useMutation(api.menu.seed);
 
   const [editing, setEditing] = useState<{
@@ -59,8 +63,11 @@ export function MenuManager({ menu }: { menu: Menu }) {
   const sections = data.sections as SectionData[];
 
   async function addSection() {
-    const title = window.prompt("New section name?");
-    if (title?.trim()) await createSection({ menu, title: title.trim() });
+    const title = await prompt({
+      title: "New section",
+      placeholder: "Section name",
+    });
+    if (title) await createSection({ menu, title });
   }
 
   async function moveSection(index: number, dir: -1 | 1) {
@@ -140,11 +147,14 @@ export function MenuManager({ menu }: { menu: Menu }) {
                   type="button"
                   className={btn.small}
                   onClick={async () => {
-                    const title = window.prompt("Rename section", section.title);
-                    if (title?.trim())
+                    const title = await prompt({
+                      title: "Rename section",
+                      defaultValue: section.title,
+                    });
+                    if (title)
                       await renameSection({
                         sectionId: section._id,
-                        title: title.trim(),
+                        title,
                       });
                   }}
                 >
@@ -192,7 +202,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
                     <p className="line-clamp-2 text-xs text-espresso/60">
                       {item.description}
                     </p>
-                    <div className="mt-2 flex gap-2">
+                    <div className="mt-2 flex flex-wrap gap-2">
                       <button
                         type="button"
                         className="text-xs font-semibold text-brick hover:underline"
@@ -201,6 +211,21 @@ export function MenuManager({ menu }: { menu: Menu }) {
                         }
                       >
                         Edit
+                      </button>
+                      <button
+                        type="button"
+                        className={`text-xs font-semibold hover:underline ${
+                          item.featured ? "text-brick" : "text-espresso/50"
+                        }`}
+                        onClick={() =>
+                          void setItemFeatured({
+                            itemId: item._id,
+                            featured: !item.featured,
+                          })
+                        }
+                        title="Show in Best Sellers on the home page"
+                      >
+                        {item.featured ? "★ Featured" : "☆ Feature"}
                       </button>
                       <button
                         type="button"
@@ -263,6 +288,7 @@ function MenuPdf({
   menu: Menu;
   pdf: { url: string | null; name: string } | null;
 }) {
+  const { confirmThen } = useDialogs();
   const upload = useUpload();
   const setMenuPdf = useMutation(api.menu.setMenuPdf);
   const removeMenuPdf = useMutation(api.menu.removeMenuPdf);

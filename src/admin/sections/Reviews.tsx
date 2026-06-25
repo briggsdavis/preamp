@@ -3,7 +3,8 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
-import { field, btn, confirmThen } from "@/admin/ui";
+import { field, btn } from "@/admin/ui";
+import { useDialogs } from "@/admin/dialogs";
 
 /**
  * Reviews moderation: approve / archive / delete visitor reviews, feature up
@@ -38,6 +39,7 @@ function fmt(ms: number) {
 }
 
 export function Reviews() {
+  const { confirmThen } = useDialogs();
   const rows = useQuery(api.reviews.adminList) as Review[] | undefined;
   const seed = useMutation(api.reviews.seed);
   const setStatus = useMutation(api.reviews.setStatus);

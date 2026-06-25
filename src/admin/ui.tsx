@@ -70,7 +70,3 @@ export function Modal({
   );
 }
 
-/** Confirm-then-call helper for destructive buttons. */
-export function confirmThen(message: string, fn: () => void) {
-  if (window.confirm(message)) fn();
-}
