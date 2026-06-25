@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
@@ -21,13 +21,19 @@ type SectionData = {
   items: ItemData[];
 };
 
+type ItemImage = {
+  url: string | null;
+  storageId?: Id<"_storage">;
+  path?: string;
+};
+
 type ItemData = {
   _id: Id<"menuItems">;
   sectionId: Id<"menuSections">;
   name: string;
   price: string;
   description: string;
-  imageUrl: string | null;
+  images: ItemImage[];
   likes: number;
 };
 
@@ -166,9 +172,9 @@ export function MenuManager({ menu }: { menu: Menu }) {
                   className="flex gap-3 rounded-xl border border-sand bg-white p-3"
                 >
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
-                    {item.imageUrl && (
+                    {item.images[0]?.url && (
                       <img
-                        src={item.imageUrl}
+                        src={item.images[0].url}
                         alt={item.name}
                         className="h-full w-full object-cover"
                       />
@@ -341,15 +347,51 @@ function ItemEditor({
   const [description, setDescription] = useState(item?.description ?? "");
   const [targetSection, setTargetSection] =
     useState<Id<"menuSections">>(sectionId);
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(item?.imageUrl ?? null);
+  const [images, setImages] = useState<ItemImage[]>(item?.images ?? []);
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dragIndex = useRef<number | null>(null);
 
-  function onPickFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0] ?? null;
-    setFile(f);
-    if (f) setPreview(URL.createObjectURL(f));
+  async function addImages(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const uploaded: ItemImage[] = [];
+      for (const f of files) {
+        const storageId = await upload(f);
+        uploaded.push({ storageId, url: URL.createObjectURL(f) });
+      }
+      setImages((prev) => [...prev, ...uploaded]);
+    } catch {
+      setError("Image upload failed. Try again.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeImage(index: number) {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function reorder(from: number, to: number) {
+    setImages((prev) => {
+      if (
+        from === to ||
+        from < 0 ||
+        to < 0 ||
+        from >= prev.length ||
+        to >= prev.length
+      )
+        return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -361,7 +403,10 @@ function ItemEditor({
     setSaving(true);
     setError(null);
     try {
-      const imageStorageId = file ? await upload(file) : undefined;
+      const imagePayload = images.map((img) => ({
+        storageId: img.storageId,
+        path: img.path,
+      }));
 
       if (item === null) {
         await createItem({
@@ -369,7 +414,7 @@ function ItemEditor({
           name: name.trim(),
           price: price.trim(),
           description: description.trim(),
-          imageStorageId,
+          images: imagePayload,
         });
       } else {
         await updateItem({
@@ -377,7 +422,7 @@ function ItemEditor({
           name: name.trim(),
           price: price.trim(),
           description: description.trim(),
-          imageStorageId,
+          images: imagePayload,
         });
         if (targetSection !== item.sectionId) {
           await moveItem({ itemId: item._id, sectionId: targetSection });
@@ -440,18 +485,55 @@ function ItemEditor({
           </select>
         </div>
         <div>
-          <label className={label}>Image</label>
-          <div className="flex items-center gap-3">
-            <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
-              {preview && (
-                <img
-                  src={preview}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              )}
-            </div>
-            <input type="file" accept="image/*" onChange={onPickFile} />
+          <label className={label}>
+            Images — drag to reorder; the first is the primary one shown
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {images.map((img, i) => (
+              <div
+                key={i}
+                draggable
+                onDragStart={() => (dragIndex.current = i)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (dragIndex.current !== null)
+                    reorder(dragIndex.current, i);
+                  dragIndex.current = null;
+                }}
+                className="relative h-20 w-20 cursor-grab overflow-hidden rounded-lg border-2 border-sand bg-cream-deep active:cursor-grabbing"
+              >
+                {img.url && (
+                  <img
+                    src={img.url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                )}
+                {i === 0 && (
+                  <span className="absolute inset-x-0 bottom-0 bg-brick/90 py-0.5 text-center text-[0.6rem] font-semibold text-cream">
+                    Primary
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  aria-label="Remove image"
+                  className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-espresso/80 text-xs text-cream"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand text-center text-xs font-semibold text-espresso/60 transition-colors hover:border-gold hover:text-espresso">
+              {uploading ? "Uploading…" : "+ Add"}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={addImages}
+              />
+            </label>
           </div>
         </div>
 
@@ -461,7 +543,11 @@ function ItemEditor({
           <button type="button" className={btn.secondary} onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" className={btn.primary} disabled={saving}>
+          <button
+            type="submit"
+            className={btn.primary}
+            disabled={saving || uploading}
+          >
             {saving ? "Saving…" : "Save"}
           </button>
         </div>

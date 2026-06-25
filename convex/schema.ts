@@ -51,7 +51,17 @@ export default defineSchema({
     name: v.string(),
     price: v.string(),
     description: v.string(),
-    // Either an uploaded image (storageId) or a public path string (seed data).
+    // Ordered images; the first is the primary one shown on the card. Each is
+    // an uploaded file (storageId) or a public path string (seed data).
+    images: v.optional(
+      v.array(
+        v.object({
+          storageId: v.optional(v.id("_storage")),
+          path: v.optional(v.string()),
+        }),
+      ),
+    ),
+    // Legacy single-image fields, kept so existing rows keep rendering.
     imageStorageId: v.optional(v.id("_storage")),
     image: v.optional(v.string()),
     likes: v.number(),

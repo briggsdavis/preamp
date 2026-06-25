@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion";
 import { Layout } from "@/components/site/Layout";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 import { AdminApp } from "@/admin/AdminApp";
+import { PdfViewer } from "@/pages/PdfViewer";
 import { Home } from "@/pages/Home";
 import { MenuCoffee } from "@/pages/MenuCoffee";
 import { MenuFood } from "@/pages/MenuFood";
@@ -43,6 +44,11 @@ export default function App() {
   // The admin app renders on its own, without the public navbar/footer chrome.
   if (location.pathname.startsWith("/admin")) {
     return <AdminApp />;
+  }
+
+  // Full-screen menu PDF viewer (its own tab, branded with the site favicon).
+  if (location.pathname.startsWith("/menu-pdf")) {
+    return <PdfViewer />;
   }
 
   return (
