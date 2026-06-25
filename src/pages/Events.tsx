@@ -17,21 +17,21 @@ const EVENTS: EventItem[] = [
     date: new Date(2026, 5, 27, 19, 0),
     description:
       "Crate-diggers welcome. We're spinning soul and funk all night with a guest selector behind the bar, so pull up a stool and stay a while.",
-    image: "/eventvinyls.jpg",
+    image: "/images/eventvinyls.jpg",
   },
   {
     title: "Single-Origin Cupping",
     date: new Date(2026, 6, 4, 10, 0),
     description:
       "A guided tasting through our latest rotating origins. Learn to taste like the bar does, and take home a bag of your favorite.",
-    image: "/eventbeans.jpg",
+    image: "/images/eventbeans.jpg",
   },
   {
     title: "Live Set: Late Night Listening",
     date: new Date(2026, 6, 11, 20, 0),
     description:
       "An intimate after-hours listening session on the big speakers. Limited seating, espresso martinis, and ambient grooves.",
-    image: "/eventspeakers.jpg",
+    image: "/images/eventspeakers.jpg",
   },
 ];
 
@@ -228,7 +228,7 @@ export function Events() {
       {/* Hero banner - half the viewport */}
       <section className="relative flex h-[50vh] min-h-[360px] items-center justify-center overflow-hidden">
         <img
-          src="/artworkheadon.jpg"
+          src="/images/artworkheadon.jpg"
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
         />

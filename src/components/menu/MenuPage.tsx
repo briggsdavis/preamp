@@ -12,7 +12,13 @@ interface ItemState {
   reviews: Review[];
 }
 
-type StateMap = Record<string, ItemState>;
+/** A visitor's client-side tweaks for one item: like toggle + added reviews. */
+interface Override {
+  liked: boolean;
+  added: Review[];
+}
+
+type OverrideMap = Record<string, Override>;
 
 /** A small heart toggle with the current like count beside it. */
 function HeartButton({
@@ -313,29 +319,41 @@ function ItemModal({
   );
 }
 
+/**
+ * Combine an item's stored like/review values with any client-side override.
+ * Overrides (rather than a state map seeded in an effect) let items that load
+ * asynchronously from Convex pick up the right values during render.
+ */
+function viewState(item: MenuItem, override?: Override): ItemState {
+  const liked = override?.liked ?? false;
+  return {
+    liked,
+    likes: item.likes + (liked ? 1 : 0),
+    reviews: [...(override?.added ?? []), ...item.reviews],
+  };
+}
+
 /** Shared menu page: hero band, grouped sections of cards, and the modal. */
 export function MenuPage({
   kicker,
   title,
   sections,
+  loading = false,
+  pdf = null,
 }: {
   kicker: string;
   title: string;
   sections: MenuSection[];
+  loading?: boolean;
+  pdf?: { url: string | null; name: string } | null;
 }) {
   const allItems = useMemo(
     () => sections.flatMap((s) => s.items),
     [sections],
   );
 
-  const [state, setState] = useState<StateMap>(() =>
-    Object.fromEntries(
-      allItems.map((it) => [
-        it.id,
-        { likes: it.likes, liked: false, reviews: it.reviews },
-      ]),
-    ),
-  );
+  // Per-item like/review tweaks the visitor makes, layered over stored values.
+  const [overrides, setOverrides] = useState<OverrideMap>({});
   const [openId, setOpenId] = useState<string | null>(null);
 
   const openItem = useMemo(
@@ -344,24 +362,17 @@ export function MenuPage({
   );
 
   function toggleLike(id: string) {
-    setState((prev) => {
-      const s = prev[id];
-      return {
-        ...prev,
-        [id]: {
-          ...s,
-          liked: !s.liked,
-          likes: s.likes + (s.liked ? -1 : 1),
-        },
-      };
+    setOverrides((prev) => {
+      const cur = prev[id] ?? { liked: false, added: [] };
+      return { ...prev, [id]: { ...cur, liked: !cur.liked } };
     });
   }
 
   function addReview(id: string, review: Review) {
-    setState((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], reviews: [review, ...prev[id].reviews] },
-    }));
+    setOverrides((prev) => {
+      const cur = prev[id] ?? { liked: false, added: [] };
+      return { ...prev, [id]: { ...cur, added: [review, ...cur.added] } };
+    });
   }
 
   // Lock body scroll while the modal is open.
@@ -383,7 +394,26 @@ export function MenuPage({
             <h1 className="mt-3 font-display text-5xl text-espresso md:text-7xl">
               {title}
             </h1>
+            {pdf?.url && (
+              <a
+                href={pdf.url}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-block rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-all hover:-translate-y-0.5 hover:bg-maroon"
+              >
+                Download PDF Menu →
+              </a>
+            )}
           </header>
+
+          {loading && sections.length === 0 && (
+            <p className="text-center text-espresso/60">Loading the menu…</p>
+          )}
+          {!loading && sections.length === 0 && (
+            <p className="text-center text-espresso/60">
+              The menu is being updated. Check back soon!
+            </p>
+          )}
 
           <div className="space-y-16">
             {sections.map((section) => (
@@ -397,7 +427,7 @@ export function MenuPage({
                     <MenuCard
                       key={item.id}
                       item={item}
-                      state={state[item.id]}
+                      state={viewState(item, overrides[item.id])}
                       onToggleLike={() => toggleLike(item.id)}
                       onOpen={() => setOpenId(item.id)}
                     />
@@ -416,7 +446,7 @@ export function MenuPage({
           {openItem && (
             <ItemModal
               item={openItem}
-              state={state[openItem.id]}
+              state={viewState(openItem, overrides[openItem.id])}
               onToggleLike={() => toggleLike(openItem.id)}
               onAddReview={(r) => addReview(openItem.id, r)}
               onClose={() => setOpenId(null)}

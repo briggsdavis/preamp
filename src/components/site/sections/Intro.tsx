@@ -29,12 +29,12 @@ export function Intro() {
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           <img
-            src="/preampdecor4.jpg"
+            src="/images/preampdecor4.jpg"
             alt=""
             className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
           />
           <img
-            src="/preampdecor5.jpg"
+            src="/images/preampdecor5.jpg"
             alt=""
             className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
           />

@@ -50,13 +50,43 @@ src/
 
 ```bash
 npm install
-npm run dev:frontend   # Vite dev server
+npm run dev            # Vite dev server + `convex dev` together
 ```
 
-Then open the printed local URL.
+Then open the printed local URL. `npm run dev:frontend` runs only Vite;
+`npm run dev:backend` runs only `convex dev`.
 
-> Note: this is a static marketing site - no backend is required. A Convex
-> scaffold still lives in `convex/` but is not wired into the app.
+## Backend & Admin (Convex)
+
+The site is backed by [Convex](https://convex.dev): the menu, inquiry inboxes,
+announcement bars, and pop-ups are all stored in Convex and edited from an
+admin dashboard at **`/admin`**.
+
+### One-time setup
+
+1. **Deploy the functions.** Run `npx convex dev` (or `npm run dev`). The first
+   time, it logs you in / creates a deployment and writes `VITE_CONVEX_URL` and
+   `CONVEX_DEPLOYMENT` into `.env.local`.
+2. **Set the admin secrets** in the Convex dashboard (Settings → Environment
+   Variables) or via the CLI:
+   - `JWT_PRIVATE_KEY`, `JWKS`, `SITE_URL` — from Convex Auth setup.
+   - `ADMIN_EMAILS` — a comma-separated allowlist of emails permitted to
+     create an admin account (e.g. `you@shop.com, manager@shop.com`).
+3. **Create your admin account** at `/admin` → "Sign up" using an email on the
+   allowlist. Sign-ups from other emails are rejected.
+4. **Seed the menu** (optional): in the admin, the menu manager exposes a one-
+   time seed of the original coffee/food items. You can also call `menu.seed`
+   from the Convex dashboard. It's idempotent and no-ops if data already exists.
+
+### Admin sections
+
+- **Page Editor** (Home / About / Global) - placeholders, not yet built.
+- **Menu** (Coffee / Food) - sections, items, item images, section moves, and a
+  per-menu PDF. Edits go live on `/menu/coffee` and `/menu/food` immediately.
+- **Inquiries** - contact-form submissions, hiring applications (with resume
+  downloads), and pop-up email captures, each searchable/filterable.
+- **Marketing** - announcement bars (one active at a time) and pop-ups (media,
+  position, trigger, frequency, optional email capture; one active per spot).
 
 ## Scripts
 

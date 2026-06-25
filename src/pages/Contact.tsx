@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useMutation } from "convex/react";
+import { api } from "@convex/_generated/api";
 
 import { SITE } from "@/data/site";
 import { PageWrapper } from "@/components/site/PageWrapper";
@@ -10,12 +12,30 @@ const fieldClass =
   "w-full rounded-xl border-2 border-sand bg-white px-4 py-3 text-espresso placeholder:text-espresso/55 outline-none transition-colors focus:border-gold";
 
 export function Contact() {
+  const submitContact = useMutation(api.inquiries.submitContact);
   const [formOpen, setFormOpen] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setSent(true);
+    const fd = new FormData(e.currentTarget);
+    setSending(true);
+    setError(null);
+    try {
+      await submitContact({
+        firstName: String(fd.get("firstName") ?? ""),
+        lastName: String(fd.get("lastName") ?? ""),
+        email: String(fd.get("email") ?? ""),
+        phone: String(fd.get("phone") ?? ""),
+        message: String(fd.get("message") ?? ""),
+      });
+      setSent(true);
+    } catch {
+      setError("Something went wrong sending your note. Please try again.");
+      setSending(false);
+    }
   }
 
   return (
@@ -117,7 +137,7 @@ export function Contact() {
               className="relative min-h-[480px] overflow-hidden rounded-3xl shadow-2xl md:min-h-0"
             >
               <img
-                src="/contactdecor.jpg"
+                src="/images/contactdecor.jpg"
                 alt="Pre Amp Coffee Studio"
                 className="absolute inset-0 h-full w-full object-cover"
               />
@@ -217,11 +237,17 @@ export function Contact() {
                           rows={4}
                           className={`${fieldClass} flex-1 resize-none`}
                         />
+                        {error && (
+                          <p className="text-sm font-semibold text-maroon">
+                            {error}
+                          </p>
+                        )}
                         <button
                           type="submit"
-                          className="mt-1 rounded-full bg-brick px-7 py-3 font-semibold text-cream shadow-lg transition-all hover:-translate-y-1 hover:bg-maroon"
+                          disabled={sending}
+                          className="mt-1 rounded-full bg-brick px-7 py-3 font-semibold text-cream shadow-lg transition-all hover:-translate-y-1 hover:bg-maroon disabled:opacity-60"
                         >
-                          Send Message →
+                          {sending ? "Sending…" : "Send Message →"}
                         </button>
                       </form>
                     )}
