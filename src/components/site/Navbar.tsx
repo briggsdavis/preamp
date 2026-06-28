@@ -2,11 +2,23 @@ import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { NAV, SITE, type NavItem } from "@/data/site";
+import { NAV, SITE, type NavItem, type NavLink as NavChild } from "@/data/site";
 import { cn } from "@/lib/utils";
+import { useTrack } from "@/lib/analytics";
+
+/** Map a nav link to the analytics event it should fire, if any. */
+function trackNavChild(
+  track: ReturnType<typeof useTrack>,
+  child: NavChild,
+) {
+  if (child.to === "/menu/coffee") track("menu_click", { menu: "coffee", clickSource: "navbar" });
+  else if (child.to === "/menu/food") track("menu_click", { menu: "food", clickSource: "navbar" });
+  else if (/egiftcards/.test(child.to)) track("cta_click", { cta: "gift_card", destination: child.to });
+}
 
 function DesktopItem({ item }: { item: NavItem }) {
   const [open, setOpen] = useState(false);
+  const track = useTrack();
 
   if (!item.children) {
     return (
@@ -56,11 +68,17 @@ function DesktopItem({ item }: { item: NavItem }) {
                     target="_blank"
                     rel="noreferrer"
                     className={cls}
+                    onClick={() => trackNavChild(track, child)}
                   >
                     {child.label}
                   </a>
                 ) : (
-                  <Link key={child.to} to={child.to} className={cls}>
+                  <Link
+                    key={child.to}
+                    to={child.to}
+                    className={cls}
+                    onClick={() => trackNavChild(track, child)}
+                  >
                     {child.label}
                   </Link>
                 );
@@ -82,6 +100,7 @@ export function Navbar() {
   const [entered, setEntered] = useState(false);
   const lastY = useRef(0);
   const location = useLocation();
+  const track = useTrack();
 
   useEffect(() => {
     const reduce = window.matchMedia(
@@ -154,6 +173,12 @@ export function Navbar() {
           ))}
           <Link
             to="/menu/coffee"
+            onClick={() =>
+              track("order_click", {
+                clickSource: "navbar",
+                destination: "/menu/coffee",
+              })
+            }
             className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold lowercase text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
           >
             Order
@@ -220,6 +245,7 @@ export function Navbar() {
                               target="_blank"
                               rel="noreferrer"
                               className="py-1 text-sm text-espresso/70"
+                              onClick={() => trackNavChild(track, child)}
                             >
                               {child.label}
                             </a>
@@ -228,6 +254,7 @@ export function Navbar() {
                               key={child.to}
                               to={child.to}
                               className="py-1 text-sm text-espresso/70"
+                              onClick={() => trackNavChild(track, child)}
                             >
                               {child.label}
                             </Link>
@@ -240,6 +267,12 @@ export function Navbar() {
               ))}
               <Link
                 to="/menu/coffee"
+                onClick={() =>
+                  track("order_click", {
+                    clickSource: "navbar",
+                    destination: "/menu/coffee",
+                  })
+                }
                 className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold lowercase text-cream"
               >
                 Order

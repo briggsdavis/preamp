@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 import { DialogProvider } from "@/admin/dialogs";
@@ -11,6 +11,12 @@ import { Events } from "@/admin/sections/Events";
 import { Reviews } from "@/admin/sections/Reviews";
 import { PagePlaceholder } from "@/admin/sections/PagePlaceholder";
 
+// Recharts is heavy and admin-only — load the dashboard on demand so it never
+// touches the public site or the rest of the admin bundle.
+const Analytics = lazy(() =>
+  import("@/admin/sections/Analytics").then((m) => ({ default: m.Analytics })),
+);
+
 /**
  * The signed-in admin shell: a left sidebar with collapsible nav groups and a
  * content area that swaps in the selected section's editor.
@@ -22,6 +28,10 @@ type NavGroup = {
 };
 
 const NAV: NavGroup[] = [
+  {
+    label: "Analytics",
+    items: [{ id: "analytics", label: "Dashboard" }],
+  },
   {
     label: "Page Editor",
     items: [
@@ -60,7 +70,7 @@ const NAV: NavGroup[] = [
 
 export function AdminLayout() {
   const { signOut } = useAuthActions();
-  const [selected, setSelected] = useState("menu-coffee");
+  const [selected, setSelected] = useState("analytics");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     "Page Editor": true,
     Menu: true,
@@ -86,8 +96,7 @@ export function AdminLayout() {
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           {NAV.map((group) => {
-            const isSingle =
-              group.items.length === 1 && group.items[0].label.startsWith("All");
+            const isSingle = group.items.length === 1;
             return (
               <div key={group.label} className="mb-2">
                 {isSingle ? (
@@ -188,6 +197,18 @@ function NavButton({
 
 function Panel({ selected }: { selected: string }) {
   switch (selected) {
+    case "analytics":
+      return (
+        <Suspense
+          fallback={
+            <p className="font-display text-2xl text-espresso/60">
+              Loading analytics…
+            </p>
+          }
+        >
+          <Analytics />
+        </Suspense>
+      );
     case "menu-coffee":
       return <MenuManager menu="coffee" />;
     case "menu-food":

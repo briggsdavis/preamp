@@ -4,6 +4,7 @@ import { AnimatePresence } from "framer-motion";
 
 import { Layout } from "@/components/site/Layout";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
+import { useTrack } from "@/lib/analytics";
 import { AdminApp } from "@/admin/AdminApp";
 import { PdfViewer } from "@/pages/PdfViewer";
 import { Home } from "@/pages/Home";
@@ -35,11 +36,17 @@ function MenuUnavailable() {
  */
 export default function App() {
   const location = useLocation();
+  const track = useTrack();
 
   // Jump to the top of the page on every route change.
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [location.pathname]);
+
+  // Record a page view on every route change (no-ops on /admin & /menu-pdf).
+  useEffect(() => {
+    track("page_view", { path: location.pathname });
+  }, [location.pathname, track]);
 
   // The admin app renders on its own, without the public navbar/footer chrome.
   if (location.pathname.startsWith("/admin")) {
