@@ -22,6 +22,9 @@ const review = v.object({
   text: v.string(),
 });
 
+/** A {key, count} pair used for analytics breakdown maps. */
+const countEntry = v.object({ key: v.string(), count: v.number() });
+
 /** Where a pop-up is anchored on screen. Also used to enforce "one per spot". */
 export const popupPosition = v.union(
   v.literal("center"),
@@ -190,4 +193,51 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_menuItem", ["menuItemId"])
     .index("by_featured", ["featured"]),
+
+  // --- Analytics ------------------------------------------------------------
+  // Raw, first-party events written by the public site (see convex/analytics.ts
+  // and src/lib/analytics.ts). Kept for a rolling retention window; an hourly
+  // cron folds them into `analyticsDaily` rollups that power the admin
+  // dashboard. `isStaff` marks visits from signed-in admins so they can be
+  // excluded from every number.
+  analyticsEvents: defineTable({
+    type: v.string(), // "page_view" | "order_click" | "menu_click" | "cta_click"
+    path: v.string(), // route the event happened on
+    visitorId: v.string(), // anonymous, persisted in localStorage
+    sessionId: v.string(), // per-tab session, sessionStorage
+    source: v.optional(v.string()), // traffic source for page views (e.g. "instagram")
+    clickSource: v.optional(v.string()), // "navbar" | "featured" for order clicks
+    menu: v.optional(v.string()), // "coffee" | "food" for menu clicks
+    cta: v.optional(v.string()), // which CTA ("phone", "directions", …)
+    destination: v.optional(v.string()), // where an order/CTA click points
+    isStaff: v.boolean(),
+    ts: v.number(), // epoch ms (server time)
+  }).index("by_ts", ["ts"]),
+
+  // One pre-aggregated document per shop-local day. Counts are additive across
+  // a range; "visitors" and the funnel steps are de-duplicated WITHIN a day
+  // (a returning visitor counts once per day), which keeps range queries exact
+  // and fast without reading raw events. Maps use string keys → counts.
+  analyticsDaily: defineTable({
+    date: v.string(), // "YYYY-MM-DD" in America/New_York
+    pageViews: v.number(),
+    visitors: v.number(), // distinct visitorId that day
+    // Breakdown maps stored as {key,count} arrays (keys like "/menu/coffee" or
+    // "l.facebook.com" aren't valid record-key identifiers).
+    perPage: v.array(countEntry), // path → views
+    sources: v.array(countEntry), // source → page views
+    orderClicks: v.number(),
+    orderBySource: v.array(countEntry), // "navbar"/"featured" → clicks
+    menuClicks: v.number(),
+    menuByKind: v.array(countEntry), // "coffee"/"food" → clicks
+    ctaClicks: v.array(countEntry), // cta key → clicks
+    // Funnel: distinct visitors that day who reached each step.
+    funnelMenuViewers: v.number(),
+    funnelOrderClickers: v.number(),
+  }).index("by_date", ["date"]),
+
+  // Singleton bookkeeping for the rollup cron: the last day fully finalized.
+  analyticsState: defineTable({
+    rolledThrough: v.optional(v.string()), // "YYYY-MM-DD" (exclusive of today)
+  }),
 });

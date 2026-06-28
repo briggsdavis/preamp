@@ -80,6 +80,14 @@ admin dashboard at **`/admin`**.
 
 ### Admin sections
 
+- **Analytics** - first-party traffic & engagement dashboard (the default admin
+  landing). Page views, visitors, order-button clicks, menu clicks, a
+  visit→menu→order funnel, top pages, and traffic sources, each across seven
+  timeframes (Today → 2 Years). Tracking is cookieless and excludes signed-in
+  staff; events are written by the public site (`src/lib/analytics.ts`) and
+  rolled into daily aggregates by an hourly cron (`convex/crons.ts`). To preview
+  the dashboard before real traffic arrives, run `analytics:seedDemo` from the
+  Convex dashboard's function runner.
 - **Page Editor** (Home / About / Global) - placeholders, not yet built.
 - **Menu** (Coffee / Food) - sections, items, item images, section moves, and a
   per-menu PDF. Edits go live on `/menu/coffee` and `/menu/food` immediately.

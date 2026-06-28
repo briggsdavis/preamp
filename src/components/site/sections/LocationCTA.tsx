@@ -2,8 +2,10 @@ import { motion } from "framer-motion";
 
 import { SITE } from "@/data/site";
 import { RippleStripes } from "@/components/site/RippleStripes";
+import { useTrack } from "@/lib/analytics";
 
 export function LocationCTA() {
+  const track = useTrack();
   return (
     <section id="visit" className="relative overflow-hidden bg-terracotta">
       <div className="absolute inset-0 opacity-25">
@@ -54,6 +56,12 @@ export function LocationCTA() {
             href={SITE.mapsLink}
             target="_blank"
             rel="noreferrer"
+            onClick={() =>
+              track("cta_click", {
+                cta: "directions",
+                destination: SITE.mapsLink,
+              })
+            }
             className="mt-7 inline-block rounded-full bg-cream px-7 py-3 font-semibold text-terracotta shadow-lg transition-all hover:-translate-y-1 hover:bg-gold hover:text-espresso"
           >
             Get Directions →

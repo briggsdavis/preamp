@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import { SITE } from "@/data/site";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
+import { useTrack } from "@/lib/analytics";
 
 interface FeaturedItem {
   _id: string;
@@ -16,6 +17,7 @@ interface FeaturedItem {
 }
 
 function FeaturedCard({ item }: { item: FeaturedItem }) {
+  const track = useTrack();
   return (
     <motion.article
       whileHover={{ y: -10 }}
@@ -47,6 +49,12 @@ function FeaturedCard({ item }: { item: FeaturedItem }) {
           href={SITE.orderUrl}
           target="_blank"
           rel="noreferrer"
+          onClick={() =>
+            track("order_click", {
+              clickSource: "featured",
+              destination: SITE.orderUrl,
+            })
+          }
           className="mt-5 block rounded-full bg-terracotta px-5 py-2.5 text-center text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
         >
           Order

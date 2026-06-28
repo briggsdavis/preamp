@@ -14,7 +14,9 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as admin from "../admin.js";
+import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
+import type * as crons from "../crons.js";
 import type * as events from "../events.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
@@ -34,7 +36,9 @@ import type * as seedData from "../seedData.js";
  */
 declare const fullApi: ApiFromModules<{
   admin: typeof admin;
+  analytics: typeof analytics;
   auth: typeof auth;
+  crons: typeof crons;
   events: typeof events;
   files: typeof files;
   http: typeof http;

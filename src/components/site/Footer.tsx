@@ -4,8 +4,10 @@ import { NAV, SITE } from "@/data/site";
 import { RippleStripes } from "@/components/site/RippleStripes";
 import { Reveal } from "@/components/site/Reveal";
 import { InstagramIcon, TikTokIcon } from "@/components/site/SocialIcons";
+import { useTrack } from "@/lib/analytics";
 
 export function Footer() {
+  const track = useTrack();
   return (
     <footer className="relative overflow-hidden bg-espresso text-cream">
       {/* Taller band with breathing room up top so the rippling ovals can
@@ -33,6 +35,9 @@ export function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label="Pre Amp on Instagram"
+              onClick={() =>
+                track("cta_click", { cta: "instagram", destination: SITE.instagram })
+              }
               className="grid h-10 w-10 place-items-center rounded-full border border-cream/15 text-cream/80 transition-all hover:-translate-y-0.5 hover:border-gold hover:text-gold"
             >
               <InstagramIcon className="h-5 w-5" />
@@ -42,6 +47,9 @@ export function Footer() {
               target="_blank"
               rel="noreferrer"
               aria-label="RD Restaurants on TikTok"
+              onClick={() =>
+                track("cta_click", { cta: "tiktok", destination: SITE.tiktok })
+              }
               className="grid h-10 w-10 place-items-center rounded-full border border-cream/15 text-cream/80 transition-all hover:-translate-y-0.5 hover:border-gold hover:text-gold"
             >
               <TikTokIcon className="h-5 w-5" />
