@@ -203,6 +203,12 @@ function ScrollRevealText({
   // Spread of the unblur per letter: higher = each letter snaps in faster, with
   // more letters mid-transition at once for a flowing "handwriting" feel.
   const SPREAD = 14;
+  // A letter at position `p` is fully clear once `--reveal >= p + 1/SPREAD`.
+  // `--reveal` (scroll progress) is clamped to 1, so spread the positions over
+  // [0, 1 - 1.4/SPREAD] instead of [0, 1]; that way the very last letter clears
+  // just before the scroll range ends rather than needing `--reveal > 1` (which
+  // never happens and used to leave the tail permanently blurred).
+  const REVEAL_RANGE = 1 - 1.4 / SPREAD;
   let index = 0;
 
   return (
@@ -220,7 +226,7 @@ function ScrollRevealText({
               key={i}
               style={
                 {
-                  "--i": i / total,
+                  "--i": (i / total) * REVEAL_RANGE,
                   opacity: `calc((var(--reveal) - var(--i)) * ${SPREAD})`,
                   filter: `blur(clamp(0px, calc((1 - (var(--reveal) - var(--i)) * ${SPREAD}) * 8px), 8px))`,
                   // hint the compositor; these two props animate every frame
