@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from "react";
+import { Fragment, useRef, type CSSProperties, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 
@@ -173,6 +173,92 @@ const VALUES = [
   },
 ];
 
+/**
+ * Renders text that "writes itself" letter by letter as it scrolls into view.
+ *
+ * The section's scroll progress is published once as the `--reveal` CSS variable
+ * on the wrapper; each letter carries its own position (`--i`, 0→1) and derives
+ * its opacity and blur from how far `--reveal` has passed it. Because all the
+ * per-letter math lives in CSS `calc()`, only one motion value updates per frame
+ * no matter how long the copy is, so the whole paragraph composes itself
+ * smoothly as the reader arrives at it.
+ */
+function ScrollRevealText({
+  text,
+  className,
+}: {
+  text: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    // Start writing as the paragraph enters the lower viewport and finish as it
+    // settles comfortably into view.
+    offset: ["start 0.85", "end 0.6"],
+  });
+
+  const total = text.length;
+  const words = text.split(" ");
+  // Spread of the unblur per letter: higher = each letter snaps in faster, with
+  // more letters mid-transition at once for a flowing "handwriting" feel.
+  const SPREAD = 14;
+  let index = 0;
+
+  return (
+    <motion.p
+      ref={ref}
+      aria-label={text}
+      style={{ ["--reveal" as string]: scrollYProgress } as CSSProperties}
+      className={className}
+    >
+      {words.map((word, wi) => {
+        const letters = [...word].map((ch) => {
+          const i = index++;
+          return (
+            <span
+              key={i}
+              style={
+                {
+                  "--i": i / total,
+                  opacity: `calc((var(--reveal) - var(--i)) * ${SPREAD})`,
+                  filter: `blur(clamp(0px, calc((1 - (var(--reveal) - var(--i)) * ${SPREAD}) * 8px), 8px))`,
+                  // hint the compositor; these two props animate every frame
+                  willChange: "opacity, filter",
+                } as CSSProperties
+              }
+            >
+              {ch}
+            </span>
+          );
+        });
+        // Account for the space that follows every word but the last, so letter
+        // positions line up with the original string.
+        if (wi < words.length - 1) index++;
+        return (
+          <Fragment key={wi}>
+            {/* keep each word intact so a half-written word never wraps */}
+            <span aria-hidden className="inline-block whitespace-nowrap">
+              {letters}
+            </span>
+            {wi < words.length - 1 ? " " : null}
+          </Fragment>
+        );
+      })}
+    </motion.p>
+  );
+}
+
+const ABOUT_INTRO =
+  "At Pre Amp, every sip hits the perfect note. Our space hums with the warmth " +
+  "of vinyl spinning and the aroma of beans roasted to perfection, welcoming " +
+  "every kind of coffee lover. Step up to our bar and watch our baristas, true " +
+  "coffee mixologists, meticulously craft your drink. Each espresso shot is " +
+  "treated like a fine spirit, blended with house-made syrups, unique infusions, " +
+  "and balanced with the precision of a master bartender. From bold and complex " +
+  "to smooth and sweet, every cup is a handcrafted liquid experience designed to " +
+  "awaken your senses.";
+
 export function About() {
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -251,18 +337,12 @@ export function About() {
             <h2 className="mt-3 font-display text-4xl text-espresso md:text-6xl">
               Every Sip Hits the Note
             </h2>
-            <p className="mt-6 text-lg leading-relaxed text-espresso/80">
-              At Pre Amp, every sip hits the perfect note. Our space hums with
-              the warmth of vinyl spinning and the aroma of beans roasted to
-              perfection, welcoming every kind of coffee lover. Step up to our
-              bar and watch our baristas, true coffee mixologists,
-              meticulously craft your drink. Each espresso shot is treated like
-              a fine spirit, blended with house-made syrups, unique infusions,
-              and balanced with the precision of a master bartender. From bold
-              and complex to smooth and sweet, every cup is a handcrafted liquid
-              experience designed to awaken your senses.
-            </p>
           </motion.div>
+          {/* Intro that "writes itself" letter by letter as you scroll into it. */}
+          <ScrollRevealText
+            text={ABOUT_INTRO}
+            className="mt-6 text-lg leading-relaxed text-espresso/80"
+          />
         </div>
       </section>
 
