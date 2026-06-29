@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "convex/react";
@@ -116,14 +116,20 @@ function PopupItem({
   const captureEmail = useMutation(api.inquiries.captureEmail);
   const [open, setOpen] = useState(false);
   const [armed] = useState(() => !alreadySeen(popup));
+  // Whether this pop-up has already revealed during this mount. Tracked in a
+  // ref (not `open`) so that closing the pop-up doesn't re-arm the trigger and
+  // make it reappear indefinitely.
+  const shown = useRef(false);
   const [current, setCurrent] = useState(0);
   const [email, setEmail] = useState("");
   const [captured, setCaptured] = useState(false);
 
   // Arm the trigger once.
   useEffect(() => {
-    if (!armed || open) return;
+    if (!armed || shown.current) return;
     const reveal = () => {
+      if (shown.current) return;
+      shown.current = true;
       setOpen(true);
       markSeen(popup);
     };
@@ -172,7 +178,7 @@ function PopupItem({
       default:
         return;
     }
-  }, [armed, open, popup, pathname]);
+  }, [armed, popup, pathname]);
 
   if (!open) return null;
 
