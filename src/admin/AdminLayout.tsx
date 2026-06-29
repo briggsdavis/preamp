@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 import { DialogProvider } from "@/admin/dialogs";
@@ -32,6 +33,8 @@ const NAV: NavGroup[] = [
     label: "Analytics",
     items: [{ id: "analytics", label: "Dashboard" }],
   },
+  // The three collapsible dropdowns are grouped together, stacked directly on
+  // top of one another.
   {
     label: "Page Editor",
     items: [
@@ -48,6 +51,13 @@ const NAV: NavGroup[] = [
     ],
   },
   {
+    label: "Marketing",
+    items: [
+      { id: "announcements", label: "Announcement Bar" },
+      { id: "popups", label: "Pop-up" },
+    ],
+  },
+  {
     label: "Inquiries",
     items: [{ id: "inquiries", label: "All Inquiries" }],
   },
@@ -59,24 +69,13 @@ const NAV: NavGroup[] = [
     label: "Reviews",
     items: [{ id: "reviews", label: "All Reviews" }],
   },
-  {
-    label: "Marketing",
-    items: [
-      { id: "announcements", label: "Announcement Bar" },
-      { id: "popups", label: "Pop-up" },
-    ],
-  },
 ];
 
 export function AdminLayout() {
   const { signOut } = useAuthActions();
   const [selected, setSelected] = useState("analytics");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
-    "Page Editor": true,
-    Menu: true,
-    Inquiries: true,
-    Marketing: true,
-  });
+  // Dropdowns start collapsed; the admin expands what they need.
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   function toggleGroup(label: string) {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
@@ -107,33 +106,45 @@ export function AdminLayout() {
                   />
                 ) : (
                   <>
-                    <button
+                    <motion.button
                       type="button"
                       onClick={() => toggleGroup(group.label)}
+                      whileTap={{ scale: 0.98 }}
                       className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left font-semibold text-espresso/80 transition-colors hover:bg-cream-deep"
                     >
                       {group.label}
-                      <span
-                        className={`text-xs transition-transform ${
-                          openGroups[group.label] ? "rotate-90" : ""
-                        }`}
+                      <motion.span
+                        className="text-xs"
+                        animate={{ rotate: openGroups[group.label] ? 90 : 0 }}
+                        transition={{ duration: 0.2 }}
                       >
                         ▶
-                      </span>
-                    </button>
-                    {openGroups[group.label] && (
-                      <div className="mt-1 space-y-0.5 pl-3">
-                        {group.items.map((item) => (
-                          <NavButton
-                            key={item.id}
-                            label={item.label}
-                            small
-                            active={selected === item.id}
-                            onClick={() => setSelected(item.id)}
-                          />
-                        ))}
-                      </div>
-                    )}
+                      </motion.span>
+                    </motion.button>
+                    <AnimatePresence initial={false}>
+                      {openGroups[group.label] && (
+                        <motion.div
+                          key="items"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="mt-1 space-y-0.5 pl-3">
+                            {group.items.map((item) => (
+                              <NavButton
+                                key={item.id}
+                                label={item.label}
+                                small
+                                active={selected === item.id}
+                                onClick={() => setSelected(item.id)}
+                              />
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </>
                 )}
               </div>
@@ -142,25 +153,41 @@ export function AdminLayout() {
         </nav>
 
         <div className="border-t-2 border-sand p-3">
-          <a
+          <motion.a
             href="/"
+            whileHover={{ x: 3 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
             className="mb-2 block rounded-lg px-3 py-2 text-center text-sm font-semibold text-espresso/70 transition-colors hover:bg-cream-deep"
           >
             ← Back to site
-          </a>
-          <button
+          </motion.a>
+          <motion.button
             type="button"
             onClick={() => void signOut()}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
             className="w-full rounded-lg bg-espresso px-3 py-2 text-sm font-semibold text-cream transition-colors hover:bg-maroon"
           >
             Sign out
-          </button>
+          </motion.button>
         </div>
       </aside>
 
       {/* Content */}
       <main className="flex-1 overflow-x-hidden px-6 py-8 md:px-10">
-        <Panel selected={selected} />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selected}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <Panel selected={selected} />
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
     </DialogProvider>
@@ -179,9 +206,12 @@ function NavButton({
   small?: boolean;
 }) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onClick}
+      whileHover={{ x: 3 }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className={`block w-full rounded-lg px-3 py-2 text-left transition-colors ${
         small ? "text-sm" : "font-semibold"
       } ${
@@ -191,7 +221,7 @@ function NavButton({
       }`}
     >
       {label}
-    </button>
+    </motion.button>
   );
 }
 

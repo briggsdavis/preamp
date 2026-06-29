@@ -10,13 +10,13 @@ export const label = "mb-1 block text-sm font-semibold text-espresso/80";
 /** Primary / secondary / danger button class helpers. */
 export const btn = {
   primary:
-    "rounded-full bg-brick px-5 py-2 font-semibold text-cream transition-colors hover:bg-maroon disabled:opacity-60",
+    "rounded-full bg-brick px-5 py-2 font-semibold text-cream transition-all hover:bg-maroon hover:-translate-y-0.5 active:translate-y-0 active:scale-95 disabled:opacity-60 disabled:hover:translate-y-0",
   secondary:
-    "rounded-full border-2 border-espresso/25 px-5 py-2 font-semibold text-espresso transition-colors hover:bg-espresso/5",
+    "rounded-full border-2 border-espresso/25 px-5 py-2 font-semibold text-espresso transition-all hover:bg-espresso/5 hover:-translate-y-0.5 active:translate-y-0 active:scale-95",
   danger:
-    "rounded-full border-2 border-brick/40 px-4 py-2 text-sm font-semibold text-brick transition-colors hover:bg-brick/10",
+    "rounded-full border-2 border-brick/40 px-4 py-2 text-sm font-semibold text-brick transition-all hover:bg-brick/10 active:scale-95",
   small:
-    "rounded-full bg-espresso/10 px-3 py-1.5 text-sm font-semibold text-espresso transition-colors hover:bg-espresso/20",
+    "rounded-full bg-espresso/10 px-3 py-1.5 text-sm font-semibold text-espresso transition-all hover:bg-espresso/20 active:scale-95",
 };
 
 /** A centered modal dialog portaled to <body>, closing on Escape / backdrop. */
