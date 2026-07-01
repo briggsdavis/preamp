@@ -40,6 +40,15 @@ export const deleteContact = mutation({
   },
 });
 
+/** Mark a contact submission as read / unread. */
+export const setContactRead = mutation({
+  args: { id: v.id("contactSubmissions"), read: v.boolean() },
+  handler: async (ctx, { id, read }) => {
+    await requireAdmin(ctx);
+    await ctx.db.patch(id, { read });
+  },
+});
+
 // --- Hiring applications -----------------------------------------------------
 
 /** Public: upload URL for an applicant's resume (no auth required). */
@@ -92,6 +101,15 @@ export const deleteHiring = mutation({
   handler: async (ctx, { id }) => {
     await requireAdmin(ctx);
     await ctx.db.delete(id);
+  },
+});
+
+/** Mark a hiring application as read / unread. */
+export const setHiringRead = mutation({
+  args: { id: v.id("hiringSubmissions"), read: v.boolean() },
+  handler: async (ctx, { id, read }) => {
+    await requireAdmin(ctx);
+    await ctx.db.patch(id, { read });
   },
 });
 

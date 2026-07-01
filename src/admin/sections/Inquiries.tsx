@@ -66,6 +66,7 @@ function ContactTab() {
   const { confirmThen } = useDialogs();
   const rows = useQuery(api.inquiries.listContact);
   const del = useMutation(api.inquiries.deleteContact);
+  const markRead = useMutation(api.inquiries.setContactRead);
   const [q, setQ] = useState("");
 
   const filtered = useMemo(() => {
@@ -92,11 +93,14 @@ function ContactTab() {
           {filtered.map((r) => (
             <div
               key={r._id}
-              className="rounded-2xl border-2 border-sand bg-cream p-4"
+              className={`rounded-2xl border-2 bg-cream p-4 ${
+                r.read ? "border-sand opacity-70" : "border-brick/40"
+              }`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-espresso">
+                  <p className="flex items-center gap-2 font-semibold text-espresso">
+                    {!r.read && <UnreadDot />}
                     {r.firstName} {r.lastName}
                   </p>
                   <p className="text-sm text-espresso/70">
@@ -110,6 +114,12 @@ function ContactTab() {
                   <span className="text-xs text-espresso/50">
                     {fmtDate(r._creationTime)}
                   </span>
+                  <ReadBtn
+                    read={!!r.read}
+                    onClick={() =>
+                      void markRead({ id: r._id, read: !r.read })
+                    }
+                  />
                   <DeleteBtn
                     onClick={() =>
                       confirmThen("Delete this submission?", () =>
@@ -136,6 +146,7 @@ function HiringTab() {
   const { confirmThen } = useDialogs();
   const rows = useQuery(api.inquiries.listHiring);
   const del = useMutation(api.inquiries.deleteHiring);
+  const markRead = useMutation(api.inquiries.setHiringRead);
   const [q, setQ] = useState("");
   const [position, setPosition] = useState("all");
   const [openId, setOpenId] = useState<string | null>(null);
@@ -186,13 +197,16 @@ function HiringTab() {
           {filtered.map((r) => (
             <div
               key={r._id}
-              className="rounded-2xl border-2 border-sand bg-cream p-4"
+              className={`rounded-2xl border-2 bg-cream p-4 ${
+                r.read ? "border-sand opacity-70" : "border-brick/40"
+              }`}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="font-semibold text-espresso">
+                  <p className="flex items-center gap-2 font-semibold text-espresso">
+                    {!r.read && <UnreadDot />}
                     {r.firstName} {r.lastName}
-                    <span className="ml-2 rounded-full bg-gold/30 px-2 py-0.5 text-xs font-semibold text-espresso">
+                    <span className="ml-1 rounded-full bg-gold/30 px-2 py-0.5 text-xs font-semibold text-espresso">
                       {r.position}
                     </span>
                   </p>
@@ -211,6 +225,12 @@ function HiringTab() {
                   <span className="text-xs text-espresso/50">
                     {fmtDate(r._creationTime)}
                   </span>
+                  <ReadBtn
+                    read={!!r.read}
+                    onClick={() =>
+                      void markRead({ id: r._id, read: !r.read })
+                    }
+                  />
                   <DeleteBtn
                     onClick={() =>
                       confirmThen("Delete this application?", () =>
@@ -368,6 +388,34 @@ function SearchBar({
         <span className="text-sm text-espresso/55">{count} result(s)</span>
       )}
     </div>
+  );
+}
+
+/** A small filled dot flagging an unread inquiry. */
+function UnreadDot() {
+  return (
+    <span
+      aria-label="Unread"
+      title="Unread"
+      className="inline-block h-2 w-2 shrink-0 rounded-full bg-brick"
+    />
+  );
+}
+
+/** Toggle button to mark an inquiry as read / unread. */
+function ReadBtn({ read, onClick }: { read: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+        read
+          ? "bg-espresso/10 text-espresso/60 hover:bg-espresso/20"
+          : "bg-brick/15 text-brick hover:bg-brick/25"
+      }`}
+    >
+      {read ? "Read ✓" : "Mark as read"}
+    </button>
   );
 }
 

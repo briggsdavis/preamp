@@ -91,6 +91,8 @@ export default defineSchema({
     email: v.string(),
     phone: v.string(),
     message: v.string(),
+    // Whether an admin has marked this inquiry as read.
+    read: v.optional(v.boolean()),
   }),
 
   hiringSubmissions: defineTable({
@@ -108,6 +110,8 @@ export default defineSchema({
     resumeName: v.optional(v.string()),
     // Full payload (address, availability, employment history, restrictions).
     details: v.any(),
+    // Whether an admin has marked this application as read.
+    read: v.optional(v.boolean()),
   }),
 
   emailCaptures: defineTable({
@@ -172,6 +176,8 @@ export default defineSchema({
         path: v.optional(v.string()),
       }),
     ),
+    // Archived events are hidden from the public site but kept in the admin.
+    archived: v.optional(v.boolean()),
   }).index("by_startsAt", ["startsAt"]),
 
   // --- Reviews --------------------------------------------------------------

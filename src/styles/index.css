@@ -57,6 +57,12 @@ body {
   overflow-x: hidden;
 }
 
+@layer base {
+  button {
+    @apply cursor-pointer;
+  }
+}
+
 /* Paper grain overlay for warmth ------------------------------------------ */
 .grain::after {
   content: "";
@@ -107,22 +113,22 @@ body {
 @keyframes stripe-ripple {
   0%,
   100% {
-    transform: scaleY(0.985) translateY(0);
+    transform: scaleY(0.9) translateY(0);
   }
   50% {
-    transform: scaleY(1.015) translateY(-0.5%);
+    transform: scaleY(1.1) translateY(-2.5%);
   }
 }
 
 @keyframes stripe-shimmer {
   0%,
   100% {
-    opacity: 0.82;
-    filter: brightness(0.96);
+    opacity: 0.62;
+    filter: brightness(0.88);
   }
   50% {
-    opacity: 0.95;
-    filter: brightness(1.04);
+    opacity: 1;
+    filter: brightness(1.15);
   }
 }
 

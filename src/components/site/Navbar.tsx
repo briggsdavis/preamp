@@ -136,12 +136,11 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-[var(--preamp-ann-h,0px)] z-50 backdrop-blur-md transition-all duration-300",
-        scrolled
-          ? "bg-cream/95 shadow-sm shadow-maroon/10"
-          : "bg-cream/80 shadow-sm shadow-maroon/5",
-        // Slide in last, after the hero intro finishes.
-        !entered && "-translate-y-full opacity-0",
+        "fixed inset-x-0 top-[var(--preamp-ann-h,0px)] z-50 bg-cream transition-all duration-300",
+        scrolled ? "shadow-sm shadow-maroon/10" : "shadow-sm shadow-maroon/5",
+        // Slide in last, after the hero intro finishes (transform only, so the
+        // bar is never translucent).
+        !entered && "-translate-y-full",
         // Slide out of view on scroll-down so it reappears on scroll-up.
         entered && hidden && !mobileOpen && "-translate-y-full",
       )}
@@ -165,6 +164,14 @@ export function Navbar() {
               scrolled ? "h-10 w-10" : "h-[2.875rem] w-[2.875rem]",
             )}
           />
+          <span
+            className={cn(
+              "font-display whitespace-nowrap leading-none text-espresso transition-all duration-300",
+              scrolled ? "text-base sm:text-lg" : "text-lg sm:text-xl",
+            )}
+          >
+            pre amp coffee studio
+          </span>
         </Link>
 
         <div className="hidden items-center gap-7 md:flex">
