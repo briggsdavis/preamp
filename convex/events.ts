@@ -28,7 +28,7 @@ async function imageUrls(ctx: QueryCtx, event: Doc<"events">): Promise<string[]>
   return urls.filter((u): u is string => !!u);
 }
 
-/** Public: all events, soonest first, with image URLs resolved. */
+/** Public: all non-archived events, soonest first, with image URLs resolved. */
 export const list = query({
   args: {},
   handler: async (ctx) => {
@@ -38,7 +38,9 @@ export const list = query({
       .collect();
     events.sort((a, b) => a.startsAt - b.startsAt);
     return await Promise.all(
-      events.map(async (event) => ({
+      events
+        .filter((event) => !event.archived)
+        .map(async (event) => ({
         _id: event._id,
         title: event.title,
         description: event.description,
@@ -65,6 +67,7 @@ export const adminList = query({
         title: event.title,
         description: event.description,
         startsAt: event.startsAt,
+        archived: event.archived ?? false,
         images: await Promise.all(
           event.images.map(async (img) => ({
             storageId: img.storageId,
@@ -107,6 +110,15 @@ export const remove = mutation({
   handler: async (ctx, { id }) => {
     await requireAdmin(ctx);
     await ctx.db.delete(id);
+  },
+});
+
+/** Archive / unarchive an event. Archived events are hidden from the site. */
+export const setArchived = mutation({
+  args: { id: v.id("events"), archived: v.boolean() },
+  handler: async (ctx, { id, archived }) => {
+    await requireAdmin(ctx);
+    await ctx.db.patch(id, { archived });
   },
 });
 

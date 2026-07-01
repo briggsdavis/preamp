@@ -29,6 +29,9 @@ interface SquiggleLineProps {
   /** Distance the top/bottom runs sit from the section edges, in px. Keeps the
    * runs up in the section padding so they clear the content. */
   marginY?: number;
+  /** Horizontal gap between the side gutters and the screen edges, in px, so
+   * the ribbon doesn't sit flush against the sides. */
+  marginX?: number;
   /** When set (>1), the ribbon serpentines left↔right across this many
    * horizontal rows instead of framing the section edges. */
   rows?: number;
@@ -55,9 +58,10 @@ function buildWaypoints(
   bundleHalf: number,
   strokeWidth: number,
   marginY: number,
+  marginX: number,
   startLeft: boolean,
 ): { points: Pt[]; effR: number } {
-  const insetX = bundleHalf + strokeWidth + 2;
+  const insetX = bundleHalf + strokeWidth + 2 + marginX;
   const xL = insetX;
   const xR = W - insetX;
 
@@ -95,10 +99,11 @@ function buildSerpentine(
   bundleHalf: number,
   strokeWidth: number,
   marginY: number,
+  marginX: number,
   rows: number,
   startLeft: boolean,
 ): { points: Pt[]; effR: number } {
-  const insetX = bundleHalf + strokeWidth + 2;
+  const insetX = bundleHalf + strokeWidth + 2 + marginX;
   const xL = insetX;
   const xR = W - insetX;
 
@@ -177,6 +182,7 @@ export function SquiggleLine({
   gap = 9,
   strokeWidth = 3,
   marginY = 52,
+  marginX = 28,
   rows,
 }: SquiggleLineProps) {
   const ref = useRef<HTMLDivElement>(null);
@@ -214,6 +220,7 @@ export function SquiggleLine({
             bundleHalf,
             strokeWidth,
             marginY,
+            marginX,
             rows,
             side !== "right",
           )
@@ -224,10 +231,11 @@ export function SquiggleLine({
             bundleHalf,
             strokeWidth,
             marginY,
+            marginX,
             side !== "right",
           );
     return RIBBON.map((_, i) => strandPath(points, effR, (i - mid) * gap));
-  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, gap, mid, side, rows]);
+  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, marginX, gap, mid, side, rows]);
 
   // Draw the ribbon on as the section scrolls through the viewport.
   const { scrollYProgress } = useScroll({

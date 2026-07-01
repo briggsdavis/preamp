@@ -26,6 +26,7 @@ type EventData = {
   description: string;
   startsAt: number;
   images: EventImage[];
+  archived: boolean;
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -49,6 +50,7 @@ export function Events() {
   const { confirmThen } = useDialogs();
   const rows = useQuery(api.events.adminList) as EventData[] | undefined;
   const remove = useMutation(api.events.remove);
+  const setArchived = useMutation(api.events.setArchived);
   const seed = useMutation(api.events.seed);
   const [editing, setEditing] = useState<EventData | "new" | null>(null);
 
@@ -89,9 +91,11 @@ export function Events() {
         {rows?.map((ev) => (
           <div
             key={ev._id}
-            className="flex flex-wrap items-center gap-3 rounded-2xl border-2 border-sand bg-cream p-4"
+            className={`flex flex-wrap items-center gap-3 rounded-2xl border-2 border-sand bg-cream p-4 ${
+              ev.archived ? "opacity-60" : ""
+            }`}
           >
-            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
+            <div className="aspect-[4/3] w-20 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
               {ev.images[0]?.url && (
                 <img
                   src={ev.images[0].url}
@@ -101,7 +105,14 @@ export function Events() {
               )}
             </div>
             <div className="min-w-[12rem] flex-1">
-              <p className="font-semibold text-espresso">{ev.title}</p>
+              <p className="flex items-center gap-2 font-semibold text-espresso">
+                {ev.title}
+                {ev.archived && (
+                  <span className="rounded-full bg-espresso/10 px-2 py-0.5 text-xs font-semibold text-espresso/60">
+                    Archived
+                  </span>
+                )}
+              </p>
               <p className="text-sm text-espresso/55">{fmt(ev.startsAt)}</p>
             </div>
             <button
@@ -110,6 +121,15 @@ export function Events() {
               onClick={() => setEditing(ev)}
             >
               Edit
+            </button>
+            <button
+              type="button"
+              className={btn.small}
+              onClick={() =>
+                void setArchived({ id: ev._id, archived: !ev.archived })
+              }
+            >
+              {ev.archived ? "Unarchive" : "Archive"}
             </button>
             <button
               type="button"
@@ -243,7 +263,7 @@ function EventForm({
             {images.map((img, i) => (
               <div
                 key={i}
-                className="relative h-20 w-20 overflow-hidden rounded-lg border-2 border-sand bg-cream-deep"
+                className="relative aspect-[4/3] w-28 overflow-hidden rounded-lg border-2 border-sand bg-cream-deep"
               >
                 {img.url && (
                   <img
@@ -263,7 +283,7 @@ function EventForm({
             ))}
             {images.length < MAX_IMAGES && (
               <label
-                className={`${btn.small} flex h-20 w-20 cursor-pointer items-center justify-center text-center`}
+                className={`${btn.small} flex aspect-[4/3] w-28 cursor-pointer items-center justify-center text-center`}
               >
                 {uploading ? "…" : "+ Image"}
                 <input

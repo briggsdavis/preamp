@@ -58,11 +58,18 @@ export function Announcements() {
             key={a._id}
             className="flex flex-wrap items-center gap-3 rounded-2xl border-2 border-sand bg-cream p-4"
           >
+            {/* A mini preview of how the live announcement bar looks. */}
             <div
-              className="flex h-10 min-w-[12rem] flex-1 items-center justify-center rounded-lg px-3 text-sm font-semibold"
+              className="flex h-10 min-w-[12rem] flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg px-3 text-sm font-semibold"
               style={{ background: a.bgColor, color: a.textColor }}
+              title="Live preview of the announcement bar"
             >
               <span className="truncate">{a.text}</span>
+              {a.buttonLabel && a.buttonLink && (
+                <span className="shrink-0 rounded-full border border-current px-2 py-0.5 text-xs font-semibold">
+                  {a.buttonLabel}
+                </span>
+              )}
             </div>
             <div className="min-w-[10rem]">
               <p className="font-semibold text-espresso">{a.internalTitle}</p>

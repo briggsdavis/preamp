@@ -154,7 +154,11 @@ function EventModal({
         className="w-full max-w-lg overflow-hidden rounded-3xl bg-cream shadow-2xl"
       >
         {event.images.length > 0 && (
-          <Carousel images={event.images} alt={event.title} className="h-64" />
+          <Carousel
+            images={event.images}
+            alt={event.title}
+            className="aspect-[4/3]"
+          />
         )}
         <div className="p-6">
           <p className="font-groovy text-sm uppercase tracking-[0.2em] text-terracotta">
@@ -205,8 +209,6 @@ function Calendar({
     return d;
   });
 
-  const goToday = () =>
-    setView(new Date(today.getFullYear(), today.getMonth(), 1));
   const prev = () => setView(new Date(year, month - 1, 1));
   const next = () => setView(new Date(year, month + 1, 1));
 
@@ -218,13 +220,6 @@ function Calendar({
           {MONTHS[month]} {year}
         </h2>
         <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={goToday}
-            className="rounded-lg bg-orange/55 px-5 py-2.5 font-semibold text-cream transition-colors hover:bg-orange/75"
-          >
-            today
-          </button>
           <div className="flex overflow-hidden rounded-lg bg-orange text-cream">
             <button
               type="button"
@@ -338,7 +333,7 @@ function UpcomingEvents({ events }: { events: EventDoc[] }) {
             <Carousel
               images={ev.images}
               alt={ev.title}
-              className="h-48 sm:h-full"
+              className="aspect-[4/3] self-start"
             />
             <div className="p-6 md:p-8">
               <p className="font-groovy text-sm uppercase tracking-[0.2em] text-terracotta">
