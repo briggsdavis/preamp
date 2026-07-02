@@ -14,6 +14,7 @@ export function MenuFood() {
       loading={data === undefined}
       pdf={data?.pdf ?? null}
       reviewsEnabled
+      orderEnabled
     />
   );
 }

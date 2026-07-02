@@ -26,7 +26,8 @@ export type TrackType =
 export interface TrackOptions {
   path?: string;
   source?: string;
-  clickSource?: string; // e.g. "navbar" | "featured"
+  clickSource?: string; // e.g. "navbar" | "featured" | "menu-item"
+  menuItemName?: string; // item name for per-item order clicks
   menu?: string; // "coffee" | "food"
   cta?: string; // "instagram" | "directions" | …
   destination?: string;
@@ -121,8 +122,14 @@ export function useTrack() {
         path,
         visitorId: getVisitorId(),
         sessionId: getSessionId(),
-        source: type === "page_view" ? (opts.source ?? getSource()) : opts.source,
+        // Attach the session's traffic source to page views AND order clicks so
+        // the dashboard can show where order-clickers originated.
+        source:
+          type === "page_view" || type === "order_click"
+            ? (opts.source ?? getSource())
+            : opts.source,
         clickSource: opts.clickSource,
+        menuItemName: opts.menuItemName,
         menu: opts.menu,
         cta: opts.cta,
         destination: opts.destination,

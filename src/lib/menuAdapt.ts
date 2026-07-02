@@ -10,6 +10,7 @@ type ConvexItem = {
   name: string;
   price: string;
   description: string;
+  orderUrl?: string | null;
   images: { url: string | null }[];
   likes: number;
   reviews: Review[];
@@ -37,6 +38,7 @@ export function toMenuSections(
         name: item.name,
         price: item.price,
         description: item.description,
+        orderUrl: item.orderUrl ?? null,
         image: urls[0] ?? FALLBACK_IMAGE,
         images: urls,
         likes: item.likes,

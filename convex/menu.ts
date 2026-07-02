@@ -77,6 +77,7 @@ export const getMenu = query({
             name: item.name,
             price: item.price,
             description: item.description,
+            orderUrl: item.orderUrl ?? null,
             images: await itemImages(ctx, item),
             featured: item.featured ?? false,
             likes: item.likes,
@@ -161,6 +162,7 @@ const itemFields = {
   name: v.string(),
   price: v.string(),
   description: v.string(),
+  orderUrl: v.optional(v.string()),
   images: v.array(
     v.object({
       storageId: v.optional(v.id("_storage")),
@@ -186,6 +188,7 @@ export const createItem = mutation({
       name: args.name,
       price: args.price,
       description: args.description,
+      orderUrl: args.orderUrl,
       images: args.images,
       likes: 0,
       reviews: [],
@@ -254,6 +257,7 @@ export const listFeatured = query({
           name: item.name,
           price: item.price,
           description: item.description,
+          orderUrl: item.orderUrl ?? null,
           image: imgs[0]?.url ?? null,
         };
       }),

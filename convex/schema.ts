@@ -54,6 +54,9 @@ export default defineSchema({
     name: v.string(),
     price: v.string(),
     description: v.string(),
+    // Per-item Toast online-ordering link. Optional; when unset the public
+    // "Order" button on the item renders disabled.
+    orderUrl: v.optional(v.string()),
     // Ordered images; the first is the primary one shown on the card. Each is
     // an uploaded file (storageId) or a public path string (seed data).
     images: v.optional(
@@ -211,8 +214,9 @@ export default defineSchema({
     path: v.string(), // route the event happened on
     visitorId: v.string(), // anonymous, persisted in localStorage
     sessionId: v.string(), // per-tab session, sessionStorage
-    source: v.optional(v.string()), // traffic source for page views (e.g. "instagram")
-    clickSource: v.optional(v.string()), // "navbar" | "featured" for order clicks
+    source: v.optional(v.string()), // traffic source (page views + order clicks)
+    clickSource: v.optional(v.string()), // "navbar" | "featured" | "menu-item" for order clicks
+    menuItemName: v.optional(v.string()), // item name for per-item order clicks
     menu: v.optional(v.string()), // "coffee" | "food" for menu clicks
     cta: v.optional(v.string()), // which CTA ("phone", "directions", …)
     destination: v.optional(v.string()), // where an order/CTA click points
@@ -233,7 +237,9 @@ export default defineSchema({
     perPage: v.array(countEntry), // path → views
     sources: v.array(countEntry), // source → page views
     orderClicks: v.number(),
-    orderBySource: v.array(countEntry), // "navbar"/"featured" → clicks
+    orderBySource: v.array(countEntry), // "navbar"/"featured"/"menu-item" → clicks
+    orderByItem: v.array(countEntry), // menu item name → order clicks
+    orderTraffic: v.array(countEntry), // traffic source → order clicks
     menuClicks: v.number(),
     menuByKind: v.array(countEntry), // "coffee"/"food" → clicks
     ctaClicks: v.array(countEntry), // cta key → clicks

@@ -164,32 +164,35 @@ export function Navbar() {
               scrolled ? "h-10 w-10" : "h-[2.875rem] w-[2.875rem]",
             )}
           />
-          <span
+          {/* The hero wordmark, scaled down to sit beside the icon. */}
+          <img
+            src="/images/heroprimary.png"
+            alt={`${SITE.name} Coffee Studio`}
             className={cn(
-              "font-display whitespace-nowrap leading-none text-espresso transition-all duration-300",
-              scrolled ? "text-base sm:text-lg" : "text-lg sm:text-xl",
+              "w-auto object-contain transition-all duration-300",
+              scrolled ? "h-8" : "h-10",
             )}
-          >
-            pre amp coffee studio
-          </span>
+          />
         </Link>
 
         <div className="hidden items-center gap-7 md:flex">
           {NAV.map((item) => (
             <DesktopItem key={item.label} item={item} />
           ))}
-          <Link
-            to="/menu/coffee"
+          <a
+            href={SITE.orderUrl}
+            target="_blank"
+            rel="noreferrer"
             onClick={() =>
               track("order_click", {
                 clickSource: "navbar",
-                destination: "/menu/coffee",
+                destination: SITE.orderUrl,
               })
             }
             className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold lowercase text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
           >
-            Order
-          </Link>
+            Order now
+          </a>
         </div>
 
         <button
@@ -272,18 +275,20 @@ export function Navbar() {
                   )}
                 </div>
               ))}
-              <Link
-                to="/menu/coffee"
+              <a
+                href={SITE.orderUrl}
+                target="_blank"
+                rel="noreferrer"
                 onClick={() =>
                   track("order_click", {
                     clickSource: "navbar",
-                    destination: "/menu/coffee",
+                    destination: SITE.orderUrl,
                   })
                 }
                 className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold lowercase text-cream"
               >
-                Order
-              </Link>
+                Order now
+              </a>
             </div>
           </motion.div>
         )}

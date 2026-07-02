@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 import { SITE } from "@/data/site";
+import { useTrack } from "@/lib/analytics";
 
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
+  const track = useTrack();
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -64,13 +66,21 @@ export function Hero() {
             to="/menu/coffee"
             className="rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg shadow-maroon/30 transition-all hover:-translate-y-1 hover:bg-amber"
           >
-            See the Menu
+            Menu
           </Link>
           <a
-            href="#visit"
-            className="rounded-full border-2 border-cream/70 px-7 py-3 font-semibold text-cream transition-all hover:-translate-y-1 hover:border-cream hover:bg-cream/10"
+            href={SITE.orderUrl}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() =>
+              track("order_click", {
+                clickSource: "hero",
+                destination: SITE.orderUrl,
+              })
+            }
+            className="rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/30 transition-all hover:-translate-y-1 hover:bg-brick"
           >
-            Find Us
+            Order Now
           </a>
         </motion.div>
       </motion.div>

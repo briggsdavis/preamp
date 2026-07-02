@@ -29,6 +29,20 @@ export function Footer() {
           <p className="mt-2 text-sm text-cream/70">
             A coffee-and-vinyl listening bar. Brews & beats, all day.
           </p>
+          <a
+            href={SITE.orderUrl}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() =>
+              track("order_click", {
+                clickSource: "footer",
+                destination: SITE.orderUrl,
+              })
+            }
+            className="mt-5 inline-block rounded-full bg-gold px-6 py-2.5 font-semibold text-espresso shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-amber"
+          >
+            Order Online →
+          </a>
           <div className="mt-5 flex items-center gap-3">
             <a
               href={SITE.instagram}

@@ -27,34 +27,146 @@ function fmtDate(ms: number): string {
   });
 }
 
+type ReadStatus = "all" | "unread" | "read";
+
+/** Segmented All / Unread / Read filter shared by the contact + hiring tabs. */
+function ReadFilter({
+  value,
+  onChange,
+}: {
+  value: ReadStatus;
+  onChange: (v: ReadStatus) => void;
+}) {
+  const opts: { v: ReadStatus; label: string }[] = [
+    { v: "all", label: "All" },
+    { v: "unread", label: "Unread" },
+    { v: "read", label: "Read" },
+  ];
+  return (
+    <div className="inline-flex rounded-full border-2 border-sand bg-cream p-1">
+      {opts.map((o) => (
+        <button
+          key={o.v}
+          type="button"
+          onClick={() => onChange(o.v)}
+          className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+            value === o.v
+              ? "bg-brick text-cream"
+              : "text-espresso/70 hover:bg-cream-deep"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Apply an All/Unread/Read filter to a list of rows with an optional `read`. */
+function matchesRead(read: boolean | undefined, status: ReadStatus): boolean {
+  if (status === "unread") return !read;
+  if (status === "read") return !!read;
+  return true;
+}
+
+/** Escape one CSV cell (quote if it contains a comma, quote, or newline). */
+function csvCell(v: unknown): string {
+  const s = String(v ?? "");
+  return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
 export function Inquiries() {
   const [tab, setTab] = useState<Tab>("contact");
+  const counts = useQuery(api.inquiries.counts);
+
+  const unreadFor = (key: Tab): number => {
+    if (!counts) return 0;
+    if (key === "contact") return counts.contact.unread;
+    if (key === "hiring") return counts.hiring.unread;
+    return 0;
+  };
 
   return (
     <div>
       <h1 className="font-display text-4xl text-espresso">Inquiries</h1>
 
+      {/* Summary counts across all three streams */}
+      <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <SummaryCard
+          label="Contact Form"
+          total={counts?.contact.total}
+          unread={counts?.contact.unread}
+        />
+        <SummaryCard
+          label="Hiring"
+          total={counts?.hiring.total}
+          unread={counts?.hiring.unread}
+        />
+        <SummaryCard label="Email Captures" total={counts?.captures.total} />
+      </div>
+
       <div className="mt-5 inline-flex rounded-full border-2 border-sand bg-cream p-1">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            onClick={() => setTab(t.key)}
-            className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
-              tab === t.key
-                ? "bg-brick text-cream"
-                : "text-espresso/70 hover:bg-cream-deep"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {TABS.map((t) => {
+          const unread = unreadFor(t.key);
+          return (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setTab(t.key)}
+              className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+                tab === t.key
+                  ? "bg-brick text-cream"
+                  : "text-espresso/70 hover:bg-cream-deep"
+              }`}
+            >
+              {t.label}
+              {unread > 0 && (
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[0.65rem] font-bold ${
+                    tab === t.key ? "bg-cream text-brick" : "bg-brick text-cream"
+                  }`}
+                >
+                  {unread}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       <div className="mt-6">
         {tab === "contact" && <ContactTab />}
         {tab === "hiring" && <HiringTab />}
         {tab === "captures" && <CapturesTab />}
+      </div>
+    </div>
+  );
+}
+
+/** A total + unread summary tile for one inquiry stream. */
+function SummaryCard({
+  label,
+  total,
+  unread,
+}: {
+  label: string;
+  total: number | undefined;
+  unread?: number;
+}) {
+  return (
+    <div className="rounded-2xl border-2 border-sand bg-cream px-4 py-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-espresso/55">
+        {label}
+      </p>
+      <div className="mt-1 flex items-baseline gap-3">
+        <span className="font-display text-2xl leading-none text-espresso">
+          {total ?? "—"}
+        </span>
+        {unread !== undefined && unread > 0 && (
+          <span className="text-sm font-semibold text-brick">
+            {unread} unread
+          </span>
+        )}
       </div>
     </div>
   );
@@ -68,24 +180,30 @@ function ContactTab() {
   const del = useMutation(api.inquiries.deleteContact);
   const markRead = useMutation(api.inquiries.setContactRead);
   const [q, setQ] = useState("");
+  const [status, setStatus] = useState<ReadStatus>("all");
 
   const filtered = useMemo(() => {
     if (!rows) return [];
     const needle = q.trim().toLowerCase();
-    if (!needle) return rows;
-    return rows.filter((r) =>
-      [r.firstName, r.lastName, r.email, r.phone, r.message]
+    return rows.filter((r) => {
+      if (!matchesRead(r.read, status)) return false;
+      if (!needle) return true;
+      return [r.firstName, r.lastName, r.email, r.phone, r.message]
         .join(" ")
         .toLowerCase()
-        .includes(needle),
-    );
-  }, [rows, q]);
+        .includes(needle);
+    });
+  }, [rows, q, status]);
 
   if (rows === undefined) return <Loading />;
 
   return (
     <div>
-      <SearchBar value={q} onChange={setQ} count={filtered.length} />
+      <div className="flex flex-wrap items-center gap-3">
+        <SearchBar value={q} onChange={setQ} count={filtered.length} inline />
+        <ReadFilter value={status} onChange={setStatus} />
+        <span className="text-sm text-espresso/55">{filtered.length} result(s)</span>
+      </div>
       {filtered.length === 0 ? (
         <Empty label="contact submissions" />
       ) : (
@@ -149,6 +267,7 @@ function HiringTab() {
   const markRead = useMutation(api.inquiries.setHiringRead);
   const [q, setQ] = useState("");
   const [position, setPosition] = useState("all");
+  const [status, setStatus] = useState<ReadStatus>("all");
   const [openId, setOpenId] = useState<string | null>(null);
 
   const positions = useMemo(() => {
@@ -161,6 +280,7 @@ function HiringTab() {
     if (!rows) return [];
     const needle = q.trim().toLowerCase();
     return rows.filter((r) => {
+      if (!matchesRead(r.read, status)) return false;
       if (position !== "all" && r.position !== position) return false;
       if (!needle) return true;
       return [r.firstName, r.lastName, r.email, r.phone, r.city, r.state]
@@ -168,7 +288,7 @@ function HiringTab() {
         .toLowerCase()
         .includes(needle);
     });
-  }, [rows, q, position]);
+  }, [rows, q, position, status]);
 
   if (rows === undefined) return <Loading />;
 
@@ -176,6 +296,7 @@ function HiringTab() {
     <div>
       <div className="flex flex-wrap items-center gap-3">
         <SearchBar value={q} onChange={setQ} count={filtered.length} inline />
+        <ReadFilter value={status} onChange={setStatus} />
         <select
           className={`${field} max-w-xs`}
           value={position}
@@ -188,6 +309,7 @@ function HiringTab() {
             </option>
           ))}
         </select>
+        <span className="text-sm text-espresso/55">{filtered.length} result(s)</span>
       </div>
 
       {filtered.length === 0 ? (
@@ -304,21 +426,91 @@ function CapturesTab() {
   const rows = useQuery(api.inquiries.listEmailCaptures);
   const del = useMutation(api.inquiries.deleteEmailCapture);
   const [q, setQ] = useState("");
+  const [source, setSource] = useState("all");
+  const [copied, setCopied] = useState(false);
+
+  const sources = useMemo(() => {
+    const set = new Set<string>();
+    (rows ?? []).forEach((r) => set.add(r.source));
+    return Array.from(set).sort();
+  }, [rows]);
 
   const filtered = useMemo(() => {
     if (!rows) return [];
     const needle = q.trim().toLowerCase();
-    if (!needle) return rows;
-    return rows.filter((r) =>
-      [r.email, r.source].join(" ").toLowerCase().includes(needle),
-    );
-  }, [rows, q]);
+    return rows.filter((r) => {
+      if (source !== "all" && r.source !== source) return false;
+      if (!needle) return true;
+      return [r.email, r.source].join(" ").toLowerCase().includes(needle);
+    });
+  }, [rows, q, source]);
+
+  function exportCsv() {
+    const header = ["Email", "Source", "Captured"];
+    const body = filtered.map((r) => [
+      r.email,
+      r.source,
+      new Date(r._creationTime).toISOString(),
+    ]);
+    const csv = [header, ...body]
+      .map((cols) => cols.map(csvCell).join(","))
+      .join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `email-captures-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function copyEmails() {
+    const emails = filtered.map((r) => r.email).join(", ");
+    try {
+      await navigator.clipboard.writeText(emails);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      /* clipboard blocked — no-op */
+    }
+  }
 
   if (rows === undefined) return <Loading />;
 
   return (
     <div>
-      <SearchBar value={q} onChange={setQ} count={filtered.length} />
+      <div className="flex flex-wrap items-center gap-3">
+        <SearchBar value={q} onChange={setQ} count={filtered.length} inline />
+        <select
+          className={`${field} max-w-xs`}
+          value={source}
+          onChange={(e) => setSource(e.target.value)}
+        >
+          <option value="all">All sources</option>
+          {sources.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          className={btn.small}
+          onClick={exportCsv}
+          disabled={filtered.length === 0}
+        >
+          Download CSV
+        </button>
+        <button
+          type="button"
+          className={btn.small}
+          onClick={() => void copyEmails()}
+          disabled={filtered.length === 0}
+        >
+          {copied ? "Copied ✓" : "Copy emails"}
+        </button>
+        <span className="text-sm text-espresso/55">{filtered.length} result(s)</span>
+      </div>
       {filtered.length === 0 ? (
         <Empty label="email captures" />
       ) : (

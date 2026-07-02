@@ -1,13 +1,61 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 
-import { QUIZ, predictDrink, type Drink } from "@/data/site";
+import { QUIZ, SITE, predictDrink, type Drink } from "@/data/site";
 import { SectionLines } from "@/components/site/SectionLines";
+import { useTrack } from "@/lib/analytics";
+
+/** Normalize a drink/item name for loose matching (drop brand + punctuation). */
+function normName(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/pre amp('s)?/g, "")
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+type MenuLookupItem = { name: string; orderUrl: string | null };
+
+/** Find the Toast link for the menu item that best matches a quiz drink. */
+function findItemOrder(
+  drinkName: string,
+  items: MenuLookupItem[],
+): { name: string; orderUrl: string } {
+  const target = normName(drinkName);
+  const match = items.find((it) => {
+    const n = normName(it.name);
+    return n === target || n.includes(target) || target.includes(n);
+  });
+  // Fall back to the site-wide ordering page so the button always works.
+  return {
+    name: match?.name ?? drinkName,
+    orderUrl: (match?.orderUrl || SITE.orderUrl) as string,
+  };
+}
 
 export function CoffeeQuiz() {
+  const track = useTrack();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<Drink | null>(null);
+
+  // Pull menu items (both menus) so a result can link to its own Toast page.
+  const coffee = useQuery(api.menu.getMenu, { menu: "coffee" });
+  const food = useQuery(api.menu.getMenu, { menu: "food" });
+  const items = useMemo<MenuLookupItem[]>(() => {
+    const out: MenuLookupItem[] = [];
+    for (const data of [coffee, food]) {
+      for (const section of data?.sections ?? []) {
+        for (const it of section.items) {
+          out.push({ name: it.name, orderUrl: it.orderUrl ?? null });
+        }
+      }
+    }
+    return out;
+  }, [coffee, food]);
 
   const total = QUIZ.length;
   const current = QUIZ[step];
@@ -123,12 +171,34 @@ export function CoffeeQuiz() {
                 <p className="mt-2 text-xs uppercase tracking-wide text-cream/50">
                   {result.notes}
                 </p>
-                <button
-                  onClick={reset}
-                  className="mt-6 rounded-full border border-cream/30 px-6 py-2.5 text-sm font-semibold transition-colors hover:border-gold hover:text-gold"
-                >
-                  Try again
-                </button>
+                {(() => {
+                  const order = findItemOrder(result.name, items);
+                  return (
+                    <a
+                      href={order.orderUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() =>
+                        track("order_click", {
+                          clickSource: "quiz",
+                          menuItemName: order.name,
+                          destination: order.orderUrl,
+                        })
+                      }
+                      className="mt-6 inline-block rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg shadow-black/25 transition-all hover:-translate-y-0.5 hover:bg-amber"
+                    >
+                      Order {result.name} →
+                    </a>
+                  );
+                })()}
+                <div>
+                  <button
+                    onClick={reset}
+                    className="mt-3 rounded-full border border-cream/30 px-6 py-2.5 text-sm font-semibold transition-colors hover:border-gold hover:text-gold"
+                  >
+                    Try again
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

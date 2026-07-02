@@ -1,6 +1,8 @@
 import { lazy, Suspense, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthActions } from "@convex-dev/auth/react";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 
 import { DialogProvider } from "@/admin/dialogs";
 
@@ -77,6 +79,16 @@ export function AdminLayout() {
   // Dropdowns start collapsed; the admin expands what they need.
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
+  // Live counts for the sidebar "needs attention" badges.
+  const inquiryCounts = useQuery(api.inquiries.counts);
+  const reviewStats = useQuery(api.reviews.stats);
+
+  function badgeFor(label: string): number {
+    if (label === "Inquiries") return inquiryCounts?.totalUnread ?? 0;
+    if (label === "Reviews") return reviewStats?.pending ?? 0;
+    return 0;
+  }
+
   function toggleGroup(label: string) {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   }
@@ -102,6 +114,7 @@ export function AdminLayout() {
                   <NavButton
                     label={group.label}
                     active={selected === group.items[0].id}
+                    badge={badgeFor(group.label)}
                     onClick={() => setSelected(group.items[0].id)}
                   />
                 ) : (
@@ -199,11 +212,13 @@ function NavButton({
   active,
   onClick,
   small,
+  badge = 0,
 }: {
   label: string;
   active: boolean;
   onClick: () => void;
   small?: boolean;
+  badge?: number;
 }) {
   return (
     <motion.button
@@ -212,7 +227,7 @@ function NavButton({
       whileHover={{ x: 3 }}
       whileTap={{ scale: 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
-      className={`block w-full rounded-lg px-3 py-2 text-left transition-colors ${
+      className={`flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left transition-colors ${
         small ? "text-sm" : "font-semibold"
       } ${
         active
@@ -220,7 +235,17 @@ function NavButton({
           : "text-espresso/80 hover:bg-cream-deep"
       }`}
     >
-      {label}
+      <span>{label}</span>
+      {badge > 0 && (
+        <span
+          className={`min-w-[1.25rem] rounded-full px-1.5 py-0.5 text-center text-[0.65rem] font-bold ${
+            active ? "bg-cream text-brick" : "bg-brick text-cream"
+          }`}
+          aria-label={`${badge} need attention`}
+        >
+          {badge}
+        </span>
+      )}
     </motion.button>
   );
 }

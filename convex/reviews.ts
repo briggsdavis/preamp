@@ -91,6 +91,27 @@ export const adminList = query({
   },
 });
 
+/** Admin: headline review counts for the dashboard, sidebar badge, and header. */
+export const stats = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const rows = await ctx.db.query("reviews").collect();
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    let pending = 0;
+    let approved = 0;
+    let archived = 0;
+    let newThisWeek = 0;
+    for (const r of rows) {
+      if (r.status === "pending") pending++;
+      else if (r.status === "approved") approved++;
+      else if (r.status === "archived") archived++;
+      if (r._creationTime >= weekAgo) newThisWeek++;
+    }
+    return { total: rows.length, pending, approved, archived, newThisWeek };
+  },
+});
+
 export const setStatus = mutation({
   args: { id: v.id("reviews"), status: reviewStatus },
   handler: async (ctx, { id, status }) => {
