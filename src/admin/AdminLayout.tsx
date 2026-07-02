@@ -12,6 +12,7 @@ import { Announcements } from "@/admin/sections/Announcements";
 import { Popups } from "@/admin/sections/Popups";
 import { Events } from "@/admin/sections/Events";
 import { Reviews } from "@/admin/sections/Reviews";
+import { AboutEditor } from "@/admin/sections/AboutEditor";
 import { PagePlaceholder } from "@/admin/sections/PagePlaceholder";
 
 // Recharts is heavy and admin-only — load the dashboard on demand so it never
@@ -281,7 +282,7 @@ function Panel({ selected }: { selected: string }) {
     case "page-home":
       return <PagePlaceholder name="Home" />;
     case "page-about":
-      return <PagePlaceholder name="About" />;
+      return <AboutEditor />;
     case "page-global":
       return <PagePlaceholder name="Global / Footer / Contact" />;
     default:
