@@ -238,8 +238,10 @@ export default defineSchema({
     sources: v.array(countEntry), // source → page views
     orderClicks: v.number(),
     orderBySource: v.array(countEntry), // "navbar"/"featured"/"menu-item" → clicks
-    orderByItem: v.array(countEntry), // menu item name → order clicks
-    orderTraffic: v.array(countEntry), // traffic source → order clicks
+    // Optional so the schema still validates against rollup rows created before
+    // these fields existed; the rollup cron backfills them on the next run.
+    orderByItem: v.optional(v.array(countEntry)), // menu item name → order clicks
+    orderTraffic: v.optional(v.array(countEntry)), // traffic source → order clicks
     menuClicks: v.number(),
     menuByKind: v.array(countEntry), // "coffee"/"food" → clicks
     ctaClicks: v.array(countEntry), // cta key → clicks
