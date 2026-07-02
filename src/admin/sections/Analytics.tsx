@@ -93,11 +93,18 @@ function titleCase(s: string): string {
   return s.replace(/(^|[\s_-])(\w)/g, (_, p, c) => p.replace(/[_-]/, " ") + c.toUpperCase());
 }
 
+const VIEWS = [
+  { id: "overview", label: "Overview" },
+  { id: "ordering", label: "Ordering" },
+] as const;
+
 export function Analytics() {
   const [timeframe, setTimeframe] = useState<string>("week");
+  const [view, setView] = useState<"overview" | "ordering">("overview");
   // Fix "now" per load so the query args are stable; bump it to refresh.
   const [now, setNow] = useState(() => Date.now());
   const data = useQuery(api.analytics.getDashboard, { timeframe, now });
+  const reviewStats = useQuery(api.reviews.stats);
 
   const rangeLabel = useMemo(() => {
     if (!data) return "";
@@ -125,7 +132,25 @@ export function Analytics() {
         </button>
       </div>
 
-      {/* Timeframe selector */}
+      {/* View toggle: overview vs a focused ordering breakdown */}
+      <div className="mb-5 inline-flex rounded-full border-2 border-sand bg-cream p-1">
+        {VIEWS.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            onClick={() => setView(v.id)}
+            className={`rounded-full px-5 py-2 text-sm font-semibold transition-colors ${
+              view === v.id
+                ? "bg-brick text-cream"
+                : "text-espresso/70 hover:bg-cream-deep"
+            }`}
+          >
+            {v.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Timeframe selector — applies to both views */}
       <div className="mb-7 flex flex-wrap gap-2">
         {TIMEFRAMES.map((t) => (
           <button
@@ -145,8 +170,10 @@ export function Analytics() {
 
       {data === undefined ? (
         <DashboardSkeleton />
+      ) : view === "overview" ? (
+        <Dashboard data={data} reviewStats={reviewStats} />
       ) : (
-        <Dashboard data={data} />
+        <OrderingDashboard data={data} />
       )}
     </div>
   );
@@ -156,7 +183,17 @@ type DashboardData = NonNullable<
   ReturnType<typeof useQuery<typeof api.analytics.getDashboard>>
 >;
 
-function Dashboard({ data }: { data: DashboardData }) {
+type ReviewStats = NonNullable<
+  ReturnType<typeof useQuery<typeof api.reviews.stats>>
+>;
+
+function Dashboard({
+  data,
+  reviewStats,
+}: {
+  data: DashboardData;
+  reviewStats: ReviewStats | undefined;
+}) {
   const { kpis, trend, topPages, sources, funnel, orderBySource, menuByKind, ctaClicks } =
     data;
   const hasData =
@@ -177,7 +214,7 @@ function Dashboard({ data }: { data: DashboardData }) {
       )}
 
       {/* KPI scorecards */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-6">
         <Kpi label="Page Views" value={kpis.pageViews} prev={kpis.previous.pageViews}
           hint="Total pages loaded in this period." />
         <Kpi label="Visitors" value={kpis.visitors} prev={kpis.previous.visitors}
@@ -188,6 +225,7 @@ function Dashboard({ data }: { data: DashboardData }) {
           hint="Clicks on Coffee/Food in the navigation." />
         <Kpi label="Order Click Rate" value={kpis.orderClickRate} prev={kpis.previous.orderClickRate}
           isRate hint="Share of visitors who clicked an Order button." />
+        <ReviewsKpi stats={reviewStats} />
       </div>
 
       {/* Main trend */}
@@ -317,6 +355,135 @@ function Dashboard({ data }: { data: DashboardData }) {
   );
 }
 
+// --- Ordering view ----------------------------------------------------------
+
+/** Friendly label for an order-button key. */
+function orderButtonLabel(key: string): string {
+  const map: Record<string, string> = {
+    navbar: "Navbar",
+    featured: "Best Sellers",
+    "menu-item": "Menu Item",
+    hero: "Hero",
+    other: "Other",
+  };
+  return map[key] ?? titleCase(key);
+}
+
+/**
+ * A focused breakdown of order intent: how many clicked Order, which button
+ * they used, which items drew the most clicks, and where those visitors came
+ * from. Everything is click-based — completed orders happen on Toast off-site.
+ */
+function OrderingDashboard({ data }: { data: DashboardData }) {
+  const { kpis, funnel, orderBySource, orderByItem, orderTraffic } = data;
+  const hasOrders = kpis.orderClicks > 0;
+  const topItem = orderByItem[0]?.key ?? "—";
+  const buttonRows = orderBySource.map((r) => ({
+    key: orderButtonLabel(r.key),
+    count: r.count,
+  }));
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border-2 border-dashed border-sand bg-cream px-5 py-3 text-xs text-espresso/55">
+        These numbers measure <span className="font-semibold">Order-button clicks
+        (intent)</span>, not completed orders or revenue — checkout happens on
+        Toast and isn&apos;t visible here.
+      </div>
+
+      {!hasOrders && (
+        <div className="rounded-2xl border-2 border-dashed border-sand bg-cream p-6 text-center text-espresso/60">
+          <p className="font-groovy text-xl text-espresso">No order clicks in this period yet</p>
+          <p className="mt-1 text-sm">Try a longer timeframe, or check back as traffic comes in.</p>
+        </div>
+      )}
+
+      {/* KPI scorecards */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Kpi label="Order Clicks" value={kpis.orderClicks} prev={kpis.previous.orderClicks}
+          hint="Total clicks on any 'Order' button in this period." />
+        <Kpi label="Order Click Rate" value={kpis.orderClickRate} prev={kpis.previous.orderClickRate}
+          isRate hint="Share of visitors who clicked an Order button." />
+        <PlainStat label="People Who Clicked" value={nf.format(funnel.orderClickers)}
+          hint="Distinct visitors who clicked Order (counted once per day)." />
+        <PlainStat label="Top Item" value={topItem}
+          hint="Menu item with the most Order-button clicks this period." />
+      </div>
+
+      {/* Most-clicked items */}
+      <Card>
+        <CardTitle>Most-Clicked Items</CardTitle>
+        <p className="mt-1 text-xs text-espresso/50">
+          Ranked by Order-button clicks on each item (menu cards + Best Sellers).
+        </p>
+        {orderByItem.length === 0 ? (
+          <Empty />
+        ) : (
+          <div className="mt-3 h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={orderByItem.map((p) => ({ name: p.key, count: p.count }))}
+                layout="vertical"
+                margin={{ top: 0, right: 16, left: 8, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke={C.sand} horizontal={false} />
+                <XAxis type="number" stroke={C.espresso} tick={{ fontSize: 12 }} allowDecimals={false} />
+                <YAxis type="category" dataKey="name" stroke={C.espresso}
+                  tick={{ fontSize: 12 }} width={130} />
+                <Tooltip
+                  contentStyle={{ background: "#fff", border: `2px solid ${C.sand}`, borderRadius: 12, fontSize: 13 }}
+                  cursor={{ fill: C.sand, opacity: 0.3 }}
+                />
+                <Bar dataKey="count" name="Order clicks" fill={C.terracotta} radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
+      </Card>
+
+      {/* Which button + traffic origin */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardTitle>Which Button They Clicked</CardTitle>
+          <MiniBars rows={buttonRows} colorize label="clicks" />
+        </Card>
+        <Card>
+          <CardTitle>Where Order-Clickers Came From</CardTitle>
+          <p className="mt-1 text-xs text-espresso/50">
+            Traffic source of the visit where the Order click happened. Best-effort — in-app browsers often report as “direct”.
+          </p>
+          {orderTraffic.length === 0 ? (
+            <Empty />
+          ) : (
+            <div className="mt-3 flex h-64 w-full items-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={orderTraffic.map((s) => ({ name: titleCase(s.key), value: s.count }))}
+                    dataKey="value"
+                    nameKey="name"
+                    innerRadius={50}
+                    outerRadius={85}
+                    paddingAngle={2}
+                  >
+                    {orderTraffic.map((_, i) => (
+                      <Cell key={i} fill={PIE[i % PIE.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: "#fff", border: `2px solid ${C.sand}`, borderRadius: 12, fontSize: 13 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 // --- Small building blocks --------------------------------------------------
 
 function Card({ children }: { children: React.ReactNode }) {
@@ -364,6 +531,54 @@ function Kpi({
         </p>
       ) : (
         <p className="mt-2 text-xs text-espresso/35">— no prior data</p>
+      )}
+    </div>
+  );
+}
+
+/** A KPI-shaped card for a plain value with no period-over-period delta. */
+function PlainStat({
+  label,
+  value,
+  hint,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+}) {
+  return (
+    <div className="rounded-2xl border-2 border-sand bg-cream p-4" title={hint}>
+      <p className="text-xs font-semibold uppercase tracking-wide text-espresso/55">{label}</p>
+      <p className="mt-1 truncate font-display text-3xl leading-none text-espresso" title={value}>
+        {value}
+      </p>
+      <p className="mt-2 text-xs text-espresso/35">this period</p>
+    </div>
+  );
+}
+
+/** All-time review submissions, with a "new this week" callout. */
+function ReviewsKpi({ stats }: { stats: ReviewStats | undefined }) {
+  return (
+    <div
+      className="rounded-2xl border-2 border-sand bg-cream p-4"
+      title="Total visitor reviews submitted (all time). Moderate them under Reviews."
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-espresso/55">
+        Reviews Submitted
+      </p>
+      <p className="mt-1 font-display text-3xl leading-none text-espresso">
+        {stats ? nf.format(stats.total) : "—"}
+      </p>
+      {stats && stats.newThisWeek > 0 ? (
+        <p className="mt-2 text-xs font-semibold text-[#4a7c4e]">
+          +{nf.format(stats.newThisWeek)}
+          <span className="font-normal text-espresso/40"> this week</span>
+        </p>
+      ) : (
+        <p className="mt-2 text-xs text-espresso/35">
+          {stats ? `${nf.format(stats.pending)} pending` : "all-time total"}
+        </p>
       )}
     </div>
   );

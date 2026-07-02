@@ -8,6 +8,33 @@ import { requireAdmin } from "./admin";
  * pop-up email captures.
  */
 
+// --- Summary counts ----------------------------------------------------------
+
+/**
+ * Admin: totals + unread counts for each inquiry stream. Powers the summary
+ * bars in the Inquiries page and the unread badge in the admin sidebar.
+ * (Email captures have no read state, so only a total is reported.)
+ */
+export const counts = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const [contact, hiring, captures] = await Promise.all([
+      ctx.db.query("contactSubmissions").collect(),
+      ctx.db.query("hiringSubmissions").collect(),
+      ctx.db.query("emailCaptures").collect(),
+    ]);
+    const unread = (rows: { read?: boolean }[]) =>
+      rows.reduce((n, r) => n + (r.read ? 0 : 1), 0);
+    return {
+      contact: { total: contact.length, unread: unread(contact) },
+      hiring: { total: hiring.length, unread: unread(hiring) },
+      captures: { total: captures.length },
+      totalUnread: unread(contact) + unread(hiring),
+    };
+  },
+});
+
 // --- Contact form -----------------------------------------------------------
 
 export const submitContact = mutation({

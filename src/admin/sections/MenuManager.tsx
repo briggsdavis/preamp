@@ -34,10 +34,21 @@ type ItemData = {
   name: string;
   price: string;
   description: string;
+  orderUrl: string | null;
   images: ItemImage[];
   featured: boolean;
   likes: number;
 };
+
+/** Best-effort check that a URL points at Toast's ordering domain. */
+function isToastUrl(url: string): boolean {
+  try {
+    const host = new URL(url.trim()).hostname.toLowerCase();
+    return host === "toasttab.com" || host.endsWith(".toasttab.com");
+  } catch {
+    return false;
+  }
+}
 
 export function MenuManager({ menu }: { menu: Menu }) {
   const { confirmThen, prompt } = useDialogs();
@@ -371,6 +382,7 @@ function ItemEditor({
   const [name, setName] = useState(item?.name ?? "");
   const [price, setPrice] = useState(item?.price ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
+  const [orderUrl, setOrderUrl] = useState(item?.orderUrl ?? "");
   const [targetSection, setTargetSection] =
     useState<Id<"menuSections">>(sectionId);
   const [images, setImages] = useState<ItemImage[]>(item?.images ?? []);
@@ -434,12 +446,15 @@ function ItemEditor({
         path: img.path,
       }));
 
+      const trimmedOrderUrl = orderUrl.trim() || undefined;
+
       if (item === null) {
         await createItem({
           sectionId: targetSection,
           name: name.trim(),
           price: price.trim(),
           description: description.trim(),
+          orderUrl: trimmedOrderUrl,
           images: imagePayload,
         });
       } else {
@@ -448,6 +463,7 @@ function ItemEditor({
           name: name.trim(),
           price: price.trim(),
           description: description.trim(),
+          orderUrl: trimmedOrderUrl,
           images: imagePayload,
         });
         if (targetSection !== item.sectionId) {
@@ -493,6 +509,27 @@ function ItemEditor({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+        </div>
+        <div>
+          <label className={label}>Toast order link</label>
+          <input
+            className={field}
+            value={orderUrl}
+            onChange={(e) => setOrderUrl(e.target.value)}
+            placeholder="https://order.toasttab.com/online/…"
+            inputMode="url"
+          />
+          {orderUrl.trim() && !isToastUrl(orderUrl) ? (
+            <p className="mt-1 text-xs font-semibold text-brick">
+              ⚠ This doesn't look like a Toast link (toasttab.com). Double-check
+              it before saving — the item's Order button points here.
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-espresso/50">
+              The item's public “Order” button opens this link. Leave blank to
+              disable that button for this item.
+            </p>
+          )}
         </div>
         <div>
           <label className={label}>Section</label>

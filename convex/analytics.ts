@@ -115,6 +115,8 @@ type DayStats = {
   sources: Record<string, number>;
   orderClicks: number;
   orderBySource: Record<string, number>;
+  orderByItem: Record<string, number>;
+  orderTraffic: Record<string, number>;
   menuClicks: number;
   menuByKind: Record<string, number>;
   ctaClicks: Record<string, number>;
@@ -130,6 +132,8 @@ function emptyStats(): DayStats {
     sources: {},
     orderClicks: 0,
     orderBySource: {},
+    orderByItem: {},
+    orderTraffic: {},
     menuClicks: 0,
     menuByKind: {},
     ctaClicks: {},
@@ -162,6 +166,8 @@ function aggregateEvents(events: Doc<"analyticsEvents">[]): DayStats {
       case "order_click": {
         s.orderClicks++;
         bump(s.orderBySource, e.clickSource || "other");
+        if (e.menuItemName) bump(s.orderByItem, e.menuItemName);
+        bump(s.orderTraffic, e.source || "direct");
         orderClickers.add(e.visitorId);
         break;
       }
@@ -207,6 +213,7 @@ export const track = mutation({
     sessionId: v.string(),
     source: v.optional(v.string()),
     clickSource: v.optional(v.string()),
+    menuItemName: v.optional(v.string()),
     menu: v.optional(v.string()),
     cta: v.optional(v.string()),
     destination: v.optional(v.string()),
@@ -226,6 +233,7 @@ export const track = mutation({
       sessionId: args.sessionId,
       source: args.source?.slice(0, 64),
       clickSource: args.clickSource?.slice(0, 32),
+      menuItemName: args.menuItemName?.slice(0, 128),
       menu: args.menu?.slice(0, 32),
       cta: args.cta?.slice(0, 64),
       destination: args.destination?.slice(0, 256),
@@ -262,6 +270,8 @@ async function upsertDay(ctx: MutationCtx, date: string, stats: DayStats) {
     sources: rec2arr(stats.sources),
     orderClicks: stats.orderClicks,
     orderBySource: rec2arr(stats.orderBySource),
+    orderByItem: rec2arr(stats.orderByItem),
+    orderTraffic: rec2arr(stats.orderTraffic),
     menuClicks: stats.menuClicks,
     menuByKind: rec2arr(stats.menuByKind),
     ctaClicks: rec2arr(stats.ctaClicks),
@@ -384,6 +394,8 @@ async function readRollups(
       sources: arr2rec(r.sources),
       orderClicks: r.orderClicks,
       orderBySource: arr2rec(r.orderBySource),
+      orderByItem: arr2rec(r.orderByItem),
+      orderTraffic: arr2rec(r.orderTraffic),
       menuClicks: r.menuClicks,
       menuByKind: arr2rec(r.menuByKind),
       ctaClicks: arr2rec(r.ctaClicks),
@@ -409,6 +421,11 @@ export const seedDemo = internalMutation({
     const paths = ["/", "/menu/coffee", "/menu/food", "/about", "/contact", "/events"];
     const srcs = ["direct", "instagram", "google", "tiktok", "yelp"];
     const ctas = ["directions", "instagram", "tiktok", "gift_card"];
+    const orderItems = [
+      "Smokey Robinson", "Yuzu Espresso Tonic", "Latte", "Focaccia Sandwich",
+      "Pre Amp Cheeseburger", "Kyoto Cold Brew", "Matcha Latte",
+    ];
+    const orderButtons = ["navbar", "featured", "menu-item"];
     const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
     let inserted = 0;
 
@@ -433,12 +450,16 @@ export const seedDemo = internalMutation({
             menu: Math.random() < 0.6 ? "coffee" : "food", clickSource: "navbar",
             isStaff: false, ts,
           });
-        if (Math.random() < 0.08)
+        if (Math.random() < 0.08) {
+          const button = pick(orderButtons);
           await ctx.db.insert("analyticsEvents", {
             type: "order_click", path, visitorId: vid, sessionId: sid,
-            clickSource: Math.random() < 0.5 ? "navbar" : "featured",
-            isStaff: false, ts,
+            clickSource: button,
+            // Per-item clicks come from the menu item buttons.
+            menuItemName: button === "menu-item" ? pick(orderItems) : undefined,
+            source: pick(srcs), isStaff: false, ts,
           });
+        }
         if (Math.random() < 0.05)
           await ctx.db.insert("analyticsEvents", {
             type: "cta_click", path, visitorId: vid, sessionId: sid,
@@ -531,6 +552,8 @@ export const getDashboard = query({
     const perPage: Record<string, number> = {};
     const sources: Record<string, number> = {};
     const orderBySource: Record<string, number> = {};
+    const orderByItem: Record<string, number> = {};
+    const orderTraffic: Record<string, number> = {};
     const menuByKind: Record<string, number> = {};
     const ctaClicks: Record<string, number> = {};
     let menuViewers = 0;
@@ -538,6 +561,8 @@ export const getDashboard = query({
       mergeMap(perPage, d.perPage);
       mergeMap(sources, d.sources);
       mergeMap(orderBySource, d.orderBySource);
+      mergeMap(orderByItem, d.orderByItem);
+      mergeMap(orderTraffic, d.orderTraffic);
       mergeMap(menuByKind, d.menuByKind);
       mergeMap(ctaClicks, d.ctaClicks);
       menuViewers += d.funnelMenuViewers;
@@ -571,6 +596,8 @@ export const getDashboard = query({
         orderClickers: cur.orderClickers,
       },
       orderBySource: topEntries(orderBySource),
+      orderByItem: topEntries(orderByItem, 10),
+      orderTraffic: topEntries(orderTraffic),
       menuByKind: topEntries(menuByKind),
       ctaClicks: topEntries(ctaClicks),
     };

@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
+import { useTrack } from "@/lib/analytics";
 import type { MenuItem, MenuSection } from "@/data/menu";
 
 /** Per-item interaction state managed client-side: like toggle + count. */
@@ -65,15 +66,64 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+/**
+ * Per-item "Order" button. When the item has a Toast link it opens it in a new
+ * tab and records an `order_click`; with no link it renders disabled (decision:
+ * show-disabled rather than hide, so every item reads consistently).
+ */
+function OrderButton({
+  item,
+  size = "sm",
+}: {
+  item: MenuItem;
+  size?: "sm" | "lg";
+}) {
+  const track = useTrack();
+  const sizing = size === "lg" ? "px-6 py-2.5 text-base" : "px-4 py-2 text-sm";
+
+  if (!item.orderUrl) {
+    return (
+      <span
+        aria-disabled="true"
+        title="Online ordering for this item is coming soon"
+        className={`inline-flex cursor-not-allowed items-center justify-center rounded-full bg-espresso/10 font-semibold text-espresso/40 ${sizing}`}
+      >
+        Order
+      </span>
+    );
+  }
+
+  return (
+    <a
+      href={item.orderUrl}
+      target="_blank"
+      rel="noreferrer"
+      onClick={(e) => {
+        e.stopPropagation();
+        track("order_click", {
+          clickSource: "menu-item",
+          menuItemName: item.name,
+          destination: item.orderUrl ?? undefined,
+        });
+      }}
+      className={`inline-flex items-center justify-center rounded-full bg-terracotta font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md ${sizing}`}
+    >
+      Order →
+    </a>
+  );
+}
+
 /** A single menu card: image + heart, title, price, short description. */
 function MenuCard({
   item,
   state,
+  orderEnabled,
   onToggleLike,
   onOpen,
 }: {
   item: MenuItem;
   state: ItemState;
+  orderEnabled: boolean;
   onToggleLike: () => void;
   onOpen: () => void;
 }) {
@@ -110,6 +160,14 @@ function MenuCard({
           <span className="font-semibold text-brick">{item.price}</span>
         </div>
         <p className="mt-2 text-sm text-espresso/75">{item.description}</p>
+        {orderEnabled && (
+          <div
+            className="mt-4 flex"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <OrderButton item={item} />
+          </div>
+        )}
       </div>
     </motion.button>
   );
@@ -120,12 +178,14 @@ function ItemModal({
   item,
   state,
   reviewsEnabled,
+  orderEnabled,
   onToggleLike,
   onClose,
 }: {
   item: MenuItem;
   state: ItemState;
   reviewsEnabled: boolean;
+  orderEnabled: boolean;
   onToggleLike: () => void;
   onClose: () => void;
 }) {
@@ -264,6 +324,17 @@ function ItemModal({
             {state.likes} {state.likes === 1 ? "like" : "likes"}
           </p>
           <p className="mt-4 text-lg text-espresso/85">{item.description}</p>
+
+          {orderEnabled && (
+            <div className="mt-6">
+              <OrderButton item={item} size="lg" />
+              {!item.orderUrl && (
+                <p className="mt-2 text-sm text-espresso/50">
+                  Online ordering for this item is coming soon.
+                </p>
+              )}
+            </div>
+          )}
 
           {reviewsEnabled && (
             <>
@@ -405,6 +476,7 @@ export function MenuPage({
   loading = false,
   pdf = null,
   reviewsEnabled = false,
+  orderEnabled = false,
 }: {
   kicker: string;
   title: string;
@@ -413,6 +485,8 @@ export function MenuPage({
   pdf?: { url: string | null; name: string } | null;
   /** When true, the item modal shows backend-moderated reviews + submission. */
   reviewsEnabled?: boolean;
+  /** When true, each item shows an "Order" button (Toast link or disabled). */
+  orderEnabled?: boolean;
 }) {
   const allItems = useMemo(
     () => sections.flatMap((s) => s.items),
@@ -485,6 +559,7 @@ export function MenuPage({
                       key={item.id}
                       item={item}
                       state={viewState(item, overrides[item.id])}
+                      orderEnabled={orderEnabled}
                       onToggleLike={() => toggleLike(item.id)}
                       onOpen={() => setOpenId(item.id)}
                     />
@@ -505,6 +580,7 @@ export function MenuPage({
               item={openItem}
               state={viewState(openItem, overrides[openItem.id])}
               reviewsEnabled={reviewsEnabled}
+              orderEnabled={orderEnabled}
               onToggleLike={() => toggleLike(openItem.id)}
               onClose={() => setOpenId(null)}
             />

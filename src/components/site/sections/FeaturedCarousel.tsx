@@ -13,11 +13,15 @@ interface FeaturedItem {
   name: string;
   price: string;
   description: string;
+  orderUrl?: string | null;
   image: string | null;
 }
 
 function FeaturedCard({ item }: { item: FeaturedItem }) {
   const track = useTrack();
+  // Prefer the item's own Toast link; fall back to the site-wide ordering page
+  // so the Best Sellers strip always has a working button.
+  const orderUrl = item.orderUrl || SITE.orderUrl;
   return (
     <motion.article
       whileHover={{ y: -10 }}
@@ -46,13 +50,14 @@ function FeaturedCard({ item }: { item: FeaturedItem }) {
           {item.description}
         </p>
         <a
-          href={SITE.orderUrl}
+          href={orderUrl}
           target="_blank"
           rel="noreferrer"
           onClick={() =>
             track("order_click", {
               clickSource: "featured",
-              destination: SITE.orderUrl,
+              menuItemName: item.name,
+              destination: orderUrl,
             })
           }
           className="mt-5 block rounded-full bg-terracotta px-5 py-2.5 text-center text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"

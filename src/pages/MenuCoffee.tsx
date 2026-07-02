@@ -14,6 +14,7 @@ export function MenuCoffee() {
       loading={data === undefined}
       pdf={data?.pdf ?? null}
       reviewsEnabled
+      orderEnabled
     />
   );
 }

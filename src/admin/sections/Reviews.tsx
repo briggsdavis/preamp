@@ -48,6 +48,8 @@ export function Reviews() {
 
   const [view, setView] = useState<"active" | "archived">("active");
   const [newOnly, setNewOnly] = useState(false);
+  // Fixed at mount so the "new this week" cutoff stays stable across renders.
+  const [nowTs] = useState(() => Date.now());
   const [itemFilter, setItemFilter] = useState("all");
   const [sort, setSort] = useState("newest");
   const [featureError, setFeatureError] = useState<string | null>(null);
@@ -62,6 +64,17 @@ export function Reviews() {
     () => (rows ?? []).filter((r) => r.featured).length,
     [rows],
   );
+
+  const stats = useMemo(() => {
+    const list = rows ?? [];
+    const weekAgo = nowTs - 7 * 24 * 60 * 60 * 1000;
+    return {
+      total: list.length,
+      pending: list.filter((r) => r.status === "pending").length,
+      approved: list.filter((r) => r.status === "approved").length,
+      newThisWeek: list.filter((r) => r._creationTime >= weekAgo).length,
+    };
+  }, [rows, nowTs]);
 
   const visible = useMemo(() => {
     let list = rows ?? [];
@@ -109,6 +122,14 @@ export function Reviews() {
         <span className="text-sm font-semibold text-espresso/70">
           Featured on home: {featuredCount}/{MAX_FEATURED}
         </span>
+      </div>
+
+      {/* Headline counts */}
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <StatChip label="Submitted" value={stats.total} />
+        <StatChip label="Pending" value={stats.pending} accent={stats.pending > 0} />
+        <StatChip label="Approved" value={stats.approved} />
+        <StatChip label="New this week" value={stats.newThisWeek} accent={stats.newThisWeek > 0} />
       </div>
 
       {/* Active / Archived view toggle */}
@@ -291,6 +312,35 @@ export function Reviews() {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function StatChip({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: number;
+  accent?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-2xl border-2 bg-cream px-4 py-3 ${
+        accent ? "border-brick/40" : "border-sand"
+      }`}
+    >
+      <p className="text-xs font-semibold uppercase tracking-wide text-espresso/55">
+        {label}
+      </p>
+      <p
+        className={`mt-1 font-display text-2xl leading-none ${
+          accent ? "text-brick" : "text-espresso"
+        }`}
+      >
+        {value}
+      </p>
     </div>
   );
 }
