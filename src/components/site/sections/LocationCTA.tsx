@@ -52,20 +52,36 @@ export function LocationCTA() {
             </ul>
           </div>
 
-          <a
-            href={SITE.mapsLink}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() =>
-              track("cta_click", {
-                cta: "directions",
-                destination: SITE.mapsLink,
-              })
-            }
-            className="mt-7 inline-block rounded-full bg-cream px-7 py-3 font-semibold text-terracotta shadow-lg transition-all hover:-translate-y-1 hover:bg-gold hover:text-espresso"
-          >
-            Get Directions →
-          </a>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <a
+              href={SITE.orderUrl}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() =>
+                track("order_click", {
+                  clickSource: "location",
+                  destination: SITE.orderUrl,
+                })
+              }
+              className="inline-block rounded-full bg-espresso px-7 py-3 font-semibold text-cream shadow-lg transition-all hover:-translate-y-1 hover:bg-maroon"
+            >
+              Order Ahead →
+            </a>
+            <a
+              href={SITE.mapsLink}
+              target="_blank"
+              rel="noreferrer"
+              onClick={() =>
+                track("cta_click", {
+                  cta: "directions",
+                  destination: SITE.mapsLink,
+                })
+              }
+              className="inline-block rounded-full bg-cream px-7 py-3 font-semibold text-terracotta shadow-lg transition-all hover:-translate-y-1 hover:bg-gold hover:text-espresso"
+            >
+              Get Directions →
+            </a>
+          </div>
         </motion.div>
 
         <motion.div

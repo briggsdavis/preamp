@@ -4,6 +4,7 @@ import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { AnnouncementBar } from "@/components/site/AnnouncementBar";
 import { PopupHost } from "@/components/site/PopupHost";
+import { StickyOrderBar } from "@/components/site/StickyOrderBar";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 
 /** Global page shell: grain overlay, fixed navbar, routed content, footer. */
@@ -22,6 +23,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <ErrorBoundary fallback={null}>
         <PopupHost />
       </ErrorBoundary>
+      <StickyOrderBar />
     </div>
   );
 }

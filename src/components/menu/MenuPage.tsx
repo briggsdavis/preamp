@@ -7,6 +7,7 @@ import type { Id } from "@convex/_generated/dataModel";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { useTrack } from "@/lib/analytics";
+import { SITE } from "@/data/site";
 import type { MenuItem, MenuSection } from "@/data/menu";
 
 /** Per-item interaction state managed client-side: like toggle + count. */
@@ -488,6 +489,7 @@ export function MenuPage({
   /** When true, each item shows an "Order" button (Toast link or disabled). */
   orderEnabled?: boolean;
 }) {
+  const track = useTrack();
   const allItems = useMemo(
     () => sections.flatMap((s) => s.items),
     [sections],
@@ -525,15 +527,35 @@ export function MenuPage({
             <h1 className="mt-3 font-display text-5xl text-espresso md:text-7xl">
               {title}
             </h1>
-            {pdf?.url && (
-              <a
-                href={`/menu-pdf?src=${encodeURIComponent(pdf.url)}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-5 inline-block rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-all hover:-translate-y-0.5 hover:bg-maroon"
-              >
-                View Menu PDF →
-              </a>
+            {(orderEnabled || pdf?.url) && (
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                {orderEnabled && (
+                  <a
+                    href={SITE.orderUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() =>
+                      track("order_click", {
+                        clickSource: "menu-header",
+                        destination: SITE.orderUrl,
+                      })
+                    }
+                    className="inline-block rounded-full bg-terracotta px-6 py-2.5 font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick"
+                  >
+                    Order Online →
+                  </a>
+                )}
+                {pdf?.url && (
+                  <a
+                    href={`/menu-pdf?src=${encodeURIComponent(pdf.url)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-block rounded-full border-2 border-brick px-6 py-2.5 font-semibold text-brick transition-all hover:-translate-y-0.5 hover:bg-brick/10"
+                  >
+                    View Menu PDF →
+                  </a>
+                )}
+              </div>
             )}
           </header>
 

@@ -425,7 +425,10 @@ export const seedDemo = internalMutation({
       "Smokey Robinson", "Yuzu Espresso Tonic", "Latte", "Focaccia Sandwich",
       "Pre Amp Cheeseburger", "Kyoto Cold Brew", "Matcha Latte",
     ];
-    const orderButtons = ["navbar", "featured", "menu-item"];
+    const orderButtons = [
+      "navbar", "featured", "menu-item", "menu-header", "hero",
+      "footer", "sticky-mobile", "quiz", "location",
+    ];
     const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
     let inserted = 0;
 

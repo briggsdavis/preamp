@@ -71,6 +71,7 @@ function FeaturedCard({ item }: { item: FeaturedItem }) {
 
 /** The animated marquee strip of featured items. */
 function BestSellersStrip({ items }: { items: FeaturedItem[] }) {
+  const trackEvent = useTrack();
   const trackRef = useRef<HTMLDivElement>(null);
   // Render the list twice so the strip can wrap seamlessly.
   const loop = [...items, ...items];
@@ -177,6 +178,24 @@ function BestSellersStrip({ items }: { items: FeaturedItem[] }) {
         </div>
         <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-cream-deep to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-cream-deep to-transparent" />
+      </div>
+
+      <div className="relative mx-auto mt-12 max-w-6xl px-6 text-center md:px-8">
+        <p className="text-espresso/70">See something you like?</p>
+        <a
+          href={SITE.orderUrl}
+          target="_blank"
+          rel="noreferrer"
+          onClick={() =>
+            trackEvent("order_click", {
+              clickSource: "featured",
+              destination: SITE.orderUrl,
+            })
+          }
+          className="mt-3 inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
+        >
+          Order on Toast →
+        </a>
       </div>
     </section>
   );

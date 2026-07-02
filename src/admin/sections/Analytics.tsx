@@ -363,7 +363,12 @@ function orderButtonLabel(key: string): string {
     navbar: "Navbar",
     featured: "Best Sellers",
     "menu-item": "Menu Item",
+    "menu-header": "Menu Header",
     hero: "Hero",
+    footer: "Footer",
+    "sticky-mobile": "Mobile Bar",
+    quiz: "Coffee Quiz",
+    location: "Find Us",
     other: "Other",
   };
   return map[key] ?? titleCase(key);
