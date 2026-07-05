@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 
 import { DialogProvider } from "@/admin/dialogs";
 
+import { Home } from "@/admin/sections/Home";
 import { MenuManager } from "@/admin/sections/MenuManager";
 import { Inquiries } from "@/admin/sections/Inquiries";
 import { Announcements } from "@/admin/sections/Announcements";
@@ -32,6 +33,10 @@ type NavGroup = {
 };
 
 const NAV: NavGroup[] = [
+  {
+    label: "Home",
+    items: [{ id: "home", label: "Home" }],
+  },
   {
     label: "Analytics",
     items: [{ id: "analytics", label: "Dashboard" }],
@@ -76,7 +81,7 @@ const NAV: NavGroup[] = [
 
 export function AdminLayout() {
   const { signOut } = useAuthActions();
-  const [selected, setSelected] = useState("analytics");
+  const [selected, setSelected] = useState("home");
   // Dropdowns start collapsed; the admin expands what they need.
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
@@ -199,7 +204,7 @@ export function AdminLayout() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
-            <Panel selected={selected} />
+            <Panel selected={selected} onNavigate={setSelected} />
           </motion.div>
         </AnimatePresence>
       </main>
@@ -251,8 +256,16 @@ function NavButton({
   );
 }
 
-function Panel({ selected }: { selected: string }) {
+function Panel({
+  selected,
+  onNavigate,
+}: {
+  selected: string;
+  onNavigate: (section: string) => void;
+}) {
   switch (selected) {
+    case "home":
+      return <Home onNavigate={onNavigate} />;
     case "analytics":
       return (
         <Suspense

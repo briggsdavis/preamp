@@ -1019,3 +1019,200 @@ export const exportRawEvents = query({
       }));
   },
 });
+
+// --- Admin: home command-center summary --------------------------------------
+
+/** Is a schedulable marketing entity live at `now`? */
+function liveAt(
+  doc: { active: boolean; startsAt?: number; endsAt?: number },
+  now: number,
+): boolean {
+  if (!doc.active) return false;
+  if (doc.startsAt != null && now < doc.startsAt) return false;
+  if (doc.endsAt != null && now > doc.endsAt) return false;
+  return true;
+}
+
+/**
+ * One-shot summary powering the admin home "command center": today's traffic
+ * snapshot (vs yesterday), unread inquiries, pending reviews, live/scheduled
+ * campaigns, the week's top item, and a computed list of things needing
+ * attention. Kept lightweight (no chart payloads) so it loads instantly.
+ */
+export const getHomeSummary = query({
+  args: { now: v.number() },
+  handler: async (ctx, { now }) => {
+    await requireAdmin(ctx);
+    const today = dayKey(now);
+    const yesterday = addDays(today, -1);
+
+    // Today (live) vs yesterday (rollup, falling back to a live aggregate).
+    const todayStats = aggregateEvents(await fetchDayEvents(ctx, today));
+    const yRollups = await readRollups(ctx, yesterday, today);
+    const yStats =
+      yRollups.get(yesterday) ??
+      aggregateEvents(await fetchDayEvents(ctx, yesterday));
+
+    // Inquiries + reviews (mirror inquiries.counts / reviews.stats).
+    const [contact, hiring, captures, reviews, announcements, popups, items] =
+      await Promise.all([
+        ctx.db.query("contactSubmissions").collect(),
+        ctx.db.query("hiringSubmissions").collect(),
+        ctx.db.query("emailCaptures").collect(),
+        ctx.db.query("reviews").collect(),
+        ctx.db.query("announcements").collect(),
+        ctx.db.query("popups").collect(),
+        ctx.db.query("menuItems").collect(),
+      ]);
+
+    const contactUnread = contact.reduce((n, r) => n + (r.read ? 0 : 1), 0);
+    const hiringUnread = hiring.reduce((n, r) => n + (r.read ? 0 : 1), 0);
+    const weekAgo = now - 7 * 86_400_000;
+    let pendingReviews = 0;
+    let newReviews = 0;
+    for (const r of reviews) {
+      if (r.status === "pending") pendingReviews++;
+      if (r._creationTime >= weekAgo) newReviews++;
+    }
+
+    // Live + scheduled campaigns.
+    const liveAnnouncement =
+      announcements
+        .filter((a) => liveAt(a, now))
+        .sort(
+          (a, b) =>
+            (b.startsAt ?? 0) - (a.startsAt ?? 0) ||
+            b._creationTime - a._creationTime,
+        )[0] ?? null;
+    // One live pop-up per position.
+    const livePopupByPos = new Map<string, (typeof popups)[number]>();
+    for (const p of popups.filter((pp) => liveAt(pp, now))) {
+      const cur = livePopupByPos.get(p.position);
+      if (
+        !cur ||
+        (p.startsAt ?? 0) > (cur.startsAt ?? 0) ||
+        ((p.startsAt ?? 0) === (cur.startsAt ?? 0) &&
+          p._creationTime > cur._creationTime)
+      )
+        livePopupByPos.set(p.position, p);
+    }
+    const livePopups = [...livePopupByPos.values()];
+    const scheduledCount =
+      announcements.filter(
+        (a) => a.active && a.startsAt != null && now < a.startsAt,
+      ).length +
+      popups.filter((p) => p.active && p.startsAt != null && now < p.startsAt)
+        .length;
+
+    // Top item over the last 7 days (by detail views).
+    const win = await loadWindow(ctx, "week", now);
+    const itemViews: Record<string, number> = {};
+    for (const d of win.perDay) mergeMap(itemViews, d.itemViews);
+    let topKey = "";
+    let topViews = 0;
+    for (const [k, c] of Object.entries(itemViews)) {
+      if (c > topViews) {
+        topViews = c;
+        topKey = k;
+      }
+    }
+    let topItem: {
+      name: string;
+      menu: string;
+      slug: string | null;
+      views: number;
+    } | null = null;
+    if (topKey) {
+      const sep = topKey.indexOf("|");
+      const menu = sep >= 0 ? topKey.slice(0, sep) : "";
+      const name = sep >= 0 ? topKey.slice(sep + 1) : topKey;
+      const match = items.find((i) => i.menu === menu && i.name === name);
+      topItem = { name, menu, slug: match?.slug ?? null, views: topViews };
+    }
+
+    // Computed alerts (most actionable first).
+    type Alert = { level: "warning" | "info"; text: string; section: string };
+    const alerts: Alert[] = [];
+    const unreadTotal = contactUnread + hiringUnread;
+    if (unreadTotal > 0)
+      alerts.push({
+        level: "warning",
+        text: `${unreadTotal} unread ${unreadTotal === 1 ? "inquiry" : "inquiries"}`,
+        section: "inquiries",
+      });
+    if (pendingReviews > 0)
+      alerts.push({
+        level: "warning",
+        text: `${pendingReviews} ${pendingReviews === 1 ? "review" : "reviews"} awaiting moderation`,
+        section: "reviews",
+      });
+    // Campaigns ending within 24h.
+    const soon = now + 86_400_000;
+    const ending: { title: string; endsAt: number; section: string }[] = [];
+    if (liveAnnouncement?.endsAt != null)
+      ending.push({
+        title: liveAnnouncement.internalTitle,
+        endsAt: liveAnnouncement.endsAt,
+        section: "announcements",
+      });
+    for (const p of livePopups)
+      if (p.endsAt != null)
+        ending.push({ title: p.internalTitle, endsAt: p.endsAt, section: "popups" });
+    for (const c of ending) {
+      if (c.endsAt <= soon) {
+        const hrs = Math.max(1, Math.round((c.endsAt - now) / 3_600_000));
+        alerts.push({
+          level: "info",
+          text: `"${c.title}" ends in ~${hrs}h`,
+          section: c.section,
+        });
+      }
+    }
+    if (!liveAnnouncement && announcements.length > 0)
+      alerts.push({
+        level: "info",
+        text: "No announcement bar is live right now",
+        section: "announcements",
+      });
+
+    return {
+      today: {
+        date: today,
+        pageViews: todayStats.pageViews,
+        visitors: todayStats.visitors,
+        orderClicks: todayStats.orderClicks,
+        menuClicks: todayStats.menuClicks,
+        prev: {
+          pageViews: yStats.pageViews,
+          visitors: yStats.visitors,
+          orderClicks: yStats.orderClicks,
+          menuClicks: yStats.menuClicks,
+        },
+      },
+      inquiries: {
+        unread: unreadTotal,
+        contactUnread,
+        hiringUnread,
+        captures: captures.length,
+      },
+      reviews: {
+        pending: pendingReviews,
+        total: reviews.length,
+        newThisWeek: newReviews,
+      },
+      campaigns: {
+        liveAnnouncement: liveAnnouncement
+          ? { id: liveAnnouncement._id, title: liveAnnouncement.internalTitle }
+          : null,
+        livePopups: livePopups.map((p) => ({
+          id: p._id,
+          title: p.internalTitle,
+          position: p.position,
+        })),
+        scheduledCount,
+      },
+      topItem,
+      alerts,
+    };
+  },
+});
