@@ -1,6 +1,11 @@
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { requireAdmin } from "./admin";
+
+/** Minimal, forgiving email shape check (server-side guard). */
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
 
 /**
  * Inquiry inboxes. Submissions come from the public site (no auth); reading
@@ -46,7 +51,14 @@ export const submitContact = mutation({
     message: v.string(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("contactSubmissions", args);
+    // Email is required and must be a valid address (also enforced client-side).
+    if (!isValidEmail(args.email)) {
+      throw new ConvexError("A valid email address is required.");
+    }
+    return await ctx.db.insert("contactSubmissions", {
+      ...args,
+      email: args.email.trim(),
+    });
   },
 });
 

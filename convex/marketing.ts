@@ -9,12 +9,61 @@ import { popupPosition } from "./schema";
 /**
  * Marketing tools: announcement bars and pop-ups.
  *
- * Activation rules:
- *  - At most ONE announcement bar can be active at a time.
- *  - Two active pop-ups may not share the same on-screen position.
+ * Activation rules (evaluated at read time for minute-precise scheduling):
+ *  - Each bar/pop-up is `active` (on/off) with an optional [startsAt, endsAt]
+ *    schedule window. It is "live" only when active AND within its window.
+ *  - The public site shows at most ONE announcement bar — the live one with the
+ *    latest start — so scheduling a new bar automatically replaces the old one
+ *    once its window opens.
+ *  - Pop-ups show at most one per on-screen position, chosen the same way.
+ *  - Activating (or scheduling) is rejected when it would put two live entities
+ *    in the same slot at overlapping times.
  */
 
 const showOn = v.union(v.literal("all"), v.array(v.string()));
+
+type Schedulable = {
+  active: boolean;
+  startsAt?: number;
+  endsAt?: number;
+  position?: string;
+};
+
+/** Is this entity live at `now` (active and within its schedule window)? */
+function isLive(doc: Schedulable, now: number): boolean {
+  if (!doc.active) return false;
+  if (doc.startsAt != null && now < doc.startsAt) return false;
+  if (doc.endsAt != null && now > doc.endsAt) return false;
+  return true;
+}
+
+type Window = { startsAt?: number; endsAt?: number };
+
+/** Do two schedule windows overlap in time (open-ended when unset)? */
+function windowsOverlap(a: Window, b: Window): boolean {
+  const as = a.startsAt ?? -Infinity;
+  const ae = a.endsAt ?? Infinity;
+  const bs = b.startsAt ?? -Infinity;
+  const be = b.endsAt ?? Infinity;
+  return as < be && bs < ae;
+}
+
+/** Among candidates, the one that should win a slot: latest start, then newest. */
+function pickWinner<T extends Schedulable & { _creationTime: number }>(
+  candidates: T[],
+): T | null {
+  if (candidates.length === 0) return null;
+  return [...candidates].sort(
+    (a, b) =>
+      (b.startsAt ?? 0) - (a.startsAt ?? 0) ||
+      b._creationTime - a._creationTime,
+  )[0];
+}
+
+const scheduleFields = {
+  startsAt: v.optional(v.number()),
+  endsAt: v.optional(v.number()),
+};
 
 // --- Announcement bars ------------------------------------------------------
 
@@ -26,6 +75,7 @@ const announcementFields = {
   bgColor: v.string(),
   textColor: v.string(),
   showOn,
+  ...scheduleFields,
 };
 
 export const listAnnouncements = query({
@@ -36,12 +86,13 @@ export const listAnnouncements = query({
   },
 });
 
-/** Public: the single active announcement bar (or null). */
+/** Public: the single live announcement bar right now (or null). */
 export const getActiveAnnouncement = query({
   args: {},
   handler: async (ctx) => {
+    const now = Date.now();
     const all = await ctx.db.query("announcements").collect();
-    return all.find((a) => a.active) ?? null;
+    return pickWinner(all.filter((a) => isLive(a, now)));
   },
 });
 
@@ -57,6 +108,19 @@ export const updateAnnouncement = mutation({
   args: { id: v.id("announcements"), ...announcementFields },
   handler: async (ctx, { id, ...fields }) => {
     await requireAdmin(ctx);
+    const bar = await ctx.db.get(id);
+    if (bar?.active) {
+      // Re-check overlap when editing the schedule of an active bar.
+      const all = await ctx.db.query("announcements").collect();
+      const clash = all.find(
+        (a) => a._id !== id && a.active && windowsOverlap(a, fields),
+      );
+      if (clash) {
+        throw new ConvexError(
+          `"${clash.internalTitle}" is already scheduled for an overlapping time. Adjust the schedule or turn that bar off.`,
+        );
+      }
+    }
     await ctx.db.patch(id, fields);
   },
 });
@@ -69,18 +133,28 @@ export const deleteAnnouncement = mutation({
   },
 });
 
-/** Toggle an announcement on/off; turning one on turns the rest off. */
+/**
+ * Toggle an announcement on/off. Activating is rejected when its schedule
+ * window would overlap another active bar (they'd both be live at once).
+ * Non-overlapping windows are allowed, so a future-scheduled bar can replace
+ * the current one automatically when its window opens.
+ */
 export const setAnnouncementActive = mutation({
   args: { id: v.id("announcements"), active: v.boolean() },
   handler: async (ctx, { id, active }) => {
     await requireAdmin(ctx);
+    const bar = await ctx.db.get(id);
+    if (!bar) throw new ConvexError("Announcement not found.");
     if (active) {
       const all = await ctx.db.query("announcements").collect();
-      await Promise.all(
-        all
-          .filter((a) => a.active && a._id !== id)
-          .map((a) => ctx.db.patch(a._id, { active: false })),
+      const clash = all.find(
+        (a) => a._id !== id && a.active && windowsOverlap(a, bar),
       );
+      if (clash) {
+        throw new ConvexError(
+          `"${clash.internalTitle}" is already scheduled for an overlapping time. Turn it off or give this bar a non-overlapping window.`,
+        );
+      }
     }
     await ctx.db.patch(id, { active });
   },
@@ -114,6 +188,7 @@ const popupFields = {
   emailCapture: v.boolean(),
   showOn,
   backdropBlur: v.optional(v.boolean()),
+  ...scheduleFields,
 };
 
 /** Resolve a pop-up's media storage ids to served URLs. */
@@ -137,13 +212,26 @@ export const listPopups = query({
   },
 });
 
-/** Public: all active pop-ups, with media URLs resolved for rendering. */
+/**
+ * Public: the live pop-ups right now — at most one per on-screen position —
+ * with media URLs resolved for rendering.
+ */
 export const listActivePopups = query({
   args: {},
   handler: async (ctx) => {
+    const now = Date.now();
     const all = await ctx.db.query("popups").collect();
-    const active = all.filter((p) => p.active);
-    return await Promise.all(active.map((p) => withMediaUrls(ctx, p)));
+    const live = all.filter((p) => isLive(p, now));
+    // One per position: the live pop-up with the latest start wins the slot.
+    const byPosition = new Map<string, (typeof live)[number]>();
+    for (const p of live) {
+      const cur = byPosition.get(p.position);
+      const winner = pickWinner(cur ? [cur, p] : [p]);
+      if (winner) byPosition.set(p.position, winner);
+    }
+    return await Promise.all(
+      [...byPosition.values()].map((p) => withMediaUrls(ctx, p)),
+    );
   },
 });
 
@@ -159,6 +247,23 @@ export const updatePopup = mutation({
   args: { id: v.id("popups"), ...popupFields },
   handler: async (ctx, { id, ...fields }) => {
     await requireAdmin(ctx);
+    const popup = await ctx.db.get(id);
+    if (popup?.active) {
+      // Re-check same-position overlap when editing an active pop-up.
+      const all = await ctx.db.query("popups").collect();
+      const clash = all.find(
+        (p) =>
+          p._id !== id &&
+          p.active &&
+          p.position === fields.position &&
+          windowsOverlap(p, fields),
+      );
+      if (clash) {
+        throw new ConvexError(
+          `"${clash.internalTitle}" is scheduled in the ${fields.position} position for an overlapping time. Adjust the schedule or turn it off.`,
+        );
+      }
+    }
     await ctx.db.patch(id, fields);
   },
 });
@@ -172,8 +277,9 @@ export const deletePopup = mutation({
 });
 
 /**
- * Toggle a pop-up on/off. Activating fails if another active pop-up already
- * occupies the same on-screen position.
+ * Toggle a pop-up on/off. Activating fails only when another active pop-up
+ * shares the same position AND an overlapping schedule window — so you can
+ * schedule a replacement in the same spot for a later, non-overlapping time.
  */
 export const setPopupActive = mutation({
   args: { id: v.id("popups"), active: v.boolean() },
@@ -184,11 +290,15 @@ export const setPopupActive = mutation({
     if (active) {
       const all = await ctx.db.query("popups").collect();
       const clash = all.find(
-        (p) => p.active && p._id !== id && p.position === popup.position,
+        (p) =>
+          p.active &&
+          p._id !== id &&
+          p.position === popup.position &&
+          windowsOverlap(p, popup),
       );
       if (clash) {
         throw new ConvexError(
-          `Another active pop-up ("${clash.internalTitle}") is already in the ${popup.position} position. Turn it off first.`,
+          `Another pop-up ("${clash.internalTitle}") is already in the ${popup.position} position for an overlapping time. Turn it off or schedule this one for a different window.`,
         );
       }
     }

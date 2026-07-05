@@ -48,12 +48,29 @@ export default defineSchema({
     order: v.number(),
   }).index("by_menu", ["menu"]),
 
+  // Curated + custom dietary tags. Built-in tags are seeded once; admins can
+  // add custom ones with their own label, emoji icon, and color. Items
+  // reference tags by `key`.
+  dietaryTags: defineTable({
+    key: v.string(), // stable slug, referenced by menuItems.dietaryTags
+    label: v.string(),
+    icon: v.string(), // emoji
+    color: v.string(), // hex, used for the pill background tint
+    builtin: v.boolean(),
+    order: v.number(),
+  }).index("by_key", ["key"]),
+
   menuItems: defineTable({
     sectionId: v.id("menuSections"),
     menu: menuKind, // denormalized for simple per-menu queries
     name: v.string(),
+    // URL-safe slug used for the item's own page (/menu/coffee/<slug>). Unique
+    // within a menu; derived from the name and kept stable once assigned.
+    slug: v.optional(v.string()),
     price: v.string(),
     description: v.string(),
+    // Optional dietary tag keys (see `dietaryTags`). Empty/absent = no tags.
+    dietaryTags: v.optional(v.array(v.string())),
     // Per-item Toast online-ordering link. Optional; when unset the public
     // "Order" button on the item renders disabled.
     orderUrl: v.optional(v.string()),
@@ -78,7 +95,8 @@ export default defineSchema({
     featured: v.optional(v.boolean()),
   })
     .index("by_section", ["sectionId"])
-    .index("by_menu", ["menu"]),
+    .index("by_menu", ["menu"])
+    .index("by_menu_slug", ["menu", "slug"]),
 
   // PDF + meta for each menu (one row per menu kind).
   menuMeta: defineTable({
@@ -134,6 +152,11 @@ export default defineSchema({
     // "all" or an explicit list of page keys (e.g. ["home", "about"]).
     showOn: v.union(v.literal("all"), v.array(v.string())),
     active: v.boolean(),
+    // Optional scheduling window (epoch ms). When set, the bar is only live
+    // between startsAt and endsAt in addition to being `active`. Evaluated at
+    // read time so activation/expiry is precise to the minute.
+    startsAt: v.optional(v.number()),
+    endsAt: v.optional(v.number()),
   }),
 
   popups: defineTable({
@@ -165,6 +188,10 @@ export default defineSchema({
     // When true (and position is "center"), dim + blur the page behind the
     // pop-up. When false, the background stays fully visible.
     backdropBlur: v.optional(v.boolean()),
+    // Optional scheduling window (epoch ms), evaluated at read time. A pop-up
+    // is only shown when `active` and within [startsAt, endsAt] (when set).
+    startsAt: v.optional(v.number()),
+    endsAt: v.optional(v.number()),
   }),
 
   // --- Events ---------------------------------------------------------------
@@ -210,16 +237,24 @@ export default defineSchema({
   // dashboard. `isStaff` marks visits from signed-in admins so they can be
   // excluded from every number.
   analyticsEvents: defineTable({
-    type: v.string(), // "page_view" | "order_click" | "menu_click" | "cta_click"
+    // "page_view" | "order_click" | "menu_click" | "cta_click"
+    // | "item_view" | "announcement_view" | "announcement_click"
+    // | "popup_view" | "popup_click" | "popup_close"
+    type: v.string(),
     path: v.string(), // route the event happened on
     visitorId: v.string(), // anonymous, persisted in localStorage
     sessionId: v.string(), // per-tab session, sessionStorage
     source: v.optional(v.string()), // traffic source (page views + order clicks)
     clickSource: v.optional(v.string()), // "navbar" | "featured" | "menu-item" for order clicks
-    menuItemName: v.optional(v.string()), // item name for per-item order clicks
-    menu: v.optional(v.string()), // "coffee" | "food" for menu clicks
+    menuItemName: v.optional(v.string()), // item name for per-item order clicks / views
+    menu: v.optional(v.string()), // "coffee" | "food" for menu clicks / item views
     cta: v.optional(v.string()), // which CTA ("phone", "directions", …)
     destination: v.optional(v.string()), // where an order/CTA click points
+    // Marketing analytics: which announcement/pop-up an event belongs to.
+    entityId: v.optional(v.string()), // announcement/pop-up/menu-item id
+    entityTitle: v.optional(v.string()), // denormalized internal title / item name
+    buttonKey: v.optional(v.string()), // which button in a pop-up ("cta" | "email")
+    dwellMs: v.optional(v.number()), // pop-up: ms open before it was dismissed
     isStaff: v.boolean(),
     ts: v.number(), // epoch ms (server time)
   }).index("by_ts", ["ts"]),
@@ -248,6 +283,16 @@ export default defineSchema({
     // Funnel: distinct visitors that day who reached each step.
     funnelMenuViewers: v.number(),
     funnelOrderClickers: v.number(),
+    // Menu-item detail opens ("views"), keyed "menu|Item Name" so coffee/food
+    // items with the same name stay distinct. Optional: older rows lack it.
+    itemViews: v.optional(v.array(countEntry)),
+    // Marketing per-entity metrics, keyed by announcement / pop-up id.
+    annViews: v.optional(v.array(countEntry)), // announcement id → impressions
+    annClicks: v.optional(v.array(countEntry)), // announcement id → button clicks
+    popupViews: v.optional(v.array(countEntry)), // pop-up id → impressions
+    popupClicks: v.optional(v.array(countEntry)), // pop-up id → button clicks
+    popupCloses: v.optional(v.array(countEntry)), // pop-up id → dismissals
+    popupDwellMs: v.optional(v.array(countEntry)), // pop-up id → summed dwell ms
   }).index("by_date", ["date"]),
 
   // Singleton bookkeeping for the rollup cron: the last day fully finalized.

@@ -15,6 +15,41 @@ import type { MutationCtx, QueryCtx } from "./_generated/server";
  * Resolve a menu item's images to servable URLs (first = primary). Falls back
  * to the legacy single-image fields for rows created before multi-image.
  */
+/** URL-safe slug from an item name (used for its own page URL). */
+function slugify(name: string): string {
+  return (
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "item"
+  );
+}
+
+/** Pick a slug for `name` that's unique among a menu's items. */
+async function uniqueSlug(
+  ctx: MutationCtx,
+  menu: "coffee" | "food",
+  name: string,
+  excludeId?: Id<"menuItems">,
+): Promise<string> {
+  const base = slugify(name);
+  const items = await ctx.db
+    .query("menuItems")
+    .withIndex("by_menu", (q) => q.eq("menu", menu))
+    .collect();
+  const taken = new Set(
+    items
+      .filter((i) => i._id !== excludeId && i.slug)
+      .map((i) => i.slug as string),
+  );
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+
 async function itemImages(
   ctx: QueryCtx,
   item: Doc<"menuItems">,
@@ -75,8 +110,10 @@ export const getMenu = query({
             _id: item._id,
             sectionId: item.sectionId,
             name: item.name,
+            slug: item.slug ?? slugify(item.name),
             price: item.price,
             description: item.description,
+            dietaryTags: item.dietaryTags ?? [],
             orderUrl: item.orderUrl ?? null,
             images: await itemImages(ctx, item),
             featured: item.featured ?? false,
@@ -102,6 +139,66 @@ export const getMenu = query({
         ? { url: pdfUrl, name: meta.pdfName ?? "menu.pdf" }
         : null,
     };
+  },
+});
+
+/** Resolve dietary tag keys to their catalog details (label/icon/color). */
+async function resolveDietaryTags(ctx: QueryCtx, keys: string[]) {
+  if (keys.length === 0) return [];
+  const catalog = await ctx.db.query("dietaryTags").collect();
+  const byKey = new Map(catalog.map((t) => [t.key, t]));
+  return keys
+    .map((k) => byKey.get(k))
+    .filter((t): t is NonNullable<typeof t> => !!t)
+    .map((t) => ({ key: t.key, label: t.label, icon: t.icon, color: t.color }));
+}
+
+/**
+ * Public: one menu item by its menu + slug, for the item's own page (and the
+ * prerender step). Returns the item with resolved images and dietary tags, or
+ * null when nothing matches.
+ */
+export const getItemBySlug = query({
+  args: { menu: menuKind, slug: v.string() },
+  handler: async (ctx, { menu, slug }) => {
+    const items = await ctx.db
+      .query("menuItems")
+      .withIndex("by_menu", (q) => q.eq("menu", menu))
+      .collect();
+    const item =
+      items.find((i) => i.slug === slug) ??
+      items.find((i) => slugify(i.name) === slug);
+    if (!item) return null;
+
+    const section = await ctx.db.get(item.sectionId);
+    const images = await itemImages(ctx, item);
+    return {
+      _id: item._id,
+      menu,
+      slug: item.slug ?? slugify(item.name),
+      name: item.name,
+      price: item.price,
+      description: item.description,
+      sectionTitle: section?.title ?? null,
+      dietaryTags: await resolveDietaryTags(ctx, item.dietaryTags ?? []),
+      orderUrl: item.orderUrl ?? null,
+      images,
+      image: images[0]?.url ?? null,
+      likes: item.likes,
+    };
+  },
+});
+
+/** Public: every item's menu + slug, for building the sitemap / prerender list. */
+export const listItemSlugs = query({
+  args: {},
+  handler: async (ctx) => {
+    const items = await ctx.db.query("menuItems").collect();
+    return items.map((i) => ({
+      menu: i.menu,
+      slug: i.slug ?? slugify(i.name),
+      name: i.name,
+    }));
   },
 });
 
@@ -163,6 +260,7 @@ const itemFields = {
   price: v.string(),
   description: v.string(),
   orderUrl: v.optional(v.string()),
+  dietaryTags: v.optional(v.array(v.string())),
   images: v.array(
     v.object({
       storageId: v.optional(v.id("_storage")),
@@ -182,12 +280,15 @@ export const createItem = mutation({
       .withIndex("by_section", (q) => q.eq("sectionId", args.sectionId))
       .collect();
     const order = siblings.reduce((max, i) => Math.max(max, i.order), -1) + 1;
+    const slug = await uniqueSlug(ctx, section.menu, args.name);
     return await ctx.db.insert("menuItems", {
       sectionId: args.sectionId,
       menu: section.menu,
       name: args.name,
+      slug,
       price: args.price,
       description: args.description,
+      dietaryTags: args.dietaryTags ?? [],
       orderUrl: args.orderUrl,
       images: args.images,
       likes: 0,
@@ -201,12 +302,47 @@ export const updateItem = mutation({
   args: { itemId: v.id("menuItems"), ...itemFields },
   handler: async (ctx, { itemId, ...fields }) => {
     await requireAdmin(ctx);
-    // Persist the images array and clear any legacy single-image fields.
+    const existing = await ctx.db.get(itemId);
+    // Keep an existing slug stable (it's a public URL); assign one if missing.
+    const slug =
+      existing?.slug ??
+      (existing
+        ? await uniqueSlug(ctx, existing.menu, fields.name, itemId)
+        : undefined);
+    // Persist the fields and clear any legacy single-image fields.
     await ctx.db.patch(itemId, {
       ...fields,
+      dietaryTags: fields.dietaryTags ?? [],
+      ...(slug ? { slug } : {}),
       image: undefined,
       imageStorageId: undefined,
     });
+  },
+});
+
+/**
+ * Admin: assign slugs to any items that don't have one yet (e.g. seeded rows).
+ * Idempotent; returns how many were backfilled.
+ */
+export const ensureSlugs = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    let filled = 0;
+    for (const menu of ["coffee", "food"] as const) {
+      const items = await ctx.db
+        .query("menuItems")
+        .withIndex("by_menu", (q) => q.eq("menu", menu))
+        .collect();
+      for (const item of items) {
+        if (item.slug) continue;
+        await ctx.db.patch(item._id, {
+          slug: await uniqueSlug(ctx, menu, item.name, item._id),
+        });
+        filled++;
+      }
+    }
+    return { filled };
   },
 });
 
@@ -255,6 +391,8 @@ export const listFeatured = query({
         return {
           _id: item._id,
           name: item.name,
+          menu: item.menu,
+          slug: item.slug ?? slugify(item.name),
           price: item.price,
           description: item.description,
           orderUrl: item.orderUrl ?? null,
@@ -311,6 +449,18 @@ async function seedMenu(
   menu: "coffee" | "food",
   sections: SeedSection[],
 ) {
+  const usedSlugs = new Set<string>();
+  const slugFor = (name: string) => {
+    const base = slugify(name);
+    if (!usedSlugs.has(base)) {
+      usedSlugs.add(base);
+      return base;
+    }
+    let n = 2;
+    while (usedSlugs.has(`${base}-${n}`)) n++;
+    usedSlugs.add(`${base}-${n}`);
+    return `${base}-${n}`;
+  };
   for (let s = 0; s < sections.length; s++) {
     const section = sections[s];
     const sectionId = await ctx.db.insert("menuSections", {
@@ -324,8 +474,10 @@ async function seedMenu(
         sectionId,
         menu,
         name: item.name,
+        slug: slugFor(item.name),
         price: item.price,
         description: item.description,
+        dietaryTags: [],
         images: [{ path: item.image }],
         likes: item.likes,
         reviews: item.reviews,
