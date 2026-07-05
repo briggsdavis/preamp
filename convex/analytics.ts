@@ -792,6 +792,10 @@ export const getMenuAnalytics = query({
           .collect()
       : await ctx.db.query("menuItems").collect();
 
+    // Section titles (+ order) so the dashboard can group/filter by section.
+    const sections = await ctx.db.query("menuSections").collect();
+    const secById = new Map(sections.map((s) => [s._id, s]));
+
     const views: Record<string, number> = {};
     const orders: Record<string, number> = {};
     for (const d of win.perDay) {
@@ -800,14 +804,20 @@ export const getMenuAnalytics = query({
     }
 
     const rows = items
-      .map((it) => ({
-        id: it._id,
-        name: it.name,
-        menu: it.menu,
-        views: views[`${it.menu}|${it.name}`] ?? 0,
-        // Order clicks aren't tagged by menu, so join on item name.
-        orders: orders[it.name] ?? 0,
-      }))
+      .map((it) => {
+        const sec = secById.get(it.sectionId);
+        return {
+          id: it._id,
+          name: it.name,
+          menu: it.menu,
+          sectionId: it.sectionId as string,
+          section: sec?.title ?? "Uncategorized",
+          sectionOrder: sec?.order ?? 999,
+          views: views[`${it.menu}|${it.name}`] ?? 0,
+          // Order clicks aren't tagged by menu, so join on item name.
+          orders: orders[it.name] ?? 0,
+        };
+      })
       .sort((a, b) => b.views - a.views || b.orders - a.orders);
 
     const trend = bucketSeries(win, (d) => ({

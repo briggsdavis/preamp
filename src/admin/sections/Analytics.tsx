@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useQuery, useConvex } from "convex/react";
 import {
   ResponsiveContainer,
@@ -87,10 +87,12 @@ export function Analytics() {
         menuData.rows.map((r) => ({
           item: r.name,
           menu: r.menu,
+          section: r.section,
           views: r.views,
           order_clicks: r.orders,
+          conversion: pct(r.views > 0 ? r.orders / r.views : 0),
         })),
-        ["item", "menu", "views", "order_clicks"],
+        ["item", "menu", "section", "views", "order_clicks", "conversion"],
       );
       return;
     }
@@ -530,27 +532,146 @@ function OrderingDashboard({ data }: { data: DashboardData }) {
 
 // --- Menu Items view --------------------------------------------------------
 
+type ItemRow = {
+  id: string;
+  name: string;
+  menu: string;
+  sectionId: string;
+  section: string;
+  sectionOrder: number;
+  views: number;
+  orders: number;
+};
+
+type SortKey = "views" | "orders" | "conversion" | "name";
+type Sort = { key: SortKey; dir: "asc" | "desc" };
+
+/** Order clicks ÷ views — how many lookers went on to click Order. */
+function conversion(r: { views: number; orders: number }): number {
+  return r.views > 0 ? r.orders / r.views : 0;
+}
+
+function compareRows(a: ItemRow, b: ItemRow, sort: Sort): number {
+  const sign = sort.dir === "asc" ? 1 : -1;
+  if (sort.key === "name") return sign * a.name.localeCompare(b.name);
+  if (sort.key === "conversion")
+    return sign * (conversion(a) - conversion(b)) || b.views - a.views;
+  if (sort.key === "orders")
+    return sign * (a.orders - b.orders) || b.views - a.views;
+  return sign * (a.views - b.views) || b.orders - a.orders;
+}
+
 function MenuItemsDashboard({ data }: { data: MenuData }) {
+  const [menuFilter, setMenuFilter] = useState<"all" | "coffee" | "food">("all");
+  const [sectionId, setSectionId] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<Sort>({ key: "views", dir: "desc" });
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  const rows = useMemo(() => (data?.rows ?? []) as ItemRow[], [data]);
+
+  // Sections available for the current menu filter (for the dropdown), ordered
+  // the way they appear on the menu (coffee before food, then section order).
+  const sectionOptions = useMemo(() => {
+    const seen = new Map<string, ItemRow>();
+    for (const r of rows) {
+      if (menuFilter !== "all" && r.menu !== menuFilter) continue;
+      if (!seen.has(r.sectionId)) seen.set(r.sectionId, r);
+    }
+    return [...seen.values()].sort(
+      (a, b) =>
+        a.menu.localeCompare(b.menu) ||
+        a.sectionOrder - b.sectionOrder ||
+        a.section.localeCompare(b.section),
+    );
+  }, [rows, menuFilter]);
+
+  const q = search.trim().toLowerCase();
+  const filtered = useMemo(
+    () =>
+      rows.filter(
+        (r) =>
+          (menuFilter === "all" || r.menu === menuFilter) &&
+          (sectionId === "all" || r.sectionId === sectionId) &&
+          (q === "" || r.name.toLowerCase().includes(q)),
+      ),
+    [rows, menuFilter, sectionId, q],
+  );
+
+  // Group the filtered rows into ordered, sortable section groups.
+  const groups = useMemo(() => {
+    const byId = new Map<string, ItemRow[]>();
+    for (const r of filtered) {
+      const arr = byId.get(r.sectionId) ?? [];
+      arr.push(r);
+      byId.set(r.sectionId, arr);
+    }
+    return [...byId.entries()]
+      .map(([id, items]) => ({
+        id,
+        title: items[0].section,
+        menu: items[0].menu,
+        sectionOrder: items[0].sectionOrder,
+        views: items.reduce((a, r) => a + r.views, 0),
+        orders: items.reduce((a, r) => a + r.orders, 0),
+        items: [...items].sort((a, b) => compareRows(a, b, sort)),
+      }))
+      .sort(
+        (a, b) =>
+          a.menu.localeCompare(b.menu) ||
+          a.sectionOrder - b.sectionOrder ||
+          a.title.localeCompare(b.title),
+      );
+  }, [filtered, sort]);
+
+  const totals = useMemo(
+    () =>
+      filtered.reduce(
+        (a, r) => ({ views: a.views + r.views, orders: a.orders + r.orders }),
+        { views: 0, orders: 0 },
+      ),
+    [filtered],
+  );
+
   if (data === undefined) return <DashboardSkeleton />;
-  const rows = data.rows;
-  const hasData = data.totals.views > 0 || data.totals.orders > 0;
+
+  const hasAnyData = data.totals.views > 0 || data.totals.orders > 0;
+  const maxViews = Math.max(...filtered.map((r) => r.views), 1);
+  const allCollapsed = groups.length > 0 && groups.every((g) => collapsed.has(g.id));
+
+  function toggleSort(key: SortKey) {
+    setSort((s) =>
+      s.key === key
+        ? { key, dir: s.dir === "desc" ? "asc" : "desc" }
+        : { key, dir: key === "name" ? "asc" : "desc" },
+    );
+  }
+
+  function setMenu(m: "all" | "coffee" | "food") {
+    setMenuFilter(m);
+    setSectionId("all"); // sections belong to a menu; reset when it changes
+  }
 
   return (
     <div className="space-y-6">
       <div className="rounded-2xl border-2 border-dashed border-sand bg-cream px-5 py-3 text-xs text-espresso/55">
         A <span className="font-semibold">view</span> is a visitor opening an
         item's page/detail; <span className="font-semibold">order clicks</span>{" "}
-        are that item's Order-button clicks. Both menus are combined here — each
-        menu manager shows its own breakdown.
+        are that item's Order-button clicks;{" "}
+        <span className="font-semibold">conv.</span> is order clicks ÷ views. Use
+        the filters to focus on one menu or section.
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <PlainStat label="Item Views" value={nf.format(data.totals.views)}
-          hint="Total menu-item detail opens this period." />
-        <PlainStat label="Order Clicks" value={nf.format(data.totals.orders)}
-          hint="Total per-item Order-button clicks this period." />
-        <PlainStat label="Top Item" value={rows[0]?.name ?? "—"}
-          hint="Most-viewed item this period." />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <PlainStat label="Item Views" value={nf.format(totals.views)}
+          hint="Menu-item detail opens for the current filter this period." />
+        <PlainStat label="Order Clicks" value={nf.format(totals.orders)}
+          hint="Per-item Order-button clicks for the current filter this period." />
+        <PlainStat label="Conversion" value={pct(conversion(totals))}
+          hint="Order clicks ÷ views for the current filter." />
+        <PlainStat label="Items Shown" value={nf.format(filtered.length)}
+          sub={menuFilter === "all" ? "all menus" : `${menuFilter} menu`}
+          hint="How many menu items match the current filter." />
       </div>
 
       <Card>
@@ -565,53 +686,218 @@ function MenuItemsDashboard({ data }: { data: MenuData }) {
       </Card>
 
       <Card>
-        <CardTitle>Items by Views &amp; Order Clicks</CardTitle>
-        {!hasData ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <CardTitle>Every Item, By Section</CardTitle>
+          {groups.length > 0 && (
+            <button
+              type="button"
+              onClick={() =>
+                setCollapsed(
+                  allCollapsed ? new Set() : new Set(groups.map((g) => g.id)),
+                )
+              }
+              className="text-xs font-semibold text-terracotta hover:underline"
+            >
+              {allCollapsed ? "Expand all" : "Collapse all"}
+            </button>
+          )}
+        </div>
+
+        {/* Filter bar */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-full border-2 border-sand bg-cream p-0.5">
+            {(["all", "coffee", "food"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMenu(m)}
+                className={`rounded-full px-4 py-1.5 text-xs font-semibold capitalize transition-colors ${
+                  menuFilter === m
+                    ? "bg-brick text-cream"
+                    : "text-espresso/70 hover:bg-cream-deep"
+                }`}
+              >
+                {m === "all" ? "All menus" : m}
+              </button>
+            ))}
+          </div>
+
+          <select
+            value={sectionId}
+            onChange={(e) => setSectionId(e.target.value)}
+            className="rounded-full border-2 border-sand bg-cream px-4 py-1.5 text-xs font-semibold text-espresso outline-none focus:border-terracotta"
+          >
+            <option value="all">All sections</option>
+            {sectionOptions.map((s) => (
+              <option key={s.sectionId} value={s.sectionId}>
+                {menuFilter === "all"
+                  ? `${titleCase(s.menu)} · ${s.section}`
+                  : s.section}
+              </option>
+            ))}
+          </select>
+
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search items…"
+            className="min-w-[10rem] flex-1 rounded-full border-2 border-sand bg-cream px-4 py-1.5 text-xs text-espresso outline-none placeholder:text-espresso/40 focus:border-terracotta"
+          />
+        </div>
+
+        {!hasAnyData ? (
           <Empty label="No item views or order clicks in this period yet." />
+        ) : filtered.length === 0 ? (
+          <Empty label="No items match these filters." />
         ) : (
-          <ItemsTable rows={rows} />
+          <ItemsTable
+            groups={groups}
+            maxViews={maxViews}
+            showMenu={menuFilter === "all"}
+            sort={sort}
+            onSort={toggleSort}
+            collapsed={collapsed}
+            onToggleCollapse={(id) =>
+              setCollapsed((prev) => {
+                const next = new Set(prev);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                return next;
+              })
+            }
+          />
         )}
       </Card>
     </div>
   );
 }
 
-function ItemsTable({
-  rows,
+type Group = {
+  id: string;
+  title: string;
+  menu: string;
+  views: number;
+  orders: number;
+  items: ItemRow[];
+};
+
+function SortHead({
+  label,
+  sortKey,
+  sort,
+  onSort,
+  align = "left",
 }: {
-  rows: { id: string; name: string; menu: string; views: number; orders: number }[];
+  label: string;
+  sortKey: SortKey;
+  sort: Sort;
+  onSort: (k: SortKey) => void;
+  align?: "left" | "right";
 }) {
-  const maxViews = Math.max(...rows.map((r) => r.views), 1);
+  const active = sort.key === sortKey;
   return (
-    <div className="mt-3 overflow-x-auto">
-      <table className="w-full min-w-[34rem] text-sm">
+    <th className={`py-2 pr-3 font-semibold ${align === "right" ? "text-right" : "text-left"}`}>
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={`inline-flex items-center gap-1 uppercase tracking-wide transition-colors hover:text-espresso ${
+          active ? "text-espresso" : ""
+        }`}
+      >
+        {label}
+        <span className={active ? "opacity-100" : "opacity-25"}>
+          {active ? (sort.dir === "desc" ? "▼" : "▲") : "▲"}
+        </span>
+      </button>
+    </th>
+  );
+}
+
+function ItemsTable({
+  groups,
+  maxViews,
+  showMenu,
+  sort,
+  onSort,
+  collapsed,
+  onToggleCollapse,
+}: {
+  groups: Group[];
+  maxViews: number;
+  showMenu: boolean;
+  sort: Sort;
+  onSort: (k: SortKey) => void;
+  collapsed: Set<string>;
+  onToggleCollapse: (id: string) => void;
+}) {
+  const cols = showMenu ? 5 : 4;
+  return (
+    <div className="mt-4 overflow-x-auto">
+      <table className="w-full min-w-[38rem] text-sm">
         <thead>
           <tr className="border-b-2 border-sand text-left text-xs uppercase tracking-wide text-espresso/50">
-            <th className="py-2 pr-3 font-semibold">Item</th>
-            <th className="py-2 pr-3 font-semibold">Menu</th>
-            <th className="py-2 pr-3 font-semibold">Views</th>
-            <th className="py-2 font-semibold">Order Clicks</th>
+            <SortHead label="Item" sortKey="name" sort={sort} onSort={onSort} />
+            {showMenu && <th className="py-2 pr-3 font-semibold">Menu</th>}
+            <SortHead label="Views" sortKey="views" sort={sort} onSort={onSort} />
+            <SortHead label="Order Clicks" sortKey="orders" sort={sort} onSort={onSort} align="right" />
+            <SortHead label="Conv." sortKey="conversion" sort={sort} onSort={onSort} align="right" />
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
-            <tr key={r.id} className="border-b border-sand/60">
-              <td className="py-2 pr-3 font-medium text-espresso">{r.name}</td>
-              <td className="py-2 pr-3 capitalize text-espresso/60">{r.menu}</td>
-              <td className="py-2 pr-3">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-24 overflow-hidden rounded-full bg-cream-deep">
-                    <div
-                      className="h-full rounded-full"
-                      style={{ width: `${(r.views / maxViews) * 100}%`, background: C.terracotta }}
-                    />
-                  </div>
-                  <span className="tabular-nums text-espresso/80">{nf.format(r.views)}</span>
-                </div>
-              </td>
-              <td className="py-2 tabular-nums text-espresso/80">{nf.format(r.orders)}</td>
-            </tr>
-          ))}
+          {groups.map((g) => {
+            const isCollapsed = collapsed.has(g.id);
+            return (
+              <Fragment key={g.id}>
+                <tr className="border-b border-sand/60 bg-cream-deep/40">
+                  <td colSpan={cols} className="py-1.5">
+                    <button
+                      type="button"
+                      onClick={() => onToggleCollapse(g.id)}
+                      className="flex w-full items-center gap-2 text-left"
+                    >
+                      <span className="text-espresso/40">{isCollapsed ? "▸" : "▾"}</span>
+                      <span className="font-groovy text-xs uppercase tracking-[0.15em] text-terracotta">
+                        {showMenu ? `${titleCase(g.menu)} · ${g.title}` : g.title}
+                      </span>
+                      <span className="text-xs text-espresso/45">
+                        {g.items.length} {g.items.length === 1 ? "item" : "items"}
+                      </span>
+                      <span className="ml-auto text-xs text-espresso/55">
+                        {nf.format(g.views)} views · {nf.format(g.orders)} clicks
+                      </span>
+                    </button>
+                  </td>
+                </tr>
+                {!isCollapsed &&
+                  g.items.map((r) => (
+                    <tr key={r.id} className="border-b border-sand/60">
+                      <td className="py-2 pr-3 font-medium text-espresso">{r.name}</td>
+                      {showMenu && (
+                        <td className="py-2 pr-3 capitalize text-espresso/60">{r.menu}</td>
+                      )}
+                      <td className="py-2 pr-3">
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-20 overflow-hidden rounded-full bg-cream-deep">
+                            <div
+                              className="h-full rounded-full"
+                              style={{ width: `${(r.views / maxViews) * 100}%`, background: C.terracotta }}
+                            />
+                          </div>
+                          <span className="tabular-nums text-espresso/80">{nf.format(r.views)}</span>
+                        </div>
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-espresso/80">
+                        {nf.format(r.orders)}
+                      </td>
+                      <td className="py-2 text-right tabular-nums text-espresso/60">
+                        {r.views > 0 ? pct(conversion(r)) : "—"}
+                      </td>
+                    </tr>
+                  ))}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>
