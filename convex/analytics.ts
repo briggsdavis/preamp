@@ -937,7 +937,15 @@ export const getEntityAnalytics = query({
         kind,
         range: { start: win.startDate, end: win.today },
         trend,
-        totals: { views, clicks, ctr: views > 0 ? clicks / views : 0 },
+        // Uniform totals shape across kinds (announcements have no email/dwell).
+        totals: {
+          views,
+          clicks,
+          closes: 0,
+          emails: 0,
+          ctr: views > 0 ? clicks / views : 0,
+          avgDwellMs: 0,
+        },
       };
     }
 

@@ -1,110 +1,74 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "convex/react";
+import { useQuery, useConvex } from "convex/react";
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  BarChart,
-  Bar,
   PieChart,
   Pie,
   Cell,
 } from "recharts";
 
 import { api } from "@convex/_generated/api";
+import { downloadCsv } from "@/admin/csv";
+import {
+  C,
+  PIE,
+  nf,
+  pct,
+  duration,
+  titleCase,
+  formatBucket,
+  pageName,
+  TimeframeBar,
+  Card,
+  CardTitle,
+  Empty,
+  Kpi,
+  PlainStat,
+  MiniBars,
+  TrendChart,
+  ExportButton,
+} from "@/admin/analyticsShared";
 
 /**
- * The admin analytics dashboard. Reads a single pre-aggregated payload from
- * `api.analytics.getDashboard` (rollups + live "today") and renders headline
- * numbers plus graphs. Everything reacts to the timeframe selector.
+ * The admin analytics dashboard. A view toggle switches between the traffic
+ * Overview, the Ordering breakdown, per-item Menu analytics, and the
+ * Announcement / Pop-up marketing analytics. Every view reacts to the shared
+ * timeframe selector and can be exported to CSV (aggregated or raw events).
  */
-
-const TIMEFRAMES = [
-  { id: "today", label: "Today" },
-  { id: "week", label: "1 Week" },
-  { id: "month", label: "1 Month" },
-  { id: "3months", label: "3 Months" },
-  { id: "6months", label: "6 Months" },
-  { id: "year", label: "1 Year" },
-  { id: "2years", label: "2 Years" },
-] as const;
-
-// Brand palette (mirrors the CSS tokens in styles/index.css).
-const C = {
-  gold: "#d9883b",
-  amber: "#e0a042",
-  orange: "#ce6b38",
-  terracotta: "#b55335",
-  brick: "#9e4a3c",
-  maroon: "#6b2f26",
-  espresso: "#2a1a12",
-  sand: "#e3d3b8",
-};
-const PIE = [C.gold, C.terracotta, C.amber, C.brick, C.orange, C.maroon, "#3b2417", C.sand];
-
-const nf = new Intl.NumberFormat("en-US");
-
-function pct(n: number): string {
-  return `${(n * 100).toFixed(n >= 0.1 ? 0 : 1)}%`;
-}
-
-/** Friendly label for a trend bucket key ("13:00" | "2026-06-21" | "2026-06"). */
-function formatBucket(label: string): string {
-  if (/^\d{1,2}:00$/.test(label)) return label;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(label)) {
-    const [y, m, d] = label.split("-").map(Number);
-    return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-  }
-  if (/^\d{4}-\d{2}$/.test(label)) {
-    const [y, m] = label.split("-").map(Number);
-    return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-US", {
-      month: "short",
-      year: "2-digit",
-    });
-  }
-  return label;
-}
-
-/** Map an internal path to a human page name. */
-function pageName(path: string): string {
-  const map: Record<string, string> = {
-    "/": "Home",
-    "/menu/coffee": "Coffee Menu",
-    "/menu/food": "Food Menu",
-    "/about": "About",
-    "/contact": "Contact",
-    "/events": "Events",
-    "/hiring": "Hiring",
-    "/retail": "Merch",
-    "/gift-cards": "Gift Cards",
-  };
-  return map[path] ?? path;
-}
-
-function titleCase(s: string): string {
-  return s.replace(/(^|[\s_-])(\w)/g, (_, p, c) => p.replace(/[_-]/, " ") + c.toUpperCase());
-}
 
 const VIEWS = [
   { id: "overview", label: "Overview" },
   { id: "ordering", label: "Ordering" },
+  { id: "menu", label: "Menu Items" },
+  { id: "announcements", label: "Announcements" },
+  { id: "popups", label: "Pop-ups" },
 ] as const;
+
+type View = (typeof VIEWS)[number]["id"];
 
 export function Analytics() {
   const [timeframe, setTimeframe] = useState<string>("week");
-  const [view, setView] = useState<"overview" | "ordering">("overview");
+  const [view, setView] = useState<View>("overview");
   // Fix "now" per load so the query args are stable; bump it to refresh.
   const [now, setNow] = useState(() => Date.now());
+  const convex = useConvex();
+
   const data = useQuery(api.analytics.getDashboard, { timeframe, now });
   const reviewStats = useQuery(api.reviews.stats);
+  const menuData = useQuery(
+    api.analytics.getMenuAnalytics,
+    view === "menu" ? { timeframe, now } : "skip",
+  );
+  const marketing = useQuery(
+    api.analytics.getMarketingAnalytics,
+    view === "announcements" || view === "popups" ? { timeframe, now } : "skip",
+  );
 
   const rangeLabel = useMemo(() => {
     if (!data) return "";
@@ -113,6 +77,114 @@ export function Analytics() {
       ? fmt(data.range.start)
       : `${fmt(data.range.start)} – ${fmt(data.range.end)}`;
   }, [data]);
+
+  /** Export the aggregated numbers currently on screen. */
+  function exportAggregated() {
+    const stamp = `${timeframe}-${data?.range.end ?? ""}`;
+    if (view === "menu" && menuData) {
+      downloadCsv(
+        `preamp-menu-items-${stamp}.csv`,
+        menuData.rows.map((r) => ({
+          item: r.name,
+          menu: r.menu,
+          views: r.views,
+          order_clicks: r.orders,
+        })),
+        ["item", "menu", "views", "order_clicks"],
+      );
+      return;
+    }
+    if (view === "announcements" && marketing) {
+      downloadCsv(
+        `preamp-announcements-${stamp}.csv`,
+        marketing.announcements.map((a) => ({
+          announcement: a.title,
+          active: a.active,
+          views: a.views,
+          clicks: a.clicks,
+          ctr: pct(a.ctr),
+        })),
+        ["announcement", "active", "views", "clicks", "ctr"],
+      );
+      return;
+    }
+    if (view === "popups" && marketing) {
+      downloadCsv(
+        `preamp-popups-${stamp}.csv`,
+        marketing.popups.map((p) => ({
+          popup: p.title,
+          active: p.active,
+          position: p.position,
+          views: p.views,
+          button_clicks: p.clicks,
+          closes: p.closes,
+          emails: p.emails,
+          avg_dwell_seconds: Math.round(p.avgDwellMs / 1000),
+          ctr: pct(p.ctr),
+        })),
+        [
+          "popup",
+          "active",
+          "position",
+          "views",
+          "button_clicks",
+          "closes",
+          "emails",
+          "avg_dwell_seconds",
+          "ctr",
+        ],
+      );
+      return;
+    }
+    if (!data) return;
+    // Overview / Ordering: a flat section/label/value sheet.
+    const rows: { section: string; label: string; value: string | number }[] =
+      [];
+    const k = data.kpis;
+    rows.push({ section: "KPI", label: "Page Views", value: k.pageViews });
+    rows.push({ section: "KPI", label: "Visitors", value: k.visitors });
+    rows.push({ section: "KPI", label: "Order Clicks", value: k.orderClicks });
+    rows.push({ section: "KPI", label: "Menu Clicks", value: k.menuClicks });
+    rows.push({
+      section: "KPI",
+      label: "Order Click Rate",
+      value: pct(k.orderClickRate),
+    });
+    for (const p of data.topPages)
+      rows.push({ section: "Top Pages", label: pageName(p.key), value: p.count });
+    for (const s of data.sources)
+      rows.push({ section: "Sources", label: titleCase(s.key), value: s.count });
+    for (const o of data.orderByItem)
+      rows.push({ section: "Order Clicks by Item", label: o.key, value: o.count });
+    for (const o of data.orderBySource)
+      rows.push({
+        section: "Order Clicks by Button",
+        label: titleCase(o.key),
+        value: o.count,
+      });
+    downloadCsv(`preamp-analytics-${stamp}.csv`, rows, [
+      "section",
+      "label",
+      "value",
+    ]);
+  }
+
+  /** Fetch + download the raw event rows for this timeframe on demand. */
+  async function exportRaw() {
+    const rows = await convex.query(api.analytics.exportRawEvents, {
+      timeframe,
+      now,
+    });
+    const stamp = `${timeframe}-${data?.range.end ?? ""}`;
+    downloadCsv(
+      `preamp-raw-events-${stamp}.csv`,
+      rows.map((r) => ({
+        ...r,
+        // ISO timestamp alongside the epoch ms for readability.
+        timestamp: new Date(r.ts).toISOString(),
+      })),
+    );
+  }
 
   return (
     <div>
@@ -123,17 +195,25 @@ export function Analytics() {
             First-party traffic &amp; engagement · {rangeLabel || "…"}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setNow(Date.now())}
-          className="rounded-full border-2 border-espresso/20 px-4 py-2 text-sm font-semibold text-espresso transition-colors hover:bg-espresso/5"
-        >
-          ↻ Refresh
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <ExportButton onClick={exportAggregated} title="Export the numbers shown for this timeframe">
+            Export CSV
+          </ExportButton>
+          <ExportButton onClick={() => void exportRaw()} title="Export raw event rows (within the retention window)">
+            Raw events
+          </ExportButton>
+          <button
+            type="button"
+            onClick={() => setNow(Date.now())}
+            className="rounded-full border-2 border-espresso/20 px-4 py-2 text-sm font-semibold text-espresso transition-colors hover:bg-espresso/5"
+          >
+            ↻ Refresh
+          </button>
+        </div>
       </div>
 
-      {/* View toggle: overview vs a focused ordering breakdown */}
-      <div className="mb-5 inline-flex rounded-full border-2 border-sand bg-cream p-1">
+      {/* View toggle */}
+      <div className="mb-5 inline-flex flex-wrap rounded-full border-2 border-sand bg-cream p-1">
         {VIEWS.map((v) => (
           <button
             key={v.id}
@@ -150,30 +230,23 @@ export function Analytics() {
         ))}
       </div>
 
-      {/* Timeframe selector — applies to both views */}
-      <div className="mb-7 flex flex-wrap gap-2">
-        {TIMEFRAMES.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTimeframe(t.id)}
-            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
-              timeframe === t.id
-                ? "bg-brick text-cream"
-                : "border-2 border-sand bg-cream text-espresso/70 hover:bg-cream-deep"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      {/* Timeframe selector — applies to every view */}
+      <div className="mb-7">
+        <TimeframeBar value={timeframe} onChange={setTimeframe} />
       </div>
 
       {data === undefined ? (
         <DashboardSkeleton />
       ) : view === "overview" ? (
         <Dashboard data={data} reviewStats={reviewStats} />
-      ) : (
+      ) : view === "ordering" ? (
         <OrderingDashboard data={data} />
+      ) : view === "menu" ? (
+        <MenuItemsDashboard data={menuData} />
+      ) : view === "announcements" ? (
+        <AnnouncementsDashboard data={marketing} />
+      ) : (
+        <PopupsDashboard data={marketing} />
       )}
     </div>
   );
@@ -182,9 +255,12 @@ export function Analytics() {
 type DashboardData = NonNullable<
   ReturnType<typeof useQuery<typeof api.analytics.getDashboard>>
 >;
-
 type ReviewStats = NonNullable<
   ReturnType<typeof useQuery<typeof api.reviews.stats>>
+>;
+type MenuData = ReturnType<typeof useQuery<typeof api.analytics.getMenuAnalytics>>;
+type Marketing = ReturnType<
+  typeof useQuery<typeof api.analytics.getMarketingAnalytics>
 >;
 
 function Dashboard({
@@ -231,40 +307,14 @@ function Dashboard({
       {/* Main trend */}
       <Card>
         <CardTitle>Traffic over time</CardTitle>
-        <div className="mt-3 h-72 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={trend} margin={{ top: 6, right: 8, left: -16, bottom: 0 }}>
-              <defs>
-                <linearGradient id="gViews" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={C.terracotta} stopOpacity={0.5} />
-                  <stop offset="100%" stopColor={C.terracotta} stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gVis" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={C.gold} stopOpacity={0.4} />
-                  <stop offset="100%" stopColor={C.gold} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke={C.sand} />
-              <XAxis dataKey="label" tickFormatter={formatBucket} stroke={C.espresso}
-                tick={{ fontSize: 12 }} minTickGap={16} />
-              <YAxis stroke={C.espresso} tick={{ fontSize: 12 }} allowDecimals={false} width={44} />
-              <Tooltip
-                labelFormatter={(l) => formatBucket(String(l))}
-                contentStyle={{
-                  background: "#fff",
-                  border: `2px solid ${C.sand}`,
-                  borderRadius: 12,
-                  fontSize: 13,
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="pageViews" name="Page Views" stroke={C.terracotta}
-                strokeWidth={2} fill="url(#gViews)" />
-              <Area type="monotone" dataKey="visitors" name="Visitors" stroke={C.gold}
-                strokeWidth={2} fill="url(#gVis)" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        <TrendChart
+          height={288}
+          data={trend as unknown as Record<string, number | string>[]}
+          series={[
+            { key: "pageViews", name: "Page Views", color: C.terracotta },
+            { key: "visitors", name: "Visitors", color: C.gold },
+          ]}
+        />
       </Card>
 
       {/* Top pages + sources */}
@@ -319,7 +369,6 @@ function Dashboard({
                   <Tooltip
                     contentStyle={{ background: "#fff", border: `2px solid ${C.sand}`, borderRadius: 12, fontSize: 13 }}
                   />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -357,7 +406,6 @@ function Dashboard({
 
 // --- Ordering view ----------------------------------------------------------
 
-/** Friendly label for an order-button key. */
 function orderButtonLabel(key: string): string {
   const map: Record<string, string> = {
     navbar: "Navbar",
@@ -374,11 +422,6 @@ function orderButtonLabel(key: string): string {
   return map[key] ?? titleCase(key);
 }
 
-/**
- * A focused breakdown of order intent: how many clicked Order, which button
- * they used, which items drew the most clicks, and where those visitors came
- * from. Everything is click-based — completed orders happen on Toast off-site.
- */
 function OrderingDashboard({ data }: { data: DashboardData }) {
   const { kpis, funnel, orderBySource, orderByItem, orderTraffic } = data;
   const hasOrders = kpis.orderClicks > 0;
@@ -403,7 +446,6 @@ function OrderingDashboard({ data }: { data: DashboardData }) {
         </div>
       )}
 
-      {/* KPI scorecards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Order Clicks" value={kpis.orderClicks} prev={kpis.previous.orderClicks}
           hint="Total clicks on any 'Order' button in this period." />
@@ -415,7 +457,6 @@ function OrderingDashboard({ data }: { data: DashboardData }) {
           hint="Menu item with the most Order-button clicks this period." />
       </div>
 
-      {/* Most-clicked items */}
       <Card>
         <CardTitle>Most-Clicked Items</CardTitle>
         <p className="mt-1 text-xs text-espresso/50">
@@ -446,7 +487,6 @@ function OrderingDashboard({ data }: { data: DashboardData }) {
         )}
       </Card>
 
-      {/* Which button + traffic origin */}
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardTitle>Which Button They Clicked</CardTitle>
@@ -478,7 +518,6 @@ function OrderingDashboard({ data }: { data: DashboardData }) {
                   <Tooltip
                     contentStyle={{ background: "#fff", border: `2px solid ${C.sand}`, borderRadius: 12, fontSize: 13 }}
                   />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -489,80 +528,242 @@ function OrderingDashboard({ data }: { data: DashboardData }) {
   );
 }
 
+// --- Menu Items view --------------------------------------------------------
+
+function MenuItemsDashboard({ data }: { data: MenuData }) {
+  if (data === undefined) return <DashboardSkeleton />;
+  const rows = data.rows;
+  const hasData = data.totals.views > 0 || data.totals.orders > 0;
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-2xl border-2 border-dashed border-sand bg-cream px-5 py-3 text-xs text-espresso/55">
+        A <span className="font-semibold">view</span> is a visitor opening an
+        item's page/detail; <span className="font-semibold">order clicks</span>{" "}
+        are that item's Order-button clicks. Both menus are combined here — each
+        menu manager shows its own breakdown.
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <PlainStat label="Item Views" value={nf.format(data.totals.views)}
+          hint="Total menu-item detail opens this period." />
+        <PlainStat label="Order Clicks" value={nf.format(data.totals.orders)}
+          hint="Total per-item Order-button clicks this period." />
+        <PlainStat label="Top Item" value={rows[0]?.name ?? "—"}
+          hint="Most-viewed item this period." />
+      </div>
+
+      <Card>
+        <CardTitle>Views over time</CardTitle>
+        <TrendChart
+          data={data.trend as unknown as Record<string, number | string>[]}
+          series={[
+            { key: "views", name: "Item Views", color: C.terracotta },
+            { key: "clicks", name: "Order Clicks", color: C.gold },
+          ]}
+        />
+      </Card>
+
+      <Card>
+        <CardTitle>Items by Views &amp; Order Clicks</CardTitle>
+        {!hasData ? (
+          <Empty label="No item views or order clicks in this period yet." />
+        ) : (
+          <ItemsTable rows={rows} />
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function ItemsTable({
+  rows,
+}: {
+  rows: { id: string; name: string; menu: string; views: number; orders: number }[];
+}) {
+  const maxViews = Math.max(...rows.map((r) => r.views), 1);
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table className="w-full min-w-[34rem] text-sm">
+        <thead>
+          <tr className="border-b-2 border-sand text-left text-xs uppercase tracking-wide text-espresso/50">
+            <th className="py-2 pr-3 font-semibold">Item</th>
+            <th className="py-2 pr-3 font-semibold">Menu</th>
+            <th className="py-2 pr-3 font-semibold">Views</th>
+            <th className="py-2 font-semibold">Order Clicks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id} className="border-b border-sand/60">
+              <td className="py-2 pr-3 font-medium text-espresso">{r.name}</td>
+              <td className="py-2 pr-3 capitalize text-espresso/60">{r.menu}</td>
+              <td className="py-2 pr-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-24 overflow-hidden rounded-full bg-cream-deep">
+                    <div
+                      className="h-full rounded-full"
+                      style={{ width: `${(r.views / maxViews) * 100}%`, background: C.terracotta }}
+                    />
+                  </div>
+                  <span className="tabular-nums text-espresso/80">{nf.format(r.views)}</span>
+                </div>
+              </td>
+              <td className="py-2 tabular-nums text-espresso/80">{nf.format(r.orders)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// --- Announcements view -----------------------------------------------------
+
+function AnnouncementsDashboard({ data }: { data: Marketing }) {
+  if (data === undefined) return <DashboardSkeleton />;
+  const rows = data.announcements;
+  const totals = rows.reduce(
+    (a, r) => ({ views: a.views + r.views, clicks: a.clicks + r.clicks }),
+    { views: 0, clicks: 0 },
+  );
+  const ctr = totals.views > 0 ? totals.clicks / totals.views : 0;
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <PlainStat label="Impressions" value={nf.format(totals.views)}
+          hint="Times an announcement bar was shown on a page." />
+        <PlainStat label="Button Clicks" value={nf.format(totals.clicks)}
+          hint="Clicks on an announcement bar's button." />
+        <PlainStat label="Click-Through Rate" value={pct(ctr)}
+          hint="Button clicks ÷ impressions." />
+      </div>
+      <Card>
+        <CardTitle>Announcement Bars</CardTitle>
+        {rows.length === 0 ? (
+          <Empty label="No announcement bars yet." />
+        ) : (
+          <MarketingTable
+            columns={["Bar", "Status", "Views", "Clicks", "CTR"]}
+            rows={rows.map((a) => [
+              a.title,
+              a.active ? "On" : "Off",
+              nf.format(a.views),
+              nf.format(a.clicks),
+              pct(a.ctr),
+            ])}
+          />
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// --- Pop-ups view -----------------------------------------------------------
+
+function PopupsDashboard({ data }: { data: Marketing }) {
+  if (data === undefined) return <DashboardSkeleton />;
+  const rows = data.popups;
+  const totals = rows.reduce(
+    (a, r) => ({
+      views: a.views + r.views,
+      clicks: a.clicks + r.clicks,
+      emails: a.emails + r.emails,
+    }),
+    { views: 0, clicks: 0, emails: 0 },
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <PlainStat label="Impressions" value={nf.format(totals.views)}
+          hint="Times a pop-up was shown." />
+        <PlainStat label="Button Clicks" value={nf.format(totals.clicks)}
+          hint="Clicks on a pop-up's call-to-action button." />
+        <PlainStat label="Emails Captured" value={nf.format(totals.emails)}
+          hint="Email addresses submitted through pop-ups this period." />
+        <PlainStat
+          label="CTR"
+          value={pct(totals.views > 0 ? totals.clicks / totals.views : 0)}
+          hint="Button clicks ÷ impressions."
+        />
+      </div>
+      <Card>
+        <CardTitle>Pop-ups</CardTitle>
+        {rows.length === 0 ? (
+          <Empty label="No pop-ups yet." />
+        ) : (
+          <MarketingTable
+            columns={[
+              "Pop-up",
+              "Status",
+              "Views",
+              "Clicks",
+              "Emails",
+              "Avg. Time",
+              "CTR",
+            ]}
+            rows={rows.map((p) => [
+              p.title,
+              p.active ? "On" : "Off",
+              nf.format(p.views),
+              nf.format(p.clicks),
+              nf.format(p.emails),
+              duration(p.avgDwellMs),
+              pct(p.ctr),
+            ])}
+          />
+        )}
+      </Card>
+    </div>
+  );
+}
+
+function MarketingTable({
+  columns,
+  rows,
+}: {
+  columns: string[];
+  rows: (string | number)[][];
+}) {
+  return (
+    <div className="mt-3 overflow-x-auto">
+      <table className="w-full min-w-[34rem] text-sm">
+        <thead>
+          <tr className="border-b-2 border-sand text-left text-xs uppercase tracking-wide text-espresso/50">
+            {columns.map((c) => (
+              <th key={c} className="py-2 pr-3 font-semibold">
+                {c}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className="border-b border-sand/60">
+              {r.map((cellValue, j) => (
+                <td
+                  key={j}
+                  className={`py-2 pr-3 ${
+                    j === 0
+                      ? "font-medium text-espresso"
+                      : "tabular-nums text-espresso/80"
+                  }`}
+                >
+                  {cellValue}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 // --- Small building blocks --------------------------------------------------
 
-function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-2xl border-2 border-sand bg-cream p-5">{children}</div>;
-}
-
-function CardTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="font-groovy text-sm uppercase tracking-[0.2em] text-terracotta">
-      {children}
-    </h2>
-  );
-}
-
-function Empty() {
-  return <p className="mt-6 text-center text-sm text-espresso/40">No data yet.</p>;
-}
-
-function Kpi({
-  label,
-  value,
-  prev,
-  isRate,
-  hint,
-}: {
-  label: string;
-  value: number;
-  prev: number;
-  isRate?: boolean;
-  hint: string;
-}) {
-  const delta = prev > 0 ? (value - prev) / prev : value > 0 ? 1 : 0;
-  const up = delta >= 0;
-  const showDelta = prev > 0;
-  return (
-    <div className="rounded-2xl border-2 border-sand bg-cream p-4" title={hint}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-espresso/55">{label}</p>
-      <p className="mt-1 font-display text-3xl leading-none text-espresso">
-        {isRate ? pct(value) : nf.format(value)}
-      </p>
-      {showDelta ? (
-        <p className={`mt-2 text-xs font-semibold ${up ? "text-[#4a7c4e]" : "text-brick"}`}>
-          {up ? "▲" : "▼"} {pct(Math.abs(delta))}
-          <span className="font-normal text-espresso/40"> vs prev.</span>
-        </p>
-      ) : (
-        <p className="mt-2 text-xs text-espresso/35">— no prior data</p>
-      )}
-    </div>
-  );
-}
-
-/** A KPI-shaped card for a plain value with no period-over-period delta. */
-function PlainStat({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-}) {
-  return (
-    <div className="rounded-2xl border-2 border-sand bg-cream p-4" title={hint}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-espresso/55">{label}</p>
-      <p className="mt-1 truncate font-display text-3xl leading-none text-espresso" title={value}>
-        {value}
-      </p>
-      <p className="mt-2 text-xs text-espresso/35">this period</p>
-    </div>
-  );
-}
-
-/** All-time review submissions, with a "new this week" callout. */
 function ReviewsKpi({ stats }: { stats: ReviewStats | undefined }) {
   return (
     <div
@@ -627,42 +828,6 @@ function Funnel({
           </div>
         );
       })}
-    </div>
-  );
-}
-
-function MiniBars({
-  rows,
-  label,
-  colorize,
-}: {
-  rows: { key: string; count: number }[];
-  label: string;
-  colorize?: boolean;
-}) {
-  if (rows.length === 0) return <Empty />;
-  const max = Math.max(...rows.map((r) => r.count), 1);
-  return (
-    <div className="mt-3 space-y-2.5">
-      {rows.map((r, i) => (
-        <div key={r.key}>
-          <div className="mb-1 flex justify-between text-sm">
-            <span className="font-medium text-espresso">{titleCase(r.key)}</span>
-            <span className="text-espresso/60">
-              {nf.format(r.count)} {label}
-            </span>
-          </div>
-          <div className="h-2.5 w-full overflow-hidden rounded-full bg-cream-deep">
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${(r.count / max) * 100}%`,
-                background: colorize ? PIE[i % PIE.length] : C.terracotta,
-              }}
-            />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
