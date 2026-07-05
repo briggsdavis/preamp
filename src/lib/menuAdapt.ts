@@ -8,8 +8,10 @@ import type { MenuSection, Review } from "@/data/menu";
 type ConvexItem = {
   _id: string;
   name: string;
+  slug?: string;
   price: string;
   description: string;
+  dietaryTags?: string[];
   orderUrl?: string | null;
   images: { url: string | null }[];
   likes: number;
@@ -36,8 +38,10 @@ export function toMenuSections(
       return {
         id: item._id,
         name: item.name,
+        slug: item.slug,
         price: item.price,
         description: item.description,
+        dietaryTags: item.dietaryTags ?? [],
         orderUrl: item.orderUrl ?? null,
         image: urls[0] ?? FALLBACK_IMAGE,
         images: urls,

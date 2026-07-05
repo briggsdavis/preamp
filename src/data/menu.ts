@@ -13,8 +13,10 @@ export interface Review {
 export interface MenuItem {
   id: string;
   name: string;
+  slug?: string; // URL slug for the item's own page
   price: string;
   description: string;
+  dietaryTags?: string[]; // dietary tag keys (see convex/dietaryTags)
   orderUrl?: string | null; // per-item Toast ordering link (optional)
   image: string; // primary image (first of `images`)
   images?: string[]; // all images, primary first

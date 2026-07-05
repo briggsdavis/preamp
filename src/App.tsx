@@ -38,10 +38,18 @@ export default function App() {
   const location = useLocation();
   const track = useTrack();
 
-  // Jump to the top of the page on every route change.
+  // A menu item's page (/menu/<kind>/<slug>) is the menu page with a modal
+  // open. Collapse it to the base menu route so opening/closing an item doesn't
+  // trigger a full page transition or scroll reset behind the modal.
+  const routeKey = location.pathname.replace(
+    /^(\/menu\/(?:coffee|food))\/[^/]+$/,
+    "$1",
+  );
+
+  // Jump to the top of the page on real route changes (not item open/close).
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-  }, [location.pathname]);
+  }, [routeKey]);
 
   // Record a page view on every route change (no-ops on /admin & /menu-pdf).
   useEffect(() => {
@@ -61,7 +69,7 @@ export default function App() {
   return (
     <Layout>
       <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
+        <Routes location={location} key={routeKey}>
           <Route path="/" element={<Home />} />
           <Route
             path="/menu/coffee"
@@ -71,8 +79,25 @@ export default function App() {
               </ErrorBoundary>
             }
           />
+          {/* An item's own page — renders the coffee menu with its modal open. */}
+          <Route
+            path="/menu/coffee/:slug"
+            element={
+              <ErrorBoundary fallback={<MenuUnavailable />}>
+                <MenuCoffee />
+              </ErrorBoundary>
+            }
+          />
           <Route
             path="/menu/food"
+            element={
+              <ErrorBoundary fallback={<MenuUnavailable />}>
+                <MenuFood />
+              </ErrorBoundary>
+            }
+          />
+          <Route
+            path="/menu/food/:slug"
             element={
               <ErrorBoundary fallback={<MenuUnavailable />}>
                 <MenuFood />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
@@ -12,6 +12,18 @@ import {
   ACTION_TRIGGERS,
 } from "@/lib/cms";
 import { useUpload } from "@/admin/useUpload";
+import {
+  ScheduleFields,
+  StatusBadge,
+  scheduleStatus,
+} from "@/admin/ScheduleFields";
+
+// Recharts-backed panel: load it (and recharts) only when Stats is opened.
+const EntityAnalytics = lazy(() =>
+  import("@/admin/analyticsPanels").then((m) => ({
+    default: m.EntityAnalytics,
+  })),
+);
 
 /**
  * Pop-up manager: create / edit / delete pop-ups and toggle them active. Two
@@ -53,6 +65,8 @@ type Popup = {
   showOn: "all" | string[];
   active: boolean;
   backdropBlur?: boolean;
+  startsAt?: number;
+  endsAt?: number;
 };
 
 const MAX_IMAGES = 5;
@@ -64,6 +78,7 @@ export function Popups() {
   const setActive = useMutation(api.marketing.setPopupActive);
   const [editing, setEditing] = useState<Popup | "new" | null>(null);
   const [activateError, setActivateError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Id<"popups"> | null>(null);
 
   async function toggle(id: Id<"popups">, active: boolean) {
     setActivateError(null);
@@ -91,7 +106,9 @@ export function Popups() {
         </button>
       </div>
       <p className="mt-2 text-sm text-espresso/60">
-        Two active pop-ups can't occupy the same position.
+        One pop-up shows per on-screen position. Give a pop-up a schedule to run
+        it for a set window; a later one automatically replaces it in the same
+        spot.
       </p>
       {activateError && (
         <p className="mt-3 rounded-xl border border-brick/30 bg-brick/10 px-4 py-2 text-sm text-brick">
@@ -107,55 +124,82 @@ export function Popups() {
         {rows?.map((p) => (
           <div
             key={p._id}
-            className="flex flex-wrap items-center gap-3 rounded-2xl border-2 border-sand bg-cream p-4"
+            className="rounded-2xl border-2 border-sand bg-cream p-4"
           >
-            <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
-              {p.media[0]?.url && p.media[0].type === "image" && (
-                <img
-                  src={p.media[0].url}
-                  alt=""
-                  className="h-full w-full object-cover"
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
+                {p.media[0]?.url && p.media[0].type === "image" && (
+                  <img
+                    src={p.media[0].url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </div>
+              <div className="min-w-[12rem] flex-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-espresso">
+                    {p.internalTitle}
+                  </p>
+                  <StatusBadge
+                    status={scheduleStatus(p.active, p.startsAt, p.endsAt)}
+                  />
+                </div>
+                <p className="text-xs text-espresso/55">
+                  {labelFor(POPUP_POSITIONS, p.position)} ·{" "}
+                  {labelFor(DISPLAY_FREQUENCIES, p.frequency)} ·{" "}
+                  {p.trigger.type === "time"
+                    ? `after ${p.trigger.seconds ?? 0}s`
+                    : labelFor(ACTION_TRIGGERS, p.trigger.action ?? "")}
+                  {p.emailCapture ? " · email capture" : ""}
+                </p>
+              </div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-espresso">
+                <input
+                  type="checkbox"
+                  checked={p.active}
+                  onChange={(e) => void toggle(p._id, e.target.checked)}
+                  className="h-5 w-5 accent-brick"
                 />
-              )}
+                {p.active ? "On" : "Off"}
+              </label>
+              <button
+                type="button"
+                className={btn.small}
+                onClick={() =>
+                  setExpanded((cur) => (cur === p._id ? null : p._id))
+                }
+              >
+                {expanded === p._id ? "Hide stats" : "Stats"}
+              </button>
+              <button
+                type="button"
+                className={btn.small}
+                onClick={() => setEditing(p as Popup)}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className={btn.danger}
+                onClick={() =>
+                  confirmThen(`Delete "${p.internalTitle}"?`, () =>
+                    void remove({ id: p._id }),
+                  )
+                }
+              >
+                Delete
+              </button>
             </div>
-            <div className="min-w-[12rem] flex-1">
-              <p className="font-semibold text-espresso">{p.internalTitle}</p>
-              <p className="text-xs text-espresso/55">
-                {labelFor(POPUP_POSITIONS, p.position)} ·{" "}
-                {labelFor(DISPLAY_FREQUENCIES, p.frequency)} ·{" "}
-                {p.trigger.type === "time"
-                  ? `after ${p.trigger.seconds ?? 0}s`
-                  : labelFor(ACTION_TRIGGERS, p.trigger.action ?? "")}
-                {p.emailCapture ? " · email capture" : ""}
-              </p>
-            </div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-espresso">
-              <input
-                type="checkbox"
-                checked={p.active}
-                onChange={(e) => void toggle(p._id, e.target.checked)}
-                className="h-5 w-5 accent-brick"
-              />
-              {p.active ? "On" : "Off"}
-            </label>
-            <button
-              type="button"
-              className={btn.small}
-              onClick={() => setEditing(p as Popup)}
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              className={btn.danger}
-              onClick={() =>
-                confirmThen(`Delete "${p.internalTitle}"?`, () =>
-                  void remove({ id: p._id }),
-                )
-              }
-            >
-              Delete
-            </button>
+            {expanded === p._id && (
+              <Suspense
+                fallback={
+                  <p className="mt-3 text-sm text-espresso/50">Loading…</p>
+                }
+              >
+                <EntityAnalytics kind="popup" id={p._id} />
+              </Suspense>
+            )}
           </div>
         ))}
       </div>
@@ -218,6 +262,10 @@ function PopupForm({
   const [pages, setPages] = useState<string[]>(
     existing && existing.showOn !== "all" ? existing.showOn : [],
   );
+  const [startsAt, setStartsAt] = useState<number | undefined>(
+    existing?.startsAt,
+  );
+  const [endsAt, setEndsAt] = useState<number | undefined>(existing?.endsAt);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -268,6 +316,10 @@ function PopupForm({
       setError("An internal title is required.");
       return;
     }
+    if (startsAt != null && endsAt != null && endsAt <= startsAt) {
+      setError("The end time must be after the start time.");
+      return;
+    }
     setSaving(true);
     setError(null);
     const payload = {
@@ -286,13 +338,19 @@ function PopupForm({
       emailCapture,
       backdropBlur,
       showOn: (allPages ? "all" : pages) as "all" | string[],
+      startsAt,
+      endsAt,
     };
     try {
       if (existing) await update({ id: existing._id, ...payload });
       else await create(payload);
       onClose();
-    } catch {
-      setError("Couldn't save the pop-up.");
+    } catch (err) {
+      setError(
+        err && typeof err === "object" && "data" in err
+          ? String((err as { data?: unknown }).data)
+          : "Couldn't save the pop-up.",
+      );
       setSaving(false);
     }
   }
@@ -565,6 +623,15 @@ function PopupForm({
             </div>
           )}
         </div>
+
+        <ScheduleFields
+          startsAt={startsAt}
+          endsAt={endsAt}
+          onChange={({ startsAt: s, endsAt: e }) => {
+            setStartsAt(s);
+            setEndsAt(e);
+          }}
+        />
 
         {error && <p className="text-sm text-brick">{error}</p>}
 

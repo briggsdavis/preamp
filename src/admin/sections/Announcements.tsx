@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
@@ -6,6 +6,18 @@ import type { Id } from "@convex/_generated/dataModel";
 import { field, label, btn, Modal } from "@/admin/ui";
 import { useDialogs } from "@/admin/dialogs";
 import { PUBLIC_PAGES } from "@/lib/cms";
+import {
+  ScheduleFields,
+  StatusBadge,
+  scheduleStatus,
+} from "@/admin/ScheduleFields";
+
+// Recharts-backed panel: load it (and recharts) only when Stats is opened.
+const EntityAnalytics = lazy(() =>
+  import("@/admin/analyticsPanels").then((m) => ({
+    default: m.EntityAnalytics,
+  })),
+);
 
 /**
  * Announcement bar manager: create / edit / delete bars and toggle exactly one
@@ -22,6 +34,8 @@ type Announcement = {
   textColor: string;
   showOn: "all" | string[];
   active: boolean;
+  startsAt?: number;
+  endsAt?: number;
 };
 
 export function Announcements() {
@@ -30,6 +44,21 @@ export function Announcements() {
   const remove = useMutation(api.marketing.deleteAnnouncement);
   const setActive = useMutation(api.marketing.setAnnouncementActive);
   const [editing, setEditing] = useState<Announcement | "new" | null>(null);
+  const [expanded, setExpanded] = useState<Id<"announcements"> | null>(null);
+  const [activateError, setActivateError] = useState<string | null>(null);
+
+  async function toggle(id: Id<"announcements">, active: boolean) {
+    setActivateError(null);
+    try {
+      await setActive({ id, active });
+    } catch (err) {
+      setActivateError(
+        err && typeof err === "object" && "data" in err
+          ? String((err as { data?: unknown }).data)
+          : "Couldn't activate this bar.",
+      );
+    }
+  }
 
   return (
     <div>
@@ -44,9 +73,14 @@ export function Announcements() {
         </button>
       </div>
       <p className="mt-2 text-sm text-espresso/60">
-        Only one bar can be active at a time. Activating one turns the others
-        off.
+        The site shows one bar at a time. Give a bar a schedule to have it go
+        live later and automatically replace the current one.
       </p>
+      {activateError && (
+        <p className="mt-3 rounded-xl border border-brick/30 bg-brick/10 px-4 py-2 text-sm text-brick">
+          {activateError}
+        </p>
+      )}
 
       <div className="mt-6 space-y-3">
         {rows === undefined && <p className="text-espresso/60">Loading…</p>}
@@ -56,58 +90,81 @@ export function Announcements() {
         {rows?.map((a) => (
           <div
             key={a._id}
-            className="flex flex-wrap items-center gap-3 rounded-2xl border-2 border-sand bg-cream p-4"
+            className="rounded-2xl border-2 border-sand bg-cream p-4"
           >
-            {/* A mini preview of how the live announcement bar looks. */}
-            <div
-              className="flex h-10 min-w-[12rem] flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg px-3 text-sm font-semibold"
-              style={{ background: a.bgColor, color: a.textColor }}
-              title="Live preview of the announcement bar"
-            >
-              <span className="truncate">{a.text}</span>
-              {a.buttonLabel && a.buttonLink && (
-                <span className="shrink-0 rounded-full border border-current px-2 py-0.5 text-xs font-semibold">
-                  {a.buttonLabel}
-                </span>
-              )}
-            </div>
-            <div className="min-w-[10rem]">
-              <p className="font-semibold text-espresso">{a.internalTitle}</p>
-              <p className="text-xs text-espresso/55">
-                {a.showOn === "all"
-                  ? "All pages"
-                  : `${a.showOn.length} page(s)`}
-              </p>
-            </div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-espresso">
-              <input
-                type="checkbox"
-                checked={a.active}
-                onChange={(e) =>
-                  void setActive({ id: a._id, active: e.target.checked })
+            <div className="flex flex-wrap items-center gap-3">
+              {/* A mini preview of how the live announcement bar looks. */}
+              <div
+                className="flex h-10 min-w-[12rem] flex-1 items-center justify-center gap-2 overflow-hidden rounded-lg px-3 text-sm font-semibold"
+                style={{ background: a.bgColor, color: a.textColor }}
+                title="Live preview of the announcement bar"
+              >
+                <span className="truncate">{a.text}</span>
+                {a.buttonLabel && a.buttonLink && (
+                  <span className="shrink-0 rounded-full border border-current px-2 py-0.5 text-xs font-semibold">
+                    {a.buttonLabel}
+                  </span>
+                )}
+              </div>
+              <div className="min-w-[10rem]">
+                <div className="flex items-center gap-2">
+                  <p className="font-semibold text-espresso">{a.internalTitle}</p>
+                  <StatusBadge
+                    status={scheduleStatus(a.active, a.startsAt, a.endsAt)}
+                  />
+                </div>
+                <p className="text-xs text-espresso/55">
+                  {a.showOn === "all"
+                    ? "All pages"
+                    : `${a.showOn.length} page(s)`}
+                </p>
+              </div>
+              <label className="flex items-center gap-2 text-sm font-semibold text-espresso">
+                <input
+                  type="checkbox"
+                  checked={a.active}
+                  onChange={(e) => void toggle(a._id, e.target.checked)}
+                  className="h-5 w-5 accent-brick"
+                />
+                {a.active ? "On" : "Off"}
+              </label>
+              <button
+                type="button"
+                className={btn.small}
+                onClick={() =>
+                  setExpanded((cur) => (cur === a._id ? null : a._id))
                 }
-                className="h-5 w-5 accent-brick"
-              />
-              {a.active ? "On" : "Off"}
-            </label>
-            <button
-              type="button"
-              className={btn.small}
-              onClick={() => setEditing(a as Announcement)}
-            >
-              Edit
-            </button>
-            <button
-              type="button"
-              className={btn.danger}
-              onClick={() =>
-                confirmThen(`Delete "${a.internalTitle}"?`, () =>
-                  void remove({ id: a._id }),
-                )
-              }
-            >
-              Delete
-            </button>
+              >
+                {expanded === a._id ? "Hide stats" : "Stats"}
+              </button>
+              <button
+                type="button"
+                className={btn.small}
+                onClick={() => setEditing(a as Announcement)}
+              >
+                Edit
+              </button>
+              <button
+                type="button"
+                className={btn.danger}
+                onClick={() =>
+                  confirmThen(`Delete "${a.internalTitle}"?`, () =>
+                    void remove({ id: a._id }),
+                  )
+                }
+              >
+                Delete
+              </button>
+            </div>
+            {expanded === a._id && (
+              <Suspense
+                fallback={
+                  <p className="mt-3 text-sm text-espresso/50">Loading…</p>
+                }
+              >
+                <EntityAnalytics kind="announcement" id={a._id} />
+              </Suspense>
+            )}
           </div>
         ))}
       </div>
@@ -146,7 +203,12 @@ function AnnouncementForm({
   const [pages, setPages] = useState<string[]>(
     existing && existing.showOn !== "all" ? existing.showOn : [],
   );
+  const [startsAt, setStartsAt] = useState<number | undefined>(
+    existing?.startsAt,
+  );
+  const [endsAt, setEndsAt] = useState<number | undefined>(existing?.endsAt);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function togglePage(key: string) {
     setPages((prev) =>
@@ -156,7 +218,12 @@ function AnnouncementForm({
 
   async function save() {
     if (!internalTitle.trim() || !text.trim()) return;
+    if (startsAt != null && endsAt != null && endsAt <= startsAt) {
+      setError("The end time must be after the start time.");
+      return;
+    }
     setSaving(true);
+    setError(null);
     const payload = {
       internalTitle: internalTitle.trim(),
       text: text.trim(),
@@ -165,12 +232,19 @@ function AnnouncementForm({
       bgColor,
       textColor,
       showOn: (allPages ? "all" : pages) as "all" | string[],
+      startsAt,
+      endsAt,
     };
     try {
       if (existing) await update({ id: existing._id, ...payload });
       else await create(payload);
       onClose();
-    } finally {
+    } catch (err) {
+      setError(
+        err && typeof err === "object" && "data" in err
+          ? String((err as { data?: unknown }).data)
+          : "Couldn't save the announcement.",
+      );
       setSaving(false);
     }
   }
@@ -272,6 +346,17 @@ function AnnouncementForm({
             </div>
           )}
         </div>
+
+        <ScheduleFields
+          startsAt={startsAt}
+          endsAt={endsAt}
+          onChange={({ startsAt: s, endsAt: e }) => {
+            setStartsAt(s);
+            setEndsAt(e);
+          }}
+        />
+
+        {error && <p className="text-sm font-semibold text-brick">{error}</p>}
 
         <div className="flex justify-end gap-3 pt-2">
           <button type="button" className={btn.secondary} onClick={onClose}>

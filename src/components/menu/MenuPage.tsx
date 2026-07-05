@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
@@ -7,8 +8,58 @@ import type { Id } from "@convex/_generated/dataModel";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { useTrack } from "@/lib/analytics";
+import { useSeo } from "@/lib/seo";
 import { SITE } from "@/data/site";
 import type { MenuItem, MenuSection } from "@/data/menu";
+
+/** A resolved dietary tag (label + emoji icon + color) for rendering pills. */
+export interface TagInfo {
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+}
+
+type TagLookup = Record<string, TagInfo>;
+
+/** Resolve an item's tag keys to catalog entries, dropping unknown keys. */
+function itemTags(item: MenuItem, lookup: TagLookup): TagInfo[] {
+  return (item.dietaryTags ?? [])
+    .map((k) => lookup[k])
+    .filter((t): t is TagInfo => !!t);
+}
+
+/** A row of dietary tag pills. Renders nothing when the item has no tags. */
+function DietaryPills({
+  tags,
+  size = "sm",
+}: {
+  tags: TagInfo[];
+  size?: "sm" | "lg";
+}) {
+  if (tags.length === 0) return null;
+  return (
+    <div className={`flex flex-wrap gap-1.5 ${size === "lg" ? "mt-4" : "mt-2"}`}>
+      {tags.map((t) => (
+        <span
+          key={t.key}
+          title={t.label}
+          className={`inline-flex items-center gap-1 rounded-full border font-semibold ${
+            size === "lg" ? "px-3 py-1 text-sm" : "px-2 py-0.5 text-xs"
+          }`}
+          style={{
+            color: t.color,
+            borderColor: `${t.color}55`,
+            background: `${t.color}14`,
+          }}
+        >
+          <span aria-hidden>{t.icon}</span>
+          {t.label}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 /** Per-item interaction state managed client-side: like toggle + count. */
 interface ItemState {
@@ -118,25 +169,35 @@ function OrderButton({
 function MenuCard({
   item,
   state,
+  tags,
+  href,
   orderEnabled,
   onToggleLike,
   onOpen,
 }: {
   item: MenuItem;
   state: ItemState;
+  tags: TagInfo[];
+  href?: string;
   orderEnabled: boolean;
   onToggleLike: () => void;
   onOpen: () => void;
 }) {
   return (
-    <motion.button
-      type="button"
-      onClick={onOpen}
+    <motion.a
+      href={href}
+      onClick={(e) => {
+        // Plain left-click opens the routed modal in-app; modifier/middle
+        // clicks fall through to the browser (open in new tab, etc.).
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        onOpen();
+      }}
       initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
       whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="group flex flex-col overflow-hidden rounded-2xl border-2 border-sand bg-cream text-left shadow-lg shadow-maroon/10 transition-all hover:-translate-y-1 hover:shadow-xl"
+      className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border-2 border-sand bg-cream text-left shadow-lg shadow-maroon/10 transition-all hover:-translate-y-1 hover:shadow-xl"
     >
       <div className="relative h-48 overflow-hidden">
         <img
@@ -146,7 +207,10 @@ function MenuCard({
         />
         <div
           className="absolute right-3 top-3"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
         >
           <HeartButton
             liked={state.liked}
@@ -161,16 +225,20 @@ function MenuCard({
           <span className="font-semibold text-brick">{item.price}</span>
         </div>
         <p className="mt-2 text-sm text-espresso/75">{item.description}</p>
+        <DietaryPills tags={tags} />
         {orderEnabled && (
           <div
             className="mt-4 flex"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
           >
             <OrderButton item={item} />
           </div>
         )}
       </div>
-    </motion.button>
+    </motion.a>
   );
 }
 
@@ -178,6 +246,7 @@ function MenuCard({
 function ItemModal({
   item,
   state,
+  tags,
   reviewsEnabled,
   orderEnabled,
   onToggleLike,
@@ -185,6 +254,7 @@ function ItemModal({
 }: {
   item: MenuItem;
   state: ItemState;
+  tags: TagInfo[];
   reviewsEnabled: boolean;
   orderEnabled: boolean;
   onToggleLike: () => void;
@@ -324,6 +394,7 @@ function ItemModal({
           <p className="mt-1 text-sm font-semibold text-terracotta">
             {state.likes} {state.likes === 1 ? "like" : "likes"}
           </p>
+          <DietaryPills tags={tags} size="lg" />
           <p className="mt-4 text-lg text-espresso/85">{item.description}</p>
 
           {orderEnabled && (
@@ -469,10 +540,18 @@ function viewState(item: MenuItem, override?: Override): ItemState {
   return { liked, likes: item.likes + (liked ? 1 : 0) };
 }
 
+/** Numeric price string ("$4.75" → "4.75") for structured data. */
+function priceValue(price: string): string {
+  const m = price.match(/[\d]+(\.\d+)?/);
+  return m ? m[0] : "";
+}
+
 /** Shared menu page: hero band, grouped sections of cards, and the modal. */
 export function MenuPage({
   kicker,
   title,
+  menuKind,
+  openSlug,
   sections,
   loading = false,
   pdf = null,
@@ -481,6 +560,14 @@ export function MenuPage({
 }: {
   kicker: string;
   title: string;
+  /**
+   * Which menu this is; drives item-page URLs (/menu/<kind>/<slug>). When
+   * omitted (e.g. the merch page) the modal opens as client-only state with no
+   * URL, tracking, or SEO.
+   */
+  menuKind?: "coffee" | "food";
+  /** When set, the item with this slug opens as a routed modal. */
+  openSlug?: string;
   sections: MenuSection[];
   loading?: boolean;
   pdf?: { url: string | null; name: string } | null;
@@ -490,6 +577,16 @@ export function MenuPage({
   orderEnabled?: boolean;
 }) {
   const track = useTrack();
+  const navigate = useNavigate();
+  const tagCatalog = useQuery(api.dietaryTags.list);
+  const tagLookup = useMemo<TagLookup>(() => {
+    const map: TagLookup = {};
+    for (const t of tagCatalog ?? []) {
+      map[t.key] = { key: t.key, label: t.label, icon: t.icon, color: t.color };
+    }
+    return map;
+  }, [tagCatalog]);
+
   const allItems = useMemo(
     () => sections.flatMap((s) => s.items),
     [sections],
@@ -497,24 +594,87 @@ export function MenuPage({
 
   // Per-item like toggles the visitor makes, layered over stored values.
   const [overrides, setOverrides] = useState<OverrideMap>({});
+  // Fallback open state for the unrouted (merch) mode.
   const [openId, setOpenId] = useState<string | null>(null);
 
+  const routed = !!menuKind;
+  const base = menuKind ? `/menu/${menuKind}` : "";
+
+  // Routed mode derives the open item from the URL slug (a real page);
+  // unrouted mode uses local state.
   const openItem = useMemo(
-    () => allItems.find((it) => it.id === openId) ?? null,
-    [allItems, openId],
+    () =>
+      routed
+        ? openSlug
+          ? (allItems.find((it) => it.slug === openSlug) ?? null)
+          : null
+        : (allItems.find((it) => it.id === openId) ?? null),
+    [routed, allItems, openSlug, openId],
   );
+
+  const hrefFor = (item: MenuItem) =>
+    routed && item.slug ? `${base}/${item.slug}` : undefined;
+  const openItemNav = (item: MenuItem) => {
+    if (routed) {
+      if (item.slug) navigate(`${base}/${item.slug}`);
+    } else {
+      setOpenId(item.id);
+    }
+  };
+  const closeModal = () => {
+    if (routed) navigate(base);
+    else setOpenId(null);
+  };
 
   function toggleLike(id: string) {
     setOverrides((prev) => ({ ...prev, [id]: { liked: !prev[id]?.liked } }));
   }
 
+  // Record a per-item "view" whenever an item detail becomes the open page.
+  useEffect(() => {
+    if (!openItem || !routed) return;
+    track("item_view", {
+      path: `${base}/${openItem.slug ?? ""}`,
+      menu: menuKind,
+      menuItemName: openItem.name,
+      entityId: openItem.id,
+      entityTitle: openItem.name,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openItem?.id, routed]);
+
+  // Per-item SEO (title/description/OG/JSON-LD) while a routed item is open.
+  useSeo(
+    openItem && routed
+      ? {
+          title: `${openItem.name} · ${title} · ${SITE.name} ${SITE.tagline}`,
+          description: openItem.description,
+          canonicalPath: `${base}/${openItem.slug ?? ""}`,
+          image: openItem.image,
+          type: "product",
+          jsonLd: {
+            "@context": "https://schema.org",
+            "@type": "MenuItem",
+            name: openItem.name,
+            description: openItem.description,
+            ...(openItem.image ? { image: openItem.image } : {}),
+            offers: {
+              "@type": "Offer",
+              price: priceValue(openItem.price),
+              priceCurrency: "USD",
+            },
+          },
+        }
+      : null,
+  );
+
   // Lock body scroll while the modal is open.
   useEffect(() => {
-    document.body.style.overflow = openId ? "hidden" : "";
+    document.body.style.overflow = openItem ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
     };
-  }, [openId]);
+  }, [openItem]);
 
   return (
     <PageWrapper>
@@ -581,9 +741,11 @@ export function MenuPage({
                       key={item.id}
                       item={item}
                       state={viewState(item, overrides[item.id])}
+                      tags={itemTags(item, tagLookup)}
+                      href={hrefFor(item)}
                       orderEnabled={orderEnabled}
                       onToggleLike={() => toggleLike(item.id)}
-                      onOpen={() => setOpenId(item.id)}
+                      onOpen={() => openItemNav(item)}
                     />
                   ))}
                 </div>
@@ -601,10 +763,11 @@ export function MenuPage({
             <ItemModal
               item={openItem}
               state={viewState(openItem, overrides[openItem.id])}
+              tags={itemTags(openItem, tagLookup)}
               reviewsEnabled={reviewsEnabled}
               orderEnabled={orderEnabled}
               onToggleLike={() => toggleLike(openItem.id)}
-              onClose={() => setOpenId(null)}
+              onClose={closeModal}
             />
           )}
         </AnimatePresence>,

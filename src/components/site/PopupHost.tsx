@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
 
 import { pageKeyForPath, showsOnPage } from "@/lib/cms";
+import { useTrack } from "@/lib/analytics";
 
 /**
  * Renders the active pop-ups on the public site, honoring each pop-up's
@@ -114,6 +115,7 @@ function PopupItem({
   pathname: string;
 }) {
   const captureEmail = useMutation(api.inquiries.captureEmail);
+  const track = useTrack();
   const [open, setOpen] = useState(false);
   const [armed] = useState(() => !alreadySeen(popup));
   // Whether this pop-up has already revealed during this mount. Tracked in a
@@ -124,6 +126,41 @@ function PopupItem({
   const [email, setEmail] = useState("");
   const [captured, setCaptured] = useState(false);
 
+  // Analytics: when the pop-up opened, whether we've recorded the close, and a
+  // mirror of `open` so the unmount cleanup can record dwell time.
+  const openedAt = useRef<number | null>(null);
+  const closeTracked = useRef(false);
+  const openRef = useRef(false);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
+
+  // Record the dismissal + dwell time once, then hide the pop-up.
+  function fireClose() {
+    if (closeTracked.current || openedAt.current == null) return;
+    closeTracked.current = true;
+    track("popup_close", {
+      path: pathname,
+      entityId: popup._id,
+      entityTitle: popup.internalTitle,
+      dwellMs: Date.now() - openedAt.current,
+    });
+  }
+  function close() {
+    fireClose();
+    setOpen(false);
+  }
+
+  // If the visitor navigates away while the pop-up is open, still count the
+  // dismissal (they "clicked out" by leaving).
+  useEffect(
+    () => () => {
+      if (openRef.current) fireClose();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   // Arm the trigger once.
   useEffect(() => {
     if (!armed || shown.current) return;
@@ -132,6 +169,12 @@ function PopupItem({
       shown.current = true;
       setOpen(true);
       markSeen(popup);
+      openedAt.current = Date.now();
+      track("popup_view", {
+        path: pathname,
+        entityId: popup._id,
+        entityTitle: popup.internalTitle,
+      });
     };
 
     const { trigger } = popup;
@@ -178,7 +221,7 @@ function PopupItem({
       default:
         return;
     }
-  }, [armed, popup, pathname]);
+  }, [armed, popup, pathname, track]);
 
   if (!open) return null;
 
@@ -213,7 +256,7 @@ function PopupItem({
     >
       <button
         type="button"
-        onClick={() => setOpen(false)}
+        onClick={close}
         aria-label="Close"
         className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-espresso/70 text-cream transition-colors hover:bg-espresso"
       >
@@ -291,6 +334,15 @@ function PopupItem({
           <div className="mt-4 flex justify-center">
             <a
               href={popup.buttonLink}
+              onClick={() =>
+                track("popup_click", {
+                  path: pathname,
+                  entityId: popup._id,
+                  entityTitle: popup.internalTitle,
+                  buttonKey: "cta",
+                  destination: popup.buttonLink,
+                })
+              }
               className="rounded-full bg-brick px-6 py-2.5 font-semibold text-cream transition-colors hover:bg-maroon"
             >
               {popup.buttonLabel}
@@ -310,7 +362,7 @@ function PopupItem({
     <AnimatePresence>
       <div
         className={`pointer-events-none ${wrapperClasses(popup.position)}`}
-        onClick={showBackdrop ? () => setOpen(false) : undefined}
+        onClick={showBackdrop ? close : undefined}
       >
         {showBackdrop && (
           <div

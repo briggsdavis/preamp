@@ -4,6 +4,7 @@ import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { requireAdmin } from "./admin";
+import { menuKind } from "./schema";
 
 /**
  * First-party analytics.
@@ -30,6 +31,12 @@ const VALID_TYPES = new Set([
   "order_click",
   "menu_click",
   "cta_click",
+  "item_view",
+  "announcement_view",
+  "announcement_click",
+  "popup_view",
+  "popup_click",
+  "popup_close",
 ]);
 
 // --- Time helpers (shop-local calendar math) --------------------------------
@@ -122,6 +129,15 @@ type DayStats = {
   ctaClicks: Record<string, number>;
   funnelMenuViewers: number;
   funnelOrderClickers: number;
+  // Menu-item detail opens, keyed "menu|Item Name".
+  itemViews: Record<string, number>;
+  // Marketing per-entity metrics, keyed by announcement / pop-up id.
+  annViews: Record<string, number>;
+  annClicks: Record<string, number>;
+  popupViews: Record<string, number>;
+  popupClicks: Record<string, number>;
+  popupCloses: Record<string, number>;
+  popupDwellMs: Record<string, number>;
 };
 
 function emptyStats(): DayStats {
@@ -139,6 +155,13 @@ function emptyStats(): DayStats {
     ctaClicks: {},
     funnelMenuViewers: 0,
     funnelOrderClickers: 0,
+    itemViews: {},
+    annViews: {},
+    annClicks: {},
+    popupViews: {},
+    popupClicks: {},
+    popupCloses: {},
+    popupDwellMs: {},
   };
 }
 
@@ -181,6 +204,38 @@ function aggregateEvents(events: Doc<"analyticsEvents">[]): DayStats {
         bump(s.ctaClicks, e.cta || "other");
         break;
       }
+      case "item_view": {
+        // Key by "menu|Name" so same-named coffee/food items stay distinct.
+        if (e.menuItemName) {
+          bump(s.itemViews, `${e.menu || "other"}|${e.menuItemName}`);
+          menuViewers.add(e.visitorId);
+        }
+        break;
+      }
+      case "announcement_view": {
+        if (e.entityId) bump(s.annViews, e.entityId);
+        break;
+      }
+      case "announcement_click": {
+        if (e.entityId) bump(s.annClicks, e.entityId);
+        break;
+      }
+      case "popup_view": {
+        if (e.entityId) bump(s.popupViews, e.entityId);
+        break;
+      }
+      case "popup_click": {
+        if (e.entityId) bump(s.popupClicks, e.entityId);
+        break;
+      }
+      case "popup_close": {
+        if (e.entityId) {
+          bump(s.popupCloses, e.entityId);
+          if (typeof e.dwellMs === "number")
+            bump(s.popupDwellMs, e.entityId, e.dwellMs);
+        }
+        break;
+      }
     }
   }
 
@@ -217,6 +272,10 @@ export const track = mutation({
     menu: v.optional(v.string()),
     cta: v.optional(v.string()),
     destination: v.optional(v.string()),
+    entityId: v.optional(v.string()),
+    entityTitle: v.optional(v.string()),
+    buttonKey: v.optional(v.string()),
+    dwellMs: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     if (!VALID_TYPES.has(args.type)) return; // ignore unknown event types
@@ -237,6 +296,13 @@ export const track = mutation({
       menu: args.menu?.slice(0, 32),
       cta: args.cta?.slice(0, 64),
       destination: args.destination?.slice(0, 256),
+      entityId: args.entityId?.slice(0, 64),
+      entityTitle: args.entityTitle?.slice(0, 128),
+      buttonKey: args.buttonKey?.slice(0, 32),
+      dwellMs:
+        typeof args.dwellMs === "number" && args.dwellMs >= 0
+          ? Math.min(args.dwellMs, 3_600_000) // clamp to 1h to bound outliers
+          : undefined,
       isStaff: userId !== null,
       ts: Date.now(),
     });
@@ -277,6 +343,13 @@ async function upsertDay(ctx: MutationCtx, date: string, stats: DayStats) {
     ctaClicks: rec2arr(stats.ctaClicks),
     funnelMenuViewers: stats.funnelMenuViewers,
     funnelOrderClickers: stats.funnelOrderClickers,
+    itemViews: rec2arr(stats.itemViews),
+    annViews: rec2arr(stats.annViews),
+    annClicks: rec2arr(stats.annClicks),
+    popupViews: rec2arr(stats.popupViews),
+    popupClicks: rec2arr(stats.popupClicks),
+    popupCloses: rec2arr(stats.popupCloses),
+    popupDwellMs: rec2arr(stats.popupDwellMs),
   };
   if (existing) await ctx.db.patch(existing._id, doc);
   else await ctx.db.insert("analyticsDaily", doc);
@@ -401,6 +474,13 @@ async function readRollups(
       ctaClicks: arr2rec(r.ctaClicks),
       funnelMenuViewers: r.funnelMenuViewers,
       funnelOrderClickers: r.funnelOrderClickers,
+      itemViews: arr2rec(r.itemViews ?? []),
+      annViews: arr2rec(r.annViews ?? []),
+      annClicks: arr2rec(r.annClicks ?? []),
+      popupViews: arr2rec(r.popupViews ?? []),
+      popupClicks: arr2rec(r.popupClicks ?? []),
+      popupCloses: arr2rec(r.popupCloses ?? []),
+      popupDwellMs: arr2rec(r.popupDwellMs ?? []),
     });
   }
   return map;
@@ -603,6 +683,536 @@ export const getDashboard = query({
       orderTraffic: topEntries(orderTraffic),
       menuByKind: topEntries(menuByKind),
       ctaClicks: topEntries(ctaClicks),
+    };
+  },
+});
+
+// --- Shared window loader (used by the per-section analytics below) ---------
+
+type Window = {
+  tf: Timeframe;
+  today: string;
+  startDate: string;
+  dates: string[];
+  perDay: DayStats[];
+};
+
+/** Build the ordered per-day stats window for a timeframe (today live). */
+async function loadWindow(
+  ctx: QueryCtx,
+  timeframe: string,
+  now: number,
+): Promise<Window> {
+  const tf = TIMEFRAMES[timeframe] ?? TIMEFRAMES.week;
+  const today = dayKey(now);
+  const startDate = addDays(today, -(tf.daysBack - 1));
+  const rollups = await readRollups(ctx, startDate, today);
+  const todayStats = aggregateEvents(await fetchDayEvents(ctx, today));
+  const dates: string[] = [];
+  for (let dk = startDate; dk <= today; dk = addDays(dk, 1)) dates.push(dk);
+  const perDay = dates.map((dk) =>
+    dk === today ? todayStats : (rollups.get(dk) ?? emptyStats()),
+  );
+  return { tf, today, startDate, dates, perDay };
+}
+
+type TrendPoint = { label: string; views: number; clicks: number };
+
+/**
+ * Bucket a per-day {views,clicks} series into the timeframe's granularity.
+ * "today" (hour granularity, one day back) renders as a single point — fine
+ * for the compact per-entity cards.
+ */
+function bucketSeries(
+  { tf, dates, perDay }: Window,
+  extract: (d: DayStats) => { views: number; clicks: number },
+): TrendPoint[] {
+  const per = perDay.map(extract);
+  if (tf.granularity === "hour" || tf.granularity === "day") {
+    return per.map((p, i) => ({ label: dates[i], ...p }));
+  }
+  if (tf.granularity === "week") {
+    const out: TrendPoint[] = [];
+    for (let i = 0; i < per.length; i += 7) {
+      const chunk = per.slice(i, i + 7);
+      out.push({
+        label: dates[i],
+        views: chunk.reduce((a, p) => a + p.views, 0),
+        clicks: chunk.reduce((a, p) => a + p.clicks, 0),
+      });
+    }
+    return out;
+  }
+  const byMonth = new Map<string, TrendPoint>();
+  per.forEach((p, i) => {
+    const month = dates[i].slice(0, 7);
+    const b = byMonth.get(month) ?? { label: month, views: 0, clicks: 0 };
+    b.views += p.views;
+    b.clicks += p.clicks;
+    byMonth.set(month, b);
+  });
+  return [...byMonth.values()];
+}
+
+/** Sum email captures per pop-up id created on/after `sinceMs`. */
+async function emailsByPopup(
+  ctx: QueryCtx,
+  sinceMs: number,
+): Promise<Record<string, number>> {
+  const rows = await ctx.db.query("emailCaptures").collect();
+  const out: Record<string, number> = {};
+  for (const r of rows) {
+    if (r._creationTime < sinceMs || !r.popupId) continue;
+    out[r.popupId] = (out[r.popupId] ?? 0) + 1;
+  }
+  return out;
+}
+
+// --- Admin: per-menu item analytics -----------------------------------------
+
+/**
+ * Per-item views (detail opens) and order-button clicks for a menu — or for
+ * both menus when `menu` is omitted (powers the home dashboard's Menu toggle
+ * and the per-menu analytics on each menu manager).
+ */
+export const getMenuAnalytics = query({
+  args: {
+    menu: v.optional(menuKind),
+    timeframe: v.string(),
+    now: v.number(),
+  },
+  handler: async (ctx, { menu, timeframe, now }) => {
+    await requireAdmin(ctx);
+    const win = await loadWindow(ctx, timeframe, now);
+
+    const items = menu
+      ? await ctx.db
+          .query("menuItems")
+          .withIndex("by_menu", (q) => q.eq("menu", menu))
+          .collect()
+      : await ctx.db.query("menuItems").collect();
+
+    const views: Record<string, number> = {};
+    const orders: Record<string, number> = {};
+    for (const d of win.perDay) {
+      mergeMap(views, d.itemViews);
+      mergeMap(orders, d.orderByItem);
+    }
+
+    const rows = items
+      .map((it) => ({
+        id: it._id,
+        name: it.name,
+        menu: it.menu,
+        views: views[`${it.menu}|${it.name}`] ?? 0,
+        // Order clicks aren't tagged by menu, so join on item name.
+        orders: orders[it.name] ?? 0,
+      }))
+      .sort((a, b) => b.views - a.views || b.orders - a.orders);
+
+    const trend = bucketSeries(win, (d) => ({
+      views: Object.entries(d.itemViews).reduce(
+        (a, [k, c]) => a + (!menu || k.startsWith(`${menu}|`) ? c : 0),
+        0,
+      ),
+      clicks: rows.length
+        ? Object.entries(d.orderByItem).reduce(
+            (a, [k, c]) =>
+              a + (items.some((it) => it.name === k) ? c : 0),
+            0,
+          )
+        : 0,
+    }));
+
+    return {
+      menu: menu ?? null,
+      range: { start: win.startDate, end: win.today },
+      rows,
+      trend,
+      totals: {
+        views: rows.reduce((a, r) => a + r.views, 0),
+        orders: rows.reduce((a, r) => a + r.orders, 0),
+      },
+    };
+  },
+});
+
+// --- Admin: marketing (announcement + pop-up) analytics ---------------------
+
+/** All announcements + pop-ups with their per-entity metrics for a timeframe. */
+export const getMarketingAnalytics = query({
+  args: { timeframe: v.string(), now: v.number() },
+  handler: async (ctx, { timeframe, now }) => {
+    await requireAdmin(ctx);
+    const win = await loadWindow(ctx, timeframe, now);
+    const sinceMs = dayStartMs(win.startDate);
+
+    const annViews: Record<string, number> = {};
+    const annClicks: Record<string, number> = {};
+    const popupViews: Record<string, number> = {};
+    const popupClicks: Record<string, number> = {};
+    const popupCloses: Record<string, number> = {};
+    const popupDwellMs: Record<string, number> = {};
+    for (const d of win.perDay) {
+      mergeMap(annViews, d.annViews);
+      mergeMap(annClicks, d.annClicks);
+      mergeMap(popupViews, d.popupViews);
+      mergeMap(popupClicks, d.popupClicks);
+      mergeMap(popupCloses, d.popupCloses);
+      mergeMap(popupDwellMs, d.popupDwellMs);
+    }
+    const emails = await emailsByPopup(ctx, sinceMs);
+
+    const announcementDocs = await ctx.db.query("announcements").collect();
+    const popupDocs = await ctx.db.query("popups").collect();
+
+    const announcements = announcementDocs
+      .map((a) => {
+        const views = annViews[a._id] ?? 0;
+        const clicks = annClicks[a._id] ?? 0;
+        return {
+          id: a._id,
+          title: a.internalTitle,
+          active: a.active,
+          views,
+          clicks,
+          ctr: views > 0 ? clicks / views : 0,
+        };
+      })
+      .sort((a, b) => b.views - a.views);
+
+    const popups = popupDocs
+      .map((p) => {
+        const views = popupViews[p._id] ?? 0;
+        const clicks = popupClicks[p._id] ?? 0;
+        const closes = popupCloses[p._id] ?? 0;
+        const dwell = popupDwellMs[p._id] ?? 0;
+        return {
+          id: p._id,
+          title: p.internalTitle,
+          active: p.active,
+          position: p.position,
+          emailCapture: p.emailCapture,
+          views,
+          clicks,
+          closes,
+          emails: emails[p._id] ?? 0,
+          ctr: views > 0 ? clicks / views : 0,
+          avgDwellMs: closes > 0 ? Math.round(dwell / closes) : 0,
+        };
+      })
+      .sort((a, b) => b.views - a.views);
+
+    return {
+      range: { start: win.startDate, end: win.today },
+      announcements,
+      popups,
+    };
+  },
+});
+
+/**
+ * Focused analytics for a single announcement or pop-up — the compact toggle
+ * shown on that entity's own editor page.
+ */
+export const getEntityAnalytics = query({
+  args: {
+    kind: v.union(v.literal("announcement"), v.literal("popup")),
+    id: v.string(),
+    timeframe: v.string(),
+    now: v.number(),
+  },
+  handler: async (ctx, { kind, id, timeframe, now }) => {
+    await requireAdmin(ctx);
+    const win = await loadWindow(ctx, timeframe, now);
+
+    if (kind === "announcement") {
+      const trend = bucketSeries(win, (d) => ({
+        views: d.annViews[id] ?? 0,
+        clicks: d.annClicks[id] ?? 0,
+      }));
+      const views = trend.reduce((a, t) => a + t.views, 0);
+      const clicks = trend.reduce((a, t) => a + t.clicks, 0);
+      return {
+        kind,
+        range: { start: win.startDate, end: win.today },
+        trend,
+        // Uniform totals shape across kinds (announcements have no email/dwell).
+        totals: {
+          views,
+          clicks,
+          closes: 0,
+          emails: 0,
+          ctr: views > 0 ? clicks / views : 0,
+          avgDwellMs: 0,
+        },
+      };
+    }
+
+    // pop-up
+    const trend = bucketSeries(win, (d) => ({
+      views: d.popupViews[id] ?? 0,
+      clicks: d.popupClicks[id] ?? 0,
+    }));
+    let closes = 0;
+    let dwell = 0;
+    for (const d of win.perDay) {
+      closes += d.popupCloses[id] ?? 0;
+      dwell += d.popupDwellMs[id] ?? 0;
+    }
+    const emails = await emailsByPopup(ctx, dayStartMs(win.startDate));
+    const views = trend.reduce((a, t) => a + t.views, 0);
+    const clicks = trend.reduce((a, t) => a + t.clicks, 0);
+    return {
+      kind,
+      range: { start: win.startDate, end: win.today },
+      trend,
+      totals: {
+        views,
+        clicks,
+        closes,
+        emails: emails[id] ?? 0,
+        ctr: views > 0 ? clicks / views : 0,
+        avgDwellMs: closes > 0 ? Math.round(dwell / closes) : 0,
+      },
+    };
+  },
+});
+
+// --- Admin: raw event export ------------------------------------------------
+
+/**
+ * Raw, non-staff events within the timeframe for CSV export. Bounded to a
+ * sane cap; raw events are pruned after the retention window, so timeframes
+ * longer than that only return what still exists.
+ */
+export const exportRawEvents = query({
+  args: { timeframe: v.string(), now: v.number() },
+  handler: async (ctx, { timeframe, now }) => {
+    await requireAdmin(ctx);
+    const tf = TIMEFRAMES[timeframe] ?? TIMEFRAMES.week;
+    const today = dayKey(now);
+    const startDate = addDays(today, -(tf.daysBack - 1));
+    const start = dayStartMs(startDate);
+    const rows = await ctx.db
+      .query("analyticsEvents")
+      .withIndex("by_ts", (q) => q.gte("ts", start))
+      .take(20000);
+    return rows
+      .filter((r) => !r.isStaff)
+      .map((r) => ({
+        ts: r.ts,
+        type: r.type,
+        path: r.path,
+        visitorId: r.visitorId,
+        sessionId: r.sessionId,
+        source: r.source ?? "",
+        clickSource: r.clickSource ?? "",
+        menuItemName: r.menuItemName ?? "",
+        menu: r.menu ?? "",
+        cta: r.cta ?? "",
+        entityId: r.entityId ?? "",
+        entityTitle: r.entityTitle ?? "",
+        buttonKey: r.buttonKey ?? "",
+        dwellMs: r.dwellMs ?? "",
+        destination: r.destination ?? "",
+      }));
+  },
+});
+
+// --- Admin: home command-center summary --------------------------------------
+
+/** Is a schedulable marketing entity live at `now`? */
+function liveAt(
+  doc: { active: boolean; startsAt?: number; endsAt?: number },
+  now: number,
+): boolean {
+  if (!doc.active) return false;
+  if (doc.startsAt != null && now < doc.startsAt) return false;
+  if (doc.endsAt != null && now > doc.endsAt) return false;
+  return true;
+}
+
+/**
+ * One-shot summary powering the admin home "command center": today's traffic
+ * snapshot (vs yesterday), unread inquiries, pending reviews, live/scheduled
+ * campaigns, the week's top item, and a computed list of things needing
+ * attention. Kept lightweight (no chart payloads) so it loads instantly.
+ */
+export const getHomeSummary = query({
+  args: { now: v.number() },
+  handler: async (ctx, { now }) => {
+    await requireAdmin(ctx);
+    const today = dayKey(now);
+    const yesterday = addDays(today, -1);
+
+    // Today (live) vs yesterday (rollup, falling back to a live aggregate).
+    const todayStats = aggregateEvents(await fetchDayEvents(ctx, today));
+    const yRollups = await readRollups(ctx, yesterday, today);
+    const yStats =
+      yRollups.get(yesterday) ??
+      aggregateEvents(await fetchDayEvents(ctx, yesterday));
+
+    // Inquiries + reviews (mirror inquiries.counts / reviews.stats).
+    const [contact, hiring, captures, reviews, announcements, popups, items] =
+      await Promise.all([
+        ctx.db.query("contactSubmissions").collect(),
+        ctx.db.query("hiringSubmissions").collect(),
+        ctx.db.query("emailCaptures").collect(),
+        ctx.db.query("reviews").collect(),
+        ctx.db.query("announcements").collect(),
+        ctx.db.query("popups").collect(),
+        ctx.db.query("menuItems").collect(),
+      ]);
+
+    const contactUnread = contact.reduce((n, r) => n + (r.read ? 0 : 1), 0);
+    const hiringUnread = hiring.reduce((n, r) => n + (r.read ? 0 : 1), 0);
+    const weekAgo = now - 7 * 86_400_000;
+    let pendingReviews = 0;
+    let newReviews = 0;
+    for (const r of reviews) {
+      if (r.status === "pending") pendingReviews++;
+      if (r._creationTime >= weekAgo) newReviews++;
+    }
+
+    // Live + scheduled campaigns.
+    const liveAnnouncement =
+      announcements
+        .filter((a) => liveAt(a, now))
+        .sort(
+          (a, b) =>
+            (b.startsAt ?? 0) - (a.startsAt ?? 0) ||
+            b._creationTime - a._creationTime,
+        )[0] ?? null;
+    // One live pop-up per position.
+    const livePopupByPos = new Map<string, (typeof popups)[number]>();
+    for (const p of popups.filter((pp) => liveAt(pp, now))) {
+      const cur = livePopupByPos.get(p.position);
+      if (
+        !cur ||
+        (p.startsAt ?? 0) > (cur.startsAt ?? 0) ||
+        ((p.startsAt ?? 0) === (cur.startsAt ?? 0) &&
+          p._creationTime > cur._creationTime)
+      )
+        livePopupByPos.set(p.position, p);
+    }
+    const livePopups = [...livePopupByPos.values()];
+    const scheduledCount =
+      announcements.filter(
+        (a) => a.active && a.startsAt != null && now < a.startsAt,
+      ).length +
+      popups.filter((p) => p.active && p.startsAt != null && now < p.startsAt)
+        .length;
+
+    // Top item over the last 7 days (by detail views).
+    const win = await loadWindow(ctx, "week", now);
+    const itemViews: Record<string, number> = {};
+    for (const d of win.perDay) mergeMap(itemViews, d.itemViews);
+    let topKey = "";
+    let topViews = 0;
+    for (const [k, c] of Object.entries(itemViews)) {
+      if (c > topViews) {
+        topViews = c;
+        topKey = k;
+      }
+    }
+    let topItem: {
+      name: string;
+      menu: string;
+      slug: string | null;
+      views: number;
+    } | null = null;
+    if (topKey) {
+      const sep = topKey.indexOf("|");
+      const menu = sep >= 0 ? topKey.slice(0, sep) : "";
+      const name = sep >= 0 ? topKey.slice(sep + 1) : topKey;
+      const match = items.find((i) => i.menu === menu && i.name === name);
+      topItem = { name, menu, slug: match?.slug ?? null, views: topViews };
+    }
+
+    // Computed alerts (most actionable first).
+    type Alert = { level: "warning" | "info"; text: string; section: string };
+    const alerts: Alert[] = [];
+    const unreadTotal = contactUnread + hiringUnread;
+    if (unreadTotal > 0)
+      alerts.push({
+        level: "warning",
+        text: `${unreadTotal} unread ${unreadTotal === 1 ? "inquiry" : "inquiries"}`,
+        section: "inquiries",
+      });
+    if (pendingReviews > 0)
+      alerts.push({
+        level: "warning",
+        text: `${pendingReviews} ${pendingReviews === 1 ? "review" : "reviews"} awaiting moderation`,
+        section: "reviews",
+      });
+    // Campaigns ending within 24h.
+    const soon = now + 86_400_000;
+    const ending: { title: string; endsAt: number; section: string }[] = [];
+    if (liveAnnouncement?.endsAt != null)
+      ending.push({
+        title: liveAnnouncement.internalTitle,
+        endsAt: liveAnnouncement.endsAt,
+        section: "announcements",
+      });
+    for (const p of livePopups)
+      if (p.endsAt != null)
+        ending.push({ title: p.internalTitle, endsAt: p.endsAt, section: "popups" });
+    for (const c of ending) {
+      if (c.endsAt <= soon) {
+        const hrs = Math.max(1, Math.round((c.endsAt - now) / 3_600_000));
+        alerts.push({
+          level: "info",
+          text: `"${c.title}" ends in ~${hrs}h`,
+          section: c.section,
+        });
+      }
+    }
+    if (!liveAnnouncement && announcements.length > 0)
+      alerts.push({
+        level: "info",
+        text: "No announcement bar is live right now",
+        section: "announcements",
+      });
+
+    return {
+      today: {
+        date: today,
+        pageViews: todayStats.pageViews,
+        visitors: todayStats.visitors,
+        orderClicks: todayStats.orderClicks,
+        menuClicks: todayStats.menuClicks,
+        prev: {
+          pageViews: yStats.pageViews,
+          visitors: yStats.visitors,
+          orderClicks: yStats.orderClicks,
+          menuClicks: yStats.menuClicks,
+        },
+      },
+      inquiries: {
+        unread: unreadTotal,
+        contactUnread,
+        hiringUnread,
+        captures: captures.length,
+      },
+      reviews: {
+        pending: pendingReviews,
+        total: reviews.length,
+        newThisWeek: newReviews,
+      },
+      campaigns: {
+        liveAnnouncement: liveAnnouncement
+          ? { id: liveAnnouncement._id, title: liveAnnouncement.internalTitle }
+          : null,
+        livePopups: livePopups.map((p) => ({
+          id: p._id,
+          title: p.internalTitle,
+          position: p.position,
+        })),
+        scheduledCount,
+      },
+      topItem,
+      alerts,
     };
   },
 });

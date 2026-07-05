@@ -8,6 +8,7 @@
     "dev:frontend": "vite",
     "dev:backend": "convex dev",
     "build": "tsc -b && vite build",
+    "postbuild": "node scripts/prerender.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc -b"

@@ -1,4 +1,11 @@
-import { useRef, useState, type FormEvent } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
@@ -6,6 +13,14 @@ import type { Id } from "@convex/_generated/dataModel";
 import { field, label, btn, Modal } from "@/admin/ui";
 import { useDialogs } from "@/admin/dialogs";
 import { useUpload } from "@/admin/useUpload";
+import { DietaryTagPicker } from "@/admin/DietaryTagPicker";
+
+// Recharts is heavy — load the analytics panel (and recharts) only when opened.
+const MenuAnalyticsPanel = lazy(() =>
+  import("@/admin/analyticsPanels").then((m) => ({
+    default: m.MenuAnalyticsPanel,
+  })),
+);
 
 /**
  * Menu manager for one menu kind ("coffee" | "food"). Handles the menu PDF,
@@ -34,6 +49,7 @@ type ItemData = {
   name: string;
   price: string;
   description: string;
+  dietaryTags: string[];
   orderUrl: string | null;
   images: ItemImage[];
   featured: boolean;
@@ -61,11 +77,19 @@ export function MenuManager({ menu }: { menu: Menu }) {
   const deleteItem = useMutation(api.menu.deleteItem);
   const setItemFeatured = useMutation(api.menu.setItemFeatured);
   const seed = useMutation(api.menu.seed);
+  const seedTags = useMutation(api.dietaryTags.seedBuiltins);
+
+  // Make sure the curated dietary tags exist so the item editor's picker is
+  // populated. Idempotent; runs once when the manager mounts.
+  useEffect(() => {
+    void seedTags({});
+  }, [seedTags]);
 
   const [editing, setEditing] = useState<{
     item: ItemData | null;
     sectionId: Id<"menuSections">;
   } | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   if (data === undefined) {
     return <Loading menu={menu} />;
@@ -101,6 +125,32 @@ export function MenuManager({ menu }: { menu: Menu }) {
       </div>
 
       <MenuPdf menu={menu} pdf={data.pdf} />
+
+      <div className="mt-5 rounded-2xl border-2 border-sand bg-cream">
+        <button
+          type="button"
+          onClick={() => setShowAnalytics((v) => !v)}
+          className="flex w-full items-center justify-between px-5 py-3 text-left"
+        >
+          <span className="font-groovy text-sm uppercase tracking-[0.2em] text-terracotta">
+            Menu Analytics
+          </span>
+          <span className="text-xs font-semibold text-espresso/60">
+            {showAnalytics ? "Hide ▲" : "Show ▼"}
+          </span>
+        </button>
+        {showAnalytics && (
+          <Suspense
+            fallback={
+              <p className="border-t-2 border-sand p-5 text-sm text-espresso/50">
+                Loading analytics…
+              </p>
+            }
+          >
+            <MenuAnalyticsPanel menu={menu} />
+          </Suspense>
+        )}
+      </div>
 
       <div className="mt-8 space-y-8">
         {sections.length === 0 && (
@@ -383,6 +433,9 @@ function ItemEditor({
   const [price, setPrice] = useState(item?.price ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
   const [orderUrl, setOrderUrl] = useState(item?.orderUrl ?? "");
+  const [dietaryTags, setDietaryTags] = useState<string[]>(
+    item?.dietaryTags ?? [],
+  );
   const [targetSection, setTargetSection] =
     useState<Id<"menuSections">>(sectionId);
   const [images, setImages] = useState<ItemImage[]>(item?.images ?? []);
@@ -455,6 +508,7 @@ function ItemEditor({
           price: price.trim(),
           description: description.trim(),
           orderUrl: trimmedOrderUrl,
+          dietaryTags,
           images: imagePayload,
         });
       } else {
@@ -464,6 +518,7 @@ function ItemEditor({
           price: price.trim(),
           description: description.trim(),
           orderUrl: trimmedOrderUrl,
+          dietaryTags,
           images: imagePayload,
         });
         if (targetSection !== item.sectionId) {
@@ -547,6 +602,7 @@ function ItemEditor({
             ))}
           </select>
         </div>
+        <DietaryTagPicker value={dietaryTags} onChange={setDietaryTags} />
         <div>
           <label className={label}>
             Images — drag to reorder; the first is the primary one shown

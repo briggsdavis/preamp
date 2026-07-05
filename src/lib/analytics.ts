@@ -21,16 +21,26 @@ export type TrackType =
   | "page_view"
   | "order_click"
   | "menu_click"
-  | "cta_click";
+  | "cta_click"
+  | "item_view"
+  | "announcement_view"
+  | "announcement_click"
+  | "popup_view"
+  | "popup_click"
+  | "popup_close";
 
 export interface TrackOptions {
   path?: string;
   source?: string;
   clickSource?: string; // e.g. "navbar" | "featured" | "menu-item"
-  menuItemName?: string; // item name for per-item order clicks
+  menuItemName?: string; // item name for per-item order clicks / views
   menu?: string; // "coffee" | "food"
   cta?: string; // "instagram" | "directions" | …
   destination?: string;
+  entityId?: string; // announcement / pop-up / menu-item id
+  entityTitle?: string; // denormalized internal title / item name
+  buttonKey?: string; // which pop-up button ("cta" | "email")
+  dwellMs?: number; // pop-up: ms open before dismissal
 }
 
 function randomId(): string {
@@ -133,6 +143,10 @@ export function useTrack() {
         menu: opts.menu,
         cta: opts.cta,
         destination: opts.destination,
+        entityId: opts.entityId,
+        entityTitle: opts.entityTitle,
+        buttonKey: opts.buttonKey,
+        dwellMs: opts.dwellMs,
       }).catch(() => {
         /* analytics must never disrupt the UI */
       });
