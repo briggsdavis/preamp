@@ -380,6 +380,7 @@ function FeatureRow({
   kicker,
   title,
   image,
+  dimensions,
   paragraphs,
   cta,
   reverse,
@@ -393,6 +394,7 @@ function FeatureRow({
   kicker: string;
   title: string;
   image: ImageRef;
+  dimensions: string;
   paragraphs: string[];
   cta?: CTA;
   reverse?: boolean;
@@ -411,17 +413,22 @@ function FeatureRow({
       )}
     >
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-16 md:grid-cols-2 md:gap-16 md:px-8">
-        <div
-          className={cn(
-            "overflow-hidden rounded-3xl shadow-2xl shadow-maroon/20",
-            reverse && "md:order-2",
-          )}
-        >
-          <EditableImage
-            value={image}
-            onChange={onImage}
-            imgClassName="h-[260px] w-full object-cover md:h-[400px]"
-          />
+        <div className={reverse ? "md:order-2" : ""}>
+          <div className="overflow-hidden rounded-3xl shadow-2xl shadow-maroon/20">
+            <EditableImage
+              value={image}
+              onChange={onImage}
+              imgClassName="h-[260px] w-full object-cover md:h-[400px]"
+            />
+          </div>
+          <p
+            className={cn(
+              "mt-2 text-center text-[11px] font-medium tracking-[0.08em]",
+              dark ? "text-cream/55" : "text-espresso/50",
+            )}
+          >
+            {dimensions}
+          </p>
         </div>
         <div className={reverse ? "md:order-1" : ""}>
           <EditableText
@@ -557,7 +564,7 @@ export function AboutEditor() {
           >
             {/* Hero */}
             <section className="relative flex min-h-[360px] items-center justify-center overflow-hidden">
-              <div className="absolute inset-0 -z-10">
+              <div className="absolute inset-0">
                 <EditableImage
                   value={{ src: c.hero.image, alt: "" }}
                   onChange={(v) => edit((d) => (d.hero.image = v.src))}
@@ -588,6 +595,9 @@ export function AboutEditor() {
                   className="mx-auto mt-6 max-w-xl text-lg text-cream/90"
                 />
               </div>
+              <p className="pointer-events-none absolute inset-x-0 bottom-3 z-20 text-center text-[11px] font-medium tracking-[0.08em] text-cream/70">
+                Shown on site: full-bleed, ~100vw × 82vh (desktop)
+              </p>
             </section>
 
             {/* About Us */}
@@ -670,6 +680,7 @@ export function AboutEditor() {
               kicker={c.origin.kicker}
               title={c.origin.title}
               image={c.origin.image}
+              dimensions="Shown on site: ~576 × 460 px (desktop)"
               paragraphs={c.origin.paragraphs}
               onKicker={(v) => edit((d) => (d.origin.kicker = v))}
               onTitle={(v) => edit((d) => (d.origin.title = v))}
@@ -684,6 +695,7 @@ export function AboutEditor() {
               kicker={c.coffee.kicker}
               title={c.coffee.title}
               image={c.coffee.image}
+              dimensions="Shown on site: ~576 × 460 px (desktop)"
               paragraphs={c.coffee.paragraphs}
               cta={c.coffee.cta}
               onKicker={(v) => edit((d) => (d.coffee.kicker = v))}
@@ -698,6 +710,7 @@ export function AboutEditor() {
               kicker={c.kitchen.kicker}
               title={c.kitchen.title}
               image={c.kitchen.image}
+              dimensions="Shown on site: ~576 × 460 px (desktop)"
               paragraphs={c.kitchen.paragraphs}
               cta={c.kitchen.cta}
               onKicker={(v) => edit((d) => (d.kitchen.kicker = v))}
@@ -744,18 +757,17 @@ export function AboutEditor() {
                 </div>
                 <div className="grid grid-cols-2 items-start gap-4">
                   {c.sound.images.map((img, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "overflow-hidden rounded-3xl shadow-2xl shadow-black/30",
-                        i === 1 && "mt-8",
-                      )}
-                    >
-                      <EditableImage
-                        value={img}
-                        onChange={(v) => edit((d) => (d.sound.images[i] = v))}
-                        imgClassName="h-56 w-full object-cover md:h-72"
-                      />
+                    <div key={i} className={i === 1 ? "mt-8" : ""}>
+                      <div className="overflow-hidden rounded-3xl shadow-2xl shadow-black/30">
+                        <EditableImage
+                          value={img}
+                          onChange={(v) => edit((d) => (d.sound.images[i] = v))}
+                          imgClassName="h-56 w-full object-cover md:h-72"
+                        />
+                      </div>
+                      <p className="mt-2 text-center text-[11px] font-medium tracking-[0.08em] text-cream/55">
+                        Shown on site: ~280 × 320 px (desktop)
+                      </p>
                     </div>
                   ))}
                 </div>
