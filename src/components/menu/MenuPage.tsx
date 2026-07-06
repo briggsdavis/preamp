@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useDragControls } from "framer-motion";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
@@ -274,6 +274,10 @@ function ItemModal({
   const [submitted, setSubmitted] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
 
+  // Swipe-down-to-dismiss on mobile. The drag is started only from the grabber
+  // handle (dragListener={false}) so it never fights the scrollable body.
+  const dragControls = useDragControls();
+
   const imgs =
     item.images && item.images.length > 0 ? item.images : [item.image];
   const shownImg = imgs[Math.min(imgIndex, imgs.length - 1)];
@@ -318,8 +322,25 @@ function ItemModal({
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
         transition={{ type: "spring", damping: 26, stiffness: 260 }}
         onClick={(e) => e.stopPropagation()}
+        drag="y"
+        dragControls={dragControls}
+        dragListener={false}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.5 }}
+        onDragEnd={(_, info) => {
+          if (info.offset.y > 120 || info.velocity.y > 600) onClose();
+        }}
         className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-cream shadow-2xl"
       >
+        {/* Grabber — swipe it down to dismiss on mobile (hidden on desktop). */}
+        <div
+          aria-hidden
+          onPointerDown={(e) => dragControls.start(e)}
+          className="flex shrink-0 cursor-grab touch-none justify-center py-2.5 active:cursor-grabbing sm:hidden"
+        >
+          <span className="h-1.5 w-10 rounded-full bg-espresso/25" />
+        </div>
+
         {/* Image header (carousel when there are multiple images) */}
         <div className="relative h-56 shrink-0 sm:h-64">
           <img
