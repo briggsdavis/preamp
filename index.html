@@ -10,9 +10,32 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Load Google Fonts without blocking first paint. font-display:swap
+         already renders text in the fallback face until the webfont arrives. -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Monoton&family=Righteous&family=Montserrat:wght@400;500;600;700&display=swap"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Monoton&family=Righteous&family=Montserrat:wght@400;500;600;700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Monoton&family=Righteous&family=Montserrat:wght@400;500;600;700&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+    <!-- Preload the LCP hero artwork so it downloads in parallel with the JS
+         bundle instead of waiting for React to mount. -->
+    <link
+      rel="preload"
+      as="image"
+      href="/images/preampdecor.jpg"
+      fetchpriority="high"
     />
     <title>Pre Amp Coffee Studio · Brews &amp; Beats in Pittsburgh</title>
   </head>

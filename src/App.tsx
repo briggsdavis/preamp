@@ -1,12 +1,20 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 
 import { Layout } from "@/components/site/Layout";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 import { useTrack } from "@/lib/analytics";
-import { AdminApp } from "@/admin/AdminApp";
-import { PdfViewer } from "@/pages/PdfViewer";
+
+// Admin (with its heavy charting deps) and the PDF viewer sit off the public
+// funnel, so load them on demand — this keeps them out of the main bundle and
+// speeds up first load for regular visitors.
+const AdminApp = lazy(() =>
+  import("@/admin/AdminApp").then((m) => ({ default: m.AdminApp })),
+);
+const PdfViewer = lazy(() =>
+  import("@/pages/PdfViewer").then((m) => ({ default: m.PdfViewer })),
+);
 import { Home } from "@/pages/Home";
 import { MenuCoffee } from "@/pages/MenuCoffee";
 import { MenuFood } from "@/pages/MenuFood";
@@ -58,12 +66,20 @@ export default function App() {
 
   // The admin app renders on its own, without the public navbar/footer chrome.
   if (location.pathname.startsWith("/admin")) {
-    return <AdminApp />;
+    return (
+      <Suspense fallback={null}>
+        <AdminApp />
+      </Suspense>
+    );
   }
 
   // Full-screen menu PDF viewer (its own tab, branded with the site favicon).
   if (location.pathname.startsWith("/menu-pdf")) {
-    return <PdfViewer />;
+    return (
+      <Suspense fallback={null}>
+        <PdfViewer />
+      </Suspense>
+    );
   }
 
   return (

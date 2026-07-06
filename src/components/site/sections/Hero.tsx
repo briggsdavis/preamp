@@ -28,6 +28,8 @@ export function Hero() {
         <img
           src="/images/preampdecor.jpg"
           alt=""
+          fetchPriority="high"
+          decoding="async"
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-espresso/80 via-maroon/55 to-espresso/85" />
