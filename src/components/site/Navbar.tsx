@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -93,35 +93,14 @@ function DesktopItem({ item }: { item: NavItem }) {
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  // Held back on first paint so the navbar slides in last, after the hero's
-  // staggered intro (image → buttons → navbar).
-  const [entered, setEntered] = useState(false);
-  const lastY = useRef(0);
   const location = useLocation();
   const track = useTrack();
 
   useEffect(() => {
-    const reduce = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    const t = setTimeout(() => setEntered(true), reduce ? 0 : 3400);
-    return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 24);
-      // Hide when scrolling down past the header; reveal when scrolling up.
-      if (y > lastY.current && y > 120) {
-        setHidden(true);
-      } else if (y < lastY.current) {
-        setHidden(false);
-      }
-      lastY.current = y;
-    };
+    // Only tracks whether we've scrolled past the top — the bar is always
+    // visible and never hides on scroll direction.
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -136,41 +115,30 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-[var(--preamp-ann-h,0px)] z-50 bg-cream transition-all duration-300",
-        scrolled ? "shadow-sm shadow-maroon/10" : "shadow-sm shadow-maroon/5",
-        // Slide in last, after the hero intro finishes (transform only, so the
-        // bar is never translucent).
-        !entered && "-translate-y-full",
-        // Slide out of view on scroll-down so it reappears on scroll-up.
-        entered && hidden && !mobileOpen && "-translate-y-full",
+        "fixed inset-x-0 top-[var(--preamp-ann-h,0px)] z-50 bg-cream shadow-sm transition-shadow duration-300",
+        scrolled ? "shadow-maroon/10" : "shadow-maroon/5",
       )}
-      style={{ transitionDuration: entered ? undefined : "700ms" }}
     >
       <nav
         className={cn(
           "mx-auto flex max-w-7xl items-center justify-between px-5 transition-all duration-300 md:px-8",
-          // Expand a touch when scrolled all the way up to make room for the
-          // larger logo, then tuck back in once the page scrolls.
-          scrolled ? "py-4" : "py-5",
+          // Mobile stays compact at all times. On desktop the bar expands a
+          // touch at the very top, then tucks back in once the page scrolls.
+          "py-4",
+          !scrolled && "md:py-5",
         )}
       >
         <Link to="/" className="group flex items-center gap-3">
           <img
             src="/images/preamplogo.png"
             alt={`${SITE.name} logo`}
+            width={46}
+            height={46}
             className={cn(
               "object-contain transition-all duration-300 group-hover:-rotate-6",
-              // ~15% larger at the very top, normal size once scrolled.
-              scrolled ? "h-10 w-10" : "h-[2.875rem] w-[2.875rem]",
-            )}
-          />
-          {/* The hero wordmark, scaled down to sit beside the icon. */}
-          <img
-            src="/images/heroprimary.png"
-            alt={`${SITE.name} Coffee Studio`}
-            className={cn(
-              "w-auto object-contain transition-all duration-300",
-              scrolled ? "h-8" : "h-10",
+              // Compact on mobile; ~15% larger on desktop at the very top.
+              "h-10 w-10",
+              !scrolled && "md:h-[2.875rem] md:w-[2.875rem]",
             )}
           />
         </Link>
