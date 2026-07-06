@@ -10,6 +10,16 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Churchward is our primary display face (used by every heading). It's
+         referenced deep in the CSS, so preload it to pull the request forward
+         and let it swap in early — otherwise headings reflow late (CLS). -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff"
+      href="/fonts/churchward-design-bold.woff"
+      crossorigin
+    />
     <!-- Load Google Fonts without blocking first paint. font-display:swap
          already renders text in the fallback face until the webfont arrives. -->
     <link

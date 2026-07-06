@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
@@ -21,7 +21,10 @@ export function AnnouncementBar() {
   const visible =
     !!announcement && showsOnPage(announcement.showOn, pageKey);
 
-  useEffect(() => {
+  // Set the navbar's offset synchronously, before paint, so the bar and the
+  // navbar's shifted position land in the same frame — the bar appears in
+  // place instead of popping in and shoving the navbar down a beat later.
+  useLayoutEffect(() => {
     document.documentElement.style.setProperty(
       "--preamp-ann-h",
       visible ? BAR_HEIGHT : "0px",
