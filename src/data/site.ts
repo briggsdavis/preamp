@@ -44,14 +44,15 @@ export const NAV: NavItem[] = [
       { label: "Food", to: "/menu/food" },
     ],
   },
+  { label: "Events", to: "/events" },
+  { label: "Merch", to: "/retail" },
+  { label: "Cold Brew", to: "/cold-brew" },
   { label: "About", to: "/about" },
-  { label: "Contact", to: "/contact" },
+  { label: "Hiring", to: "/hiring" },
   {
     label: "More",
     children: [
-      { label: "Merch", to: "/retail" },
-      { label: "Events", to: "/events" },
-      { label: "Hiring", to: "/hiring" },
+      { label: "Contact", to: "/contact" },
       {
         label: "Gift Card",
         to: "https://order.toasttab.com/egiftcards/pre-amp-new-5840-forbes-avenue",

@@ -19,6 +19,7 @@ import { MenuCoffee } from "@/pages/MenuCoffee";
 import { MenuFood } from "@/pages/MenuFood";
 import { About } from "@/pages/About";
 import { Merch } from "@/pages/Merch";
+import { ColdBrew } from "@/pages/ColdBrew";
 import { Contact } from "@/pages/Contact";
 import { Events } from "@/pages/Events";
 import { Hiring } from "@/pages/Hiring";
@@ -121,6 +122,7 @@ export default function App() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/retail" element={<Merch />} />
+          <Route path="/cold-brew" element={<ColdBrew />} />
           <Route
             path="/events"
             element={

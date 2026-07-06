@@ -143,7 +143,7 @@ export function Navbar() {
           />
         </Link>
 
-        <div className="hidden items-center gap-7 md:flex">
+        <div className="hidden items-center gap-5 md:flex lg:gap-6">
           {NAV.map((item) => (
             <DesktopItem key={item.label} item={item} />
           ))}

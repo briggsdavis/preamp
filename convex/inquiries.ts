@@ -100,22 +100,24 @@ export const generateResumeUploadUrl = mutation({
 
 export const submitHiring = mutation({
   args: {
-    firstName: v.string(),
-    lastName: v.string(),
+    name: v.string(),
     email: v.string(),
     phone: v.string(),
-    city: v.string(),
-    state: v.string(),
-    position: v.string(),
-    desiredSalary: v.string(),
-    hoursDesired: v.string(),
-    transportation: v.string(),
+    coffeeExperience: v.string(), // "yes" | "no"
+    availability: v.array(v.string()), // ["Part-Time", "Full-Time"]
+    favoriteCoffeeShop: v.string(),
+    favoriteRecord: v.string(),
     resumeStorageId: v.optional(v.id("_storage")),
     resumeName: v.optional(v.string()),
-    details: v.any(),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("hiringSubmissions", args);
+    if (!isValidEmail(args.email)) {
+      throw new ConvexError("A valid email address is required.");
+    }
+    return await ctx.db.insert("hiringSubmissions", {
+      ...args,
+      email: args.email.trim(),
+    });
   },
 });
 
