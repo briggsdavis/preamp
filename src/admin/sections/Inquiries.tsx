@@ -160,7 +160,7 @@ function SummaryCard({
       </p>
       <div className="mt-1 flex items-baseline gap-3">
         <span className="font-display text-2xl leading-none text-espresso">
-          {total ?? "—"}
+          {total ?? "-"}
         </span>
         {unread !== undefined && unread > 0 && (
           <span className="text-sm font-semibold text-brick">
@@ -268,7 +268,7 @@ function applicantName(r: {
 }): string {
   if (r.name && r.name.trim()) return r.name;
   const legacy = [r.firstName, r.lastName].filter(Boolean).join(" ").trim();
-  return legacy || "—";
+  return legacy || "-";
 }
 
 function HiringTab() {
@@ -507,7 +507,7 @@ function CapturesTab() {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
-      /* clipboard blocked — no-op */
+      /* clipboard blocked - no-op */
     }
   }
 

@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 
 import { NAV, SITE, type NavItem, type NavLink as NavChild } from "@/data/site";
 import { cn } from "@/lib/utils";
@@ -16,6 +18,14 @@ function trackNavChild(
   else if (/egiftcards/.test(child.to)) track("cta_click", { cta: "gift_card", destination: child.to });
 }
 
+/**
+ * Hover underline: a 2px terracotta line pinned under a nav item that grows
+ * from its center out to both edges on hover (origin-center + scale-x). It's
+ * held open (scaled to full) for the active page via `after:scale-x-100`.
+ */
+const NAV_UNDERLINE =
+  "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0.5 after:h-[2px] after:origin-center after:rounded-full after:bg-terracotta after:transition-transform after:duration-300 hover:after:scale-x-100";
+
 function DesktopItem({ item }: { item: NavItem }) {
   const [open, setOpen] = useState(false);
   const track = useTrack();
@@ -27,7 +37,8 @@ function DesktopItem({ item }: { item: NavItem }) {
         className={({ isActive }) =>
           cn(
             "relative px-1 py-2 text-sm font-medium lowercase tracking-wide text-espresso/80 transition-colors hover:text-terracotta",
-            isActive && "text-terracotta",
+            NAV_UNDERLINE,
+            isActive ? "text-terracotta after:scale-x-100" : "after:scale-x-0",
           )
         }
       >
@@ -43,7 +54,11 @@ function DesktopItem({ item }: { item: NavItem }) {
       onMouseLeave={() => setOpen(false)}
     >
       <button
-        className="flex items-center gap-1 px-1 py-2 text-sm font-medium lowercase tracking-wide text-espresso/80 transition-colors hover:text-terracotta"
+        className={cn(
+          "relative flex items-center gap-1 px-1 py-2 text-sm font-medium lowercase tracking-wide text-espresso/80 transition-colors hover:text-terracotta",
+          NAV_UNDERLINE,
+          "after:scale-x-0",
+        )}
         aria-expanded={open}
       >
         {item.label}
@@ -96,9 +111,19 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const track = useTrack();
+  const settings = useQuery(api.settings.getPublicSettings);
+
+  // Drop the Merch link when the page is turned off in the admin. Absent/loading
+  // settings default to showing it (the common case), so nothing flickers.
+  const navItems = useMemo(() => {
+    if (settings?.merchEnabled === false) {
+      return NAV.filter((item) => item.to !== "/retail");
+    }
+    return NAV;
+  }, [settings?.merchEnabled]);
 
   useEffect(() => {
-    // Only tracks whether we've scrolled past the top — the bar is always
+    // Only tracks whether we've scrolled past the top - the bar is always
     // visible and never hides on scroll direction.
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -144,7 +169,7 @@ export function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-5 md:flex lg:gap-6">
-          {NAV.map((item) => (
+          {navItems.map((item) => (
             <DesktopItem key={item.label} item={item} />
           ))}
           <a
@@ -157,7 +182,7 @@ export function Navbar() {
                 destination: SITE.orderUrl,
               })
             }
-            className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold lowercase text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
+            className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold uppercase tracking-wide text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
           >
             Order now
           </a>
@@ -200,7 +225,7 @@ export function Navbar() {
             className="overflow-hidden border-t border-espresso/10 bg-cream md:hidden"
           >
             <div className="space-y-4 px-6 py-6">
-              {NAV.map((item) => (
+              {navItems.map((item) => (
                 <div key={item.label}>
                   {item.to ? (
                     <Link
@@ -253,7 +278,7 @@ export function Navbar() {
                     destination: SITE.orderUrl,
                   })
                 }
-                className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold lowercase text-cream"
+                className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold uppercase tracking-wide text-cream"
               >
                 Order now
               </a>

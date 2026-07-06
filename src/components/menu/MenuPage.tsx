@@ -338,7 +338,7 @@ function ItemModal({
         }}
         className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-cream shadow-2xl"
       >
-        {/* Grabber — swipe it down to dismiss on mobile (hidden on desktop). */}
+        {/* Grabber - swipe it down to dismiss on mobile (hidden on desktop). */}
         <div
           aria-hidden
           onPointerDown={(e) => dragControls.start(e)}

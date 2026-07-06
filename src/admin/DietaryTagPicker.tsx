@@ -8,7 +8,7 @@ import { field, label, btn } from "@/admin/ui";
  * Dietary tag picker for the menu item editor. Shows the curated + custom tag
  * catalog as toggle chips, and lets an admin add a new custom tag (name, emoji
  * icon, color) inline. Selection is a list of tag `key`s stored on the item.
- * Tags are optional — an item can have none.
+ * Tags are optional - an item can have none.
  */
 
 /** Mirror of the server slug rule so we can select a freshly-created tag. */

@@ -258,7 +258,7 @@ function EventForm({
           />
         </div>
         <div>
-          <label className={label}>Images — up to {MAX_IMAGES}</label>
+          <label className={label}>Images - up to {MAX_IMAGES}</label>
           <div className="flex flex-wrap gap-2">
             {images.map((img, i) => (
               <div

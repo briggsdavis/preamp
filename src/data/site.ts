@@ -155,7 +155,7 @@ export interface Restaurant {
 }
 
 /**
- * The other concepts under Richard Dishon's restaurant group (RD Restaurants).
+ * The other concepts under Richard Deshantz's restaurant group (RD Restaurants).
  * Each renders as a square tile. Drop in the real Facebook profile images and
  * page links as `image` / `href` to replace the on-brand placeholders.
  */
@@ -170,7 +170,7 @@ export const RD_RESTAURANTS: Restaurant[] = [
   { name: "Sally Ann's", image: "/images/sallyannys.webp", href: "https://sallyannspgh.com/" },
   { name: "Golden Gai", image: "/images/goldengai.webp", href: "https://goldengaipgh.com/" },
   { name: "Vieux Carré", image: "/images/vieuxcarre.webp", href: "https://www.seamonkeypgh.com/vieux-carre" },
-  { name: "Hand Roll", image: "/images/handroll.webp", href: "https://gi-jin.com/" },
+  { name: "Gi-Jin", image: "/images/handroll.webp", href: "https://gi-jin.com/" },
   { name: "Sea Monkey", image: "/images/seamonkey.webp", href: "https://www.seamonkeypgh.com/" },
   { name: "Rib Room", image: "/images/ribroom.webp", href: "https://ribroompgh.com/" },
   { name: "Pre Amp", image: "/images/preamplogo.png", href: "/" },

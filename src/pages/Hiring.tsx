@@ -149,7 +149,7 @@ export function Hiring() {
                 Send Your Resume
               </h2>
               <p className="mt-4 text-lg text-espresso/80">
-                Keep it short and sweet — tell us who you are, drop your resume,
+                Keep it short and sweet - tell us who you are, drop your resume,
                 and we'll be in touch.
               </p>
             </header>

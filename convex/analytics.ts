@@ -18,7 +18,7 @@ import { menuKind } from "./schema";
  *
  * Honesty notes baked into the data:
  *  - "Visitors" is de-duplicated within a day (once per day), not across a range.
- *  - Order clicks measure *intent* — actual checkout happens off-site on Toast.
+ *  - Order clicks measure *intent* - actual checkout happens off-site on Toast.
  *  - Signed-in admins are flagged `isStaff` and excluded from every number.
  */
 
@@ -720,7 +720,7 @@ type TrendPoint = { label: string; views: number; clicks: number };
 
 /**
  * Bucket a per-day {views,clicks} series into the timeframe's granularity.
- * "today" (hour granularity, one day back) renders as a single point — fine
+ * "today" (hour granularity, one day back) renders as a single point - fine
  * for the compact per-entity cards.
  */
 function bucketSeries(
@@ -771,7 +771,7 @@ async function emailsByPopup(
 // --- Admin: per-menu item analytics -----------------------------------------
 
 /**
- * Per-item views (detail opens) and order-button clicks for a menu — or for
+ * Per-item views (detail opens) and order-button clicks for a menu - or for
  * both menus when `menu` is omitted (powers the home dashboard's Menu toggle
  * and the per-menu analytics on each menu manager).
  */
@@ -922,7 +922,7 @@ export const getMarketingAnalytics = query({
 });
 
 /**
- * Focused analytics for a single announcement or pop-up — the compact toggle
+ * Focused analytics for a single announcement or pop-up - the compact toggle
  * shown on that entity's own editor page.
  */
 export const getEntityAnalytics = query({

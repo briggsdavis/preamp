@@ -309,7 +309,7 @@ function PopupItem({
         {popup.emailCapture &&
           (captured ? (
             <p className="mt-4 font-semibold text-brick">
-              Thanks — you're on the list!
+              Thanks - you're on the list!
             </p>
           ) : (
             <form onSubmit={submitEmail} className="mt-4 flex gap-2">

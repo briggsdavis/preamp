@@ -12,8 +12,8 @@ import { popupPosition } from "./schema";
  * Activation rules (evaluated at read time for minute-precise scheduling):
  *  - Each bar/pop-up is `active` (on/off) with an optional [startsAt, endsAt]
  *    schedule window. It is "live" only when active AND within its window.
- *  - The public site shows at most ONE announcement bar — the live one with the
- *    latest start — so scheduling a new bar automatically replaces the old one
+ *  - The public site shows at most ONE announcement bar - the live one with the
+ *    latest start - so scheduling a new bar automatically replaces the old one
  *    once its window opens.
  *  - Pop-ups show at most one per on-screen position, chosen the same way.
  *  - Activating (or scheduling) is rejected when it would put two live entities
@@ -213,7 +213,7 @@ export const listPopups = query({
 });
 
 /**
- * Public: the live pop-ups right now — at most one per on-screen position —
+ * Public: the live pop-ups right now - at most one per on-screen position -
  * with media URLs resolved for rendering.
  */
 export const listActivePopups = query({
@@ -278,7 +278,7 @@ export const deletePopup = mutation({
 
 /**
  * Toggle a pop-up on/off. Activating fails only when another active pop-up
- * shares the same position AND an overlapping schedule window — so you can
+ * shares the same position AND an overlapping schedule window - so you can
  * schedule a replacement in the same spot for a later, non-overlapping time.
  */
 export const setPopupActive = mutation({

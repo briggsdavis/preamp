@@ -365,7 +365,7 @@ function PopupForm({
         {/* Media */}
         <div>
           <label className={label}>
-            Media — up to {MAX_IMAGES} images and one video
+            Media - up to {MAX_IMAGES} images and one video
           </label>
           <div className="flex flex-wrap gap-2">
             {media.map((m, i) => (

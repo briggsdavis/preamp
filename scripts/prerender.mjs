@@ -5,13 +5,13 @@
  * lifecycle hook). It pulls the live menu from Convex and writes a static
  * `dist/menu/<kind>/<slug>/index.html` for every item, injecting per-item
  * <title>, meta description, Open Graph / Twitter tags, and JSON-LD plus a
- * crawlable content block — so search engines and social scrapers get the item
+ * crawlable content block - so search engines and social scrapers get the item
  * without executing JS. Users still boot into the SPA, which opens the same
  * item as a routed modal. A sitemap.xml + robots.txt are written too.
  *
  * Content lives in Convex, so these files reflect the menu at build time and
  * are regenerated on each deploy. If no Convex URL is configured (e.g. a local
- * build with no deployment), the script logs a notice and exits 0 — the SPA
+ * build with no deployment), the script logs a notice and exits 0 - the SPA
  * fallback still serves every item client-side.
  */
 import { ConvexHttpClient } from "convex/browser";
@@ -142,12 +142,12 @@ function writeSitemap(urls) {
 
 async function main() {
   if (!existsSync(join(DIST, "index.html"))) {
-    console.warn("[prerender] dist/index.html not found — run vite build first.");
+    console.warn("[prerender] dist/index.html not found - run vite build first.");
     return;
   }
   if (!CONVEX_URL) {
     console.warn(
-      "[prerender] No VITE_CONVEX_URL set — skipping menu-item prerender. " +
+      "[prerender] No VITE_CONVEX_URL set - skipping menu-item prerender. " +
         "Items still work via the SPA fallback.",
     );
     return;
@@ -197,7 +197,7 @@ async function main() {
     console.log(`[prerender] Wrote sitemap.xml (${STATIC_PAGES.length + itemUrls.length} URLs).`);
   } else {
     console.warn(
-      "[prerender] No VITE_SITE_URL set — skipping sitemap.xml (needs absolute URLs).",
+      "[prerender] No VITE_SITE_URL set - skipping sitemap.xml (needs absolute URLs).",
     );
   }
 }
@@ -205,7 +205,7 @@ async function main() {
 // Only run as a CLI (`node scripts/prerender.mjs`), not when imported for tests.
 if (process.argv[1] && process.argv[1].endsWith("prerender.mjs")) {
   main().catch((e) => {
-    // Never fail the build over prerendering — the SPA still serves everything.
+    // Never fail the build over prerendering - the SPA still serves everything.
     console.warn("[prerender] Skipped due to error:", e?.message ?? e);
   });
 }

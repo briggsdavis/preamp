@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { btn, field, label as fieldLabel } from "@/admin/ui";
 
 /**
- * About page editor — a UI-only, WYSIWYG stand-in for a flat field list.
+ * About page editor - a UI-only, WYSIWYG stand-in for a flat field list.
  *
  * It renders a static replica of the public About page (same layout, colors,
  * type, and images, minus the scroll/entrance animations so text stays
@@ -550,7 +550,7 @@ export function AboutEditor() {
           <h1 className="font-display text-4xl text-espresso">About Page</h1>
           <p className="mt-1 text-sm text-espresso/60">
             Click any text, image, or button below to edit it in place. This is
-            a live preview — changes aren&apos;t connected to the site yet.
+            a live preview - changes aren&apos;t connected to the site yet.
           </p>
         </div>
       </div>
@@ -863,7 +863,7 @@ export function AboutEditor() {
             </label>
 
             <p className="mt-4 border-t border-sand pt-3 text-xs text-espresso/50">
-              UI preview only — not connected to the live site yet. Saving logs
+              UI preview only - not connected to the live site yet. Saving logs
               the content payload to the browser console.
             </p>
           </div>

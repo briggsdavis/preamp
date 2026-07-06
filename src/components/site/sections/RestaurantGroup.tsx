@@ -92,7 +92,7 @@ export function RestaurantGroup() {
             The Family
           </p>
           <h2 className="mx-auto mt-3 max-w-2xl font-groovy text-3xl leading-tight text-espresso md:text-4xl">
-            Proud to be part of Richard Dishon's restaurant group.
+            Proud to be part of Richard Deshantz's restaurant group.
           </h2>
         </motion.div>
 

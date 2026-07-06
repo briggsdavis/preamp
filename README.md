@@ -69,8 +69,8 @@ admin dashboard at **`/admin`**.
    `CONVEX_DEPLOYMENT` into `.env.local`.
 2. **Set the admin secrets** in the Convex dashboard (Settings → Environment
    Variables) or via the CLI:
-   - `JWT_PRIVATE_KEY`, `JWKS`, `SITE_URL` — from Convex Auth setup.
-   - `ADMIN_EMAILS` — a comma-separated allowlist of emails permitted to
+   - `JWT_PRIVATE_KEY`, `JWKS`, `SITE_URL` - from Convex Auth setup.
+   - `ADMIN_EMAILS` - a comma-separated allowlist of emails permitted to
      create an admin account (e.g. `you@shop.com, manager@shop.com`).
 3. **Create your admin account** at `/admin` → "Sign up" using an email on the
    allowlist. Sign-ups from other emails are rejected.
@@ -85,7 +85,7 @@ admin dashboard at **`/admin`**.
   order/menu clicks, a visit→menu→order funnel, top pages, traffic sources),
   **Ordering**, **Menu Items** (per-item views + order clicks), **Announcements**
   (impressions, clicks, CTR), and **Pop-ups** (impressions, clicks, emails
-  captured, average time-before-dismiss, CTR) — each across seven timeframes
+  captured, average time-before-dismiss, CTR) - each across seven timeframes
   (Today → 2 Years) and exportable to CSV (aggregated numbers or raw event
   rows). Each menu manager, announcement bar, and pop-up also has its own inline
   analytics panel. Tracking is cookieless and excludes signed-in staff; events
@@ -121,19 +121,19 @@ admin dashboard at **`/admin`**.
 
 For search + social crawlers, `npm run build` runs a `postbuild` step
 (`scripts/prerender.mjs`) that pulls the live menu from Convex and writes a
-static `dist/menu/<kind>/<slug>/index.html` for every item — with its own
+static `dist/menu/<kind>/<slug>/index.html` for every item - with its own
 `<title>`, meta description, Open Graph/Twitter tags, JSON-LD, and a crawlable
-content block — plus a `sitemap.xml`. Real visitors still boot into the SPA,
+content block - plus a `sitemap.xml`. Real visitors still boot into the SPA,
 which opens the item as a routed modal.
 
 Because the menu lives in Convex, these files reflect the menu **at build
 time** and are regenerated on each deploy (re-deploy after menu edits to
 refresh them). The step reads two build-time env vars:
 
-- `VITE_CONVEX_URL` — the Convex deployment URL (already written to
+- `VITE_CONVEX_URL` - the Convex deployment URL (already written to
   `.env.local` by `convex dev`; set it in your Vercel build env). Without it the
   prerender is skipped and items still work via the SPA fallback.
-- `VITE_SITE_URL` — the production origin (e.g. `https://preampcoffee.com`) used
+- `VITE_SITE_URL` - the production origin (e.g. `https://preampcoffee.com`) used
   for absolute canonical/OG URLs and the sitemap. Without it, canonical/OG URLs
   are root-relative and `sitemap.xml` is skipped.
 
