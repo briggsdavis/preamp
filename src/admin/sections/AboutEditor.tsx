@@ -76,7 +76,7 @@ const ABOUT_INTRO =
 
 const DEFAULT_CONTENT: AboutContent = {
   hero: {
-    image: "/images/artworkheadon.jpg",
+    image: "/images/artworkheadon.webp",
     kicker: "Pre Amp Coffee Studio · Pittsburgh",
     title: "Our Story",
     subtitle:
@@ -109,7 +109,7 @@ const DEFAULT_CONTENT: AboutContent = {
     kicker: "Our Origin",
     title: "Meet Danny Ryan",
     image: {
-      src: "/images/menu-coffeepouring.jpg",
+      src: "/images/menu-coffeepouring.webp",
       alt: "Pouring espresso at the Pre Amp bar",
     },
     paragraphs: [
@@ -122,7 +122,7 @@ const DEFAULT_CONTENT: AboutContent = {
     kicker: "The Coffee",
     title: "Espresso, Treated Like a Spirit",
     image: {
-      src: "/images/menu-coffeeshot.jpg",
+      src: "/images/menu-coffeeshot.webp",
       alt: "A handcrafted espresso drink",
     },
     paragraphs: [
@@ -135,7 +135,7 @@ const DEFAULT_CONTENT: AboutContent = {
     kicker: "The Kitchen",
     title: "Made to Pair With Your Cup",
     image: {
-      src: "/images/menu-sandwich.jpg",
+      src: "/images/menu-sandwich.webp",
       alt: "A focaccia sandwich from the kitchen",
     },
     paragraphs: [
@@ -153,8 +153,8 @@ const DEFAULT_CONTENT: AboutContent = {
     ],
     cta: { label: "See What's On →", to: "/events" },
     images: [
-      { src: "/images/eventvinyls.jpg", alt: "Vinyl records" },
-      { src: "/images/eventspeakers.jpg", alt: "Speakers in the studio" },
+      { src: "/images/eventvinyls.webp", alt: "Vinyl records" },
+      { src: "/images/eventspeakers.webp", alt: "Speakers in the studio" },
     ],
   },
   closing: {
@@ -169,16 +169,16 @@ const DEFAULT_CONTENT: AboutContent = {
 
 /** A few on-brand images to pick from when swapping a picture. */
 const IMAGE_PRESETS = [
-  "/images/artworkheadon.jpg",
-  "/images/menu-coffeepouring.jpg",
-  "/images/menu-coffeeshot.jpg",
-  "/images/menu-coffee.jpg",
-  "/images/menu-sandwich.jpg",
-  "/images/eventvinyls.jpg",
-  "/images/eventspeakers.jpg",
-  "/images/preampdecor.jpg",
-  "/images/preampdecor2.jpg",
-  "/images/preampdecor3.jpg",
+  "/images/artworkheadon.webp",
+  "/images/menu-coffeepouring.webp",
+  "/images/menu-coffeeshot.webp",
+  "/images/menu-coffee.webp",
+  "/images/menu-sandwich.webp",
+  "/images/eventvinyls.webp",
+  "/images/eventspeakers.webp",
+  "/images/preampdecor.webp",
+  "/images/preampdecor2.webp",
+  "/images/preampdecor3.webp",
 ];
 
 // --- Inline editing primitives ----------------------------------------------

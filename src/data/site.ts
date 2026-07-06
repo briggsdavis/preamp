@@ -159,19 +159,19 @@ export interface Restaurant {
  * page links as `image` / `href` to replace the on-brand placeholders.
  */
 export const RD_RESTAURANTS: Restaurant[] = [
-  { name: "Meat & Potatoes", image: "/images/meatpotatoes.jpg", href: "https://meatandpotatoespgh.com/" },
-  { name: "Butcher and the Rye", image: "/images/butcherandtherye.jpg", href: "https://butcherandtherye.com/" },
-  { name: "täkō", image: "/images/tako.jpg", href: "https://takopgh.com/" },
-  { name: "Tako Torta", image: "/images/takotorta.jpg", href: "https://takotorta.com/" },
-  { name: "Poulet Bleu", image: "/images/pouletbleu.jpg", href: "https://www.pouletbleupgh.com/" },
-  { name: "Fish nor Fowl", image: "/images/fishnorfowl.jpg", href: "https://fishnorfowlpgh.com/" },
-  { name: "Coup De Ville", image: "/images/coupdeville.jpg", href: "https://coopdevillepgh.com/" },
-  { name: "Sally Ann's", image: "/images/sallyannys.jpg", href: "https://sallyannspgh.com/" },
-  { name: "Golden Gai", image: "/images/goldengai.jpg", href: "https://goldengaipgh.com/" },
-  { name: "Vieux Carré", image: "/images/vieuxcarre.jpg", href: "https://www.seamonkeypgh.com/vieux-carre" },
-  { name: "Hand Roll", image: "/images/handroll.jpg", href: "https://gi-jin.com/" },
-  { name: "Sea Monkey", image: "/images/seamonkey.jpg", href: "https://www.seamonkeypgh.com/" },
-  { name: "Rib Room", image: "/images/ribroom.jpg", href: "https://ribroompgh.com/" },
+  { name: "Meat & Potatoes", image: "/images/meatpotatoes.webp", href: "https://meatandpotatoespgh.com/" },
+  { name: "Butcher and the Rye", image: "/images/butcherandtherye.webp", href: "https://butcherandtherye.com/" },
+  { name: "täkō", image: "/images/tako.webp", href: "https://takopgh.com/" },
+  { name: "Tako Torta", image: "/images/takotorta.webp", href: "https://takotorta.com/" },
+  { name: "Poulet Bleu", image: "/images/pouletbleu.webp", href: "https://www.pouletbleupgh.com/" },
+  { name: "Fish nor Fowl", image: "/images/fishnorfowl.webp", href: "https://fishnorfowlpgh.com/" },
+  { name: "Coup De Ville", image: "/images/coupdeville.webp", href: "https://coopdevillepgh.com/" },
+  { name: "Sally Ann's", image: "/images/sallyannys.webp", href: "https://sallyannspgh.com/" },
+  { name: "Golden Gai", image: "/images/goldengai.webp", href: "https://goldengaipgh.com/" },
+  { name: "Vieux Carré", image: "/images/vieuxcarre.webp", href: "https://www.seamonkeypgh.com/vieux-carre" },
+  { name: "Hand Roll", image: "/images/handroll.webp", href: "https://gi-jin.com/" },
+  { name: "Sea Monkey", image: "/images/seamonkey.webp", href: "https://www.seamonkeypgh.com/" },
+  { name: "Rib Room", image: "/images/ribroom.webp", href: "https://ribroompgh.com/" },
   { name: "Pre Amp", image: "/images/preamplogo.png", href: "/" },
 ];
 

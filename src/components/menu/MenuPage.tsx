@@ -193,8 +193,8 @@ function MenuCard({
         e.preventDefault();
         onOpen();
       }}
-      initial={{ opacity: 0, y: 20, filter: "blur(8px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
       className="group flex cursor-pointer flex-col overflow-hidden rounded-2xl border-2 border-sand bg-cream text-left shadow-lg shadow-maroon/10 transition-all hover:-translate-y-1 hover:shadow-xl"

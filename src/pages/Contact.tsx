@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import { SITE } from "@/data/site";
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { RippleStripes } from "@/components/site/RippleStripes";
+import { MapEmbed } from "@/components/site/MapEmbed";
 
 /** Shared field styling for the cream-on-white inputs used across the form. */
 const fieldClass =
@@ -50,8 +51,8 @@ export function Contact() {
           <div className="grid gap-10 md:grid-cols-2 md:items-stretch">
             {/* Left - heading + contact details */}
             <motion.div
-              initial={{ opacity: 0, x: -30, filter: "blur(12px)" }}
-              whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.9 }}
               className="flex flex-col"
@@ -130,14 +131,14 @@ export function Contact() {
 
             {/* Right - image with a button that reveals a sliding contact form */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.96, filter: "blur(12px)" }}
-              whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+              initial={{ opacity: 0, scale: 0.96 }}
+              whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.9 }}
               className="relative min-h-[480px] overflow-hidden rounded-3xl shadow-2xl md:min-h-0"
             >
               <img
-                src="/images/contactdecor.jpg"
+                src="/images/contactdecor.webp"
                 alt="Pre Amp Coffee Studio"
                 className="absolute inset-0 h-full w-full object-cover"
               />
@@ -263,8 +264,8 @@ export function Contact() {
       <section className="relative overflow-hidden bg-espresso">
         <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-20 md:grid-cols-2 md:items-center md:px-8">
           <motion.div
-            initial={{ opacity: 0, x: -30, filter: "blur(12px)" }}
-            whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.9 }}
           >
@@ -293,18 +294,16 @@ export function Contact() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, filter: "blur(12px)" }}
-            whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.9 }}
             className="overflow-hidden rounded-3xl border-4 border-cream/60 shadow-2xl"
           >
-            <iframe
+            <MapEmbed
               title="Pre Amp Coffee Studio location map"
               src={SITE.mapsEmbed}
               className="h-full min-h-[360px] w-full"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
             />
           </motion.div>
         </div>

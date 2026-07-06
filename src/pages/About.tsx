@@ -35,8 +35,8 @@ function FeatureSection({
       <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-20 md:grid-cols-2 md:gap-16 md:py-28 md:px-8">
         {/* Image */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.94, filter: "blur(12px)" }}
-          whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+          initial={{ opacity: 0, scale: 0.94 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.8 }}
           className={`group relative overflow-hidden rounded-3xl shadow-2xl shadow-maroon/20 ${
@@ -53,8 +53,8 @@ function FeatureSection({
 
         {/* Copy */}
         <motion.div
-          initial={{ opacity: 0, x: reverse ? -30 : 30, filter: "blur(10px)" }}
-          whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+          initial={{ opacity: 0, x: reverse ? -30 : 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.8 }}
           className={reverse ? "md:order-1" : ""}
@@ -283,7 +283,7 @@ export function About() {
       >
         <motion.div style={{ y: bgY }} className="absolute inset-0 -z-10 scale-110">
           <img
-            src="/images/artworkheadon.jpg"
+            src="/images/artworkheadon.webp"
             alt=""
             loading="lazy"
             decoding="async"
@@ -297,25 +297,22 @@ export function About() {
           className="relative mx-auto max-w-3xl px-6 text-center"
         >
           <motion.p
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.2, duration: 1 }}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
             className="font-groovy text-sm uppercase tracking-[0.4em] text-cream/80"
           >
             Pre Amp Coffee Studio · Pittsburgh
           </motion.p>
           <motion.h1
-            initial={{ opacity: 0, y: 24, filter: "blur(14px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.4, duration: 1 }}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
             className="mt-4 font-display text-6xl text-cream drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)] md:text-8xl"
           >
             Our Story
           </motion.h1>
           <motion.p
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.7, duration: 1 }}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
             className="mx-auto mt-6 max-w-xl text-lg text-cream/90"
           >
             Every sip hits the perfect note. A coffee studio and vinyl listening
@@ -334,8 +331,8 @@ export function About() {
         <SquiggleLine side="right" />
         <div className="relative mx-auto max-w-3xl px-6 text-center md:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
@@ -372,8 +369,8 @@ export function About() {
             {VALUES.map((v, i) => (
               <motion.div
                 key={v.title}
-                initial={{ opacity: 0, y: 28, filter: "blur(10px)" }}
-                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: i * 0.1 }}
                 className="group rounded-3xl border border-cream/10 bg-espresso-soft/60 p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:border-gold/40 hover:bg-espresso-soft"
@@ -395,7 +392,7 @@ export function About() {
       <FeatureSection
         kicker="Our Origin"
         title="Meet Danny Ryan"
-        image="/images/menu-coffeepouring.jpg"
+        image="/images/menu-coffeepouring.webp"
         imageAlt="Pouring espresso at the Pre Amp bar"
       >
         <p>
@@ -421,7 +418,7 @@ export function About() {
       <FeatureSection
         kicker="The Coffee"
         title="Espresso, Treated Like a Spirit"
-        image="/images/menu-coffeeshot.jpg"
+        image="/images/menu-coffeeshot.webp"
         imageAlt="A handcrafted espresso drink"
         reverse
         dark
@@ -442,7 +439,7 @@ export function About() {
       <FeatureSection
         kicker="The Kitchen"
         title="Made to Pair With Your Cup"
-        image="/images/menu-sandwich.jpg"
+        image="/images/menu-sandwich.webp"
         imageAlt="A focaccia sandwich from the kitchen"
         cta={{ label: "See the Food →", to: "/menu/food" }}
       >
@@ -464,8 +461,8 @@ export function About() {
         </div>
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-24 pt-36 md:grid-cols-2 md:gap-16 md:px-8">
           <motion.div
-            initial={{ opacity: 0, x: -30, filter: "blur(10px)" }}
-            whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.8 }}
           >
@@ -496,15 +493,15 @@ export function About() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.94, filter: "blur(12px)" }}
-            whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            initial={{ opacity: 0, scale: 0.94 }}
+            whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.8 }}
             className="grid grid-cols-2 items-start gap-4"
           >
             <div className="group overflow-hidden rounded-3xl shadow-2xl shadow-black/30">
               <img
-                src="/images/eventvinyls.jpg"
+                src="/images/eventvinyls.webp"
                 alt="Vinyl records"
                 loading="lazy"
                 decoding="async"
@@ -513,7 +510,7 @@ export function About() {
             </div>
             <div className="group mt-8 overflow-hidden rounded-3xl shadow-2xl shadow-black/30">
               <img
-                src="/images/eventspeakers.jpg"
+                src="/images/eventspeakers.webp"
                 alt="Speakers in the studio"
                 loading="lazy"
                 decoding="async"
@@ -530,8 +527,8 @@ export function About() {
           <RippleStripes count={26} fade="none" drift="right" />
         </div>
         <motion.div
-          initial={{ opacity: 0, y: 24, filter: "blur(10px)" }}
-          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
           className="relative mx-auto max-w-2xl px-6"

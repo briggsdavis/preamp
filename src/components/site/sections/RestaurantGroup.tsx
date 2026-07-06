@@ -57,8 +57,8 @@ function RestaurantTile({ r, i }: { r: Restaurant; i: number }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "0px 0px -18% 0px" }}
       transition={{ duration: 0.75, delay: (i % 7) * 0.04, ease: [0.22, 1, 0.36, 1] }}
       className="group"
@@ -82,8 +82,8 @@ export function RestaurantGroup() {
 
       <div className="relative mx-auto max-w-7xl px-6 md:px-8">
         <motion.div
-          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-          whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "0px 0px -18% 0px" }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
           className="text-center"

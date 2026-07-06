@@ -23,7 +23,7 @@ type ConvexSection = {
   items: ConvexItem[];
 };
 
-const FALLBACK_IMAGE = "/images/preampdecor.jpg";
+const FALLBACK_IMAGE = "/images/preampdecor.webp";
 
 export function toMenuSections(
   sections: ConvexSection[] | undefined,

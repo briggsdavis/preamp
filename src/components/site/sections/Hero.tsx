@@ -26,9 +26,8 @@ export function Hero() {
       {/* Photographic ambience, slow parallax */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 -z-20 scale-110">
         <img
-          src="/images/preampdecor.jpg"
+          src="/images/preampdecor.webp"
           alt=""
-          fetchPriority="high"
           decoding="async"
           className="h-full w-full object-cover"
         />
@@ -40,30 +39,23 @@ export function Hero() {
         style={{ y: contentY, opacity: fade }}
         className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-6 pt-28 text-center md:px-8"
       >
-        <motion.img
+        {/* LCP element — render immediately, no entrance animation. Explicit
+            dimensions reserve the aspect ratio so it never shifts layout. */}
+        <img
           src="/images/heroprimary.png"
           alt={SITE.name}
-          initial={{ opacity: 0, y: 30, filter: "blur(14px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 1.3, duration: 1.2 }}
-          className="w-full max-w-2xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.25)]"
+          width={1400}
+          height={881}
+          fetchPriority="high"
+          decoding="async"
+          className="h-auto w-full max-w-2xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.25)]"
         />
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 2.0, duration: 1.05 }}
-          className="mt-6 max-w-2xl font-groovy text-lg uppercase tracking-[0.18em] text-cream/90 md:text-xl"
-        >
+        <h1 className="mt-6 max-w-2xl font-groovy text-lg uppercase tracking-[0.18em] text-cream/90 md:text-xl">
           Coffee studio &amp; vinyl listening bar, Squirrel Hill, Pittsburgh
-        </motion.h1>
+        </h1>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ delay: 2.7, duration: 1.05 }}
-          className="mt-9 flex flex-wrap justify-center gap-4"
-        >
+        <div className="mt-9 flex flex-wrap justify-center gap-4">
           <Link
             to="/menu/coffee"
             className="rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg shadow-maroon/30 transition-all hover:-translate-y-1 hover:bg-amber"
@@ -84,7 +76,7 @@ export function Hero() {
           >
             Order Now
           </a>
-        </motion.div>
+        </div>
       </motion.div>
     </section>
   );

@@ -211,15 +211,14 @@ export function Hiring() {
       {/* Hero banner - half the viewport */}
       <section className="relative flex h-[50vh] min-h-[360px] items-center justify-center overflow-hidden">
         <img
-          src="/images/hiringBG.jpg"
+          src="/images/hiringBG.webp"
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-espresso/70 via-maroon/45 to-espresso/80" />
         <motion.h1
-          initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1, delay: 0.2 }}
+          initial={false}
+          animate={{ opacity: 1, y: 0 }}
           className="relative px-6 text-center font-display text-6xl text-cream drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)] md:text-8xl"
         >
           Join Our Team
@@ -232,8 +231,8 @@ export function Hiring() {
 
         <div className="relative mx-auto max-w-3xl px-5 md:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="rounded-[2rem] border-4 border-sand bg-cream p-7 shadow-2xl shadow-maroon/15 md:p-12"

@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
 
 import { Layout } from "@/components/site/Layout";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
@@ -40,7 +39,7 @@ function MenuUnavailable() {
 /**
  * Route table for Pre Amp Coffee Studio. Only the home page is built out;
  * every other route renders the friendly "Not Brewed Yet" placeholder.
- * Routes are wrapped in AnimatePresence for cross-page transitions.
+ * Pages render instantly on navigation; reveal motion is scroll-driven only.
  */
 export default function App() {
   const location = useLocation();
@@ -84,8 +83,7 @@ export default function App() {
 
   return (
     <Layout>
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={routeKey}>
+      <Routes location={location} key={routeKey}>
           <Route path="/" element={<Home />} />
           <Route
             path="/menu/coffee"
@@ -145,8 +143,7 @@ export default function App() {
           <Route path="/gift-cards" element={<NotDeveloped />} />
           <Route path="/hiring" element={<Hiring />} />
           <Route path="*" element={<NotDeveloped />} />
-        </Routes>
-      </AnimatePresence>
+      </Routes>
     </Layout>
   );
 }
