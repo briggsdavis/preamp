@@ -10,7 +10,9 @@
    Google fonts so headlines read in Churchward where the file loads. */
 @font-face {
   font-family: "Churchward";
-  src: url("/fonts/churchward-design-bold.woff") format("woff");
+  src:
+    url("/fonts/churchward-design-bold.woff2") format("woff2"),
+    url("/fonts/churchward-design-bold.woff") format("woff");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
