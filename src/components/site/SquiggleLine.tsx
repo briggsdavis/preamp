@@ -209,6 +209,14 @@ export function SquiggleLine({
   const mid = (RIBBON.length - 1) / 2;
   const bundleHalf = mid * gap;
 
+  // On narrow (mobile) viewports the centred copy nearly fills the width, so
+  // the tall connector run — inset by `marginX` — strikes through the text
+  // (e.g. the "Welcome in" section). There, bleed the vertical runs off the
+  // left/right edges instead (insetX ≈ 0) so the ribbon frames the section at
+  // the page edges rather than crossing the content.
+  const effMarginX =
+    size.w > 0 && size.w < 768 ? -(bundleHalf + strokeWidth + 2) : marginX;
+
   const paths = useMemo(() => {
     if (size.w < 10 || size.h < 10) return null;
     const { points, effR } =
@@ -220,7 +228,7 @@ export function SquiggleLine({
             bundleHalf,
             strokeWidth,
             marginY,
-            marginX,
+            effMarginX,
             rows,
             side !== "right",
           )
@@ -231,11 +239,11 @@ export function SquiggleLine({
             bundleHalf,
             strokeWidth,
             marginY,
-            marginX,
+            effMarginX,
             side !== "right",
           );
     return RIBBON.map((_, i) => strandPath(points, effR, (i - mid) * gap));
-  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, marginX, gap, mid, side, rows]);
+  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, effMarginX, gap, mid, side, rows]);
 
   // Draw the ribbon on as the section scrolls through the viewport.
   const { scrollYProgress } = useScroll({
