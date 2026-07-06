@@ -18,6 +18,14 @@ function trackNavChild(
   else if (/egiftcards/.test(child.to)) track("cta_click", { cta: "gift_card", destination: child.to });
 }
 
+/**
+ * Hover underline: a 2px terracotta line pinned under a nav item that grows
+ * from its center out to both edges on hover (origin-center + scale-x). It's
+ * held open (scaled to full) for the active page via `after:scale-x-100`.
+ */
+const NAV_UNDERLINE =
+  "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0.5 after:h-[2px] after:origin-center after:rounded-full after:bg-terracotta after:transition-transform after:duration-300 hover:after:scale-x-100";
+
 function DesktopItem({ item }: { item: NavItem }) {
   const [open, setOpen] = useState(false);
   const track = useTrack();
@@ -29,7 +37,8 @@ function DesktopItem({ item }: { item: NavItem }) {
         className={({ isActive }) =>
           cn(
             "relative px-1 py-2 text-sm font-medium lowercase tracking-wide text-espresso/80 transition-colors hover:text-terracotta",
-            isActive && "text-terracotta",
+            NAV_UNDERLINE,
+            isActive ? "text-terracotta after:scale-x-100" : "after:scale-x-0",
           )
         }
       >
@@ -45,7 +54,11 @@ function DesktopItem({ item }: { item: NavItem }) {
       onMouseLeave={() => setOpen(false)}
     >
       <button
-        className="flex items-center gap-1 px-1 py-2 text-sm font-medium lowercase tracking-wide text-espresso/80 transition-colors hover:text-terracotta"
+        className={cn(
+          "relative flex items-center gap-1 px-1 py-2 text-sm font-medium lowercase tracking-wide text-espresso/80 transition-colors hover:text-terracotta",
+          NAV_UNDERLINE,
+          "after:scale-x-0",
+        )}
         aria-expanded={open}
       >
         {item.label}

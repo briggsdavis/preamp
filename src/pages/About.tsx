@@ -207,6 +207,76 @@ export function About() {
         </div>
       </section>
 
+      {/* Meet the owner - Danny Ryan */}
+      <section className="relative overflow-hidden bg-cream py-24 md:py-32">
+        <div className="relative mx-auto max-w-5xl px-6 md:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.8 }}
+            className="grid items-center gap-10 md:grid-cols-[auto_1fr] md:gap-14"
+          >
+            {/* Left: circular portrait with name + title */}
+            <div className="flex flex-col items-center text-center">
+              {/* Swap the src for a real portrait of Danny when it's ready. */}
+              <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-gold/60 shadow-2xl shadow-maroon/25 md:h-60 md:w-60">
+                <img
+                  src="/images/menu-coffeepouring.webp"
+                  alt="Danny Ryan, owner of Pre Amp Coffee Studio"
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <h3 className="mt-6 font-display text-3xl text-espresso">
+                Danny Ryan
+              </h3>
+              <p className="mt-1 font-groovy text-sm uppercase tracking-[0.25em] text-terracotta">
+                Restaurant Owner & Operator
+              </p>
+            </div>
+
+            {/* Right: introduction */}
+            <div>
+              <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
+                Meet the Owner
+              </p>
+              <h2 className="mt-3 font-display text-4xl leading-tight text-espresso md:text-5xl">
+                A Decade in the Making
+              </h2>
+              <div className="mt-5 space-y-4 text-lg text-espresso/80">
+                <p>
+                  After dedicating a decade to working in restaurants, cafes, and
+                  a roastery in New York City, I finally decided to pack up my
+                  family and embark on a new chapter: opening my own cafe in
+                  Pittsburgh in 2020. However, the pandemic had other plans for
+                  us, and, in a twist of fate, things worked out better than I
+                  could have ever imagined or anticipated.
+                </p>
+                <p>
+                  While seeking work during the pandemic's uncertainty, I had the
+                  fortune of meeting Tolga and Rick. They brought me on as their
+                  coffee lead at Coop De Ville, and from there, the rest is
+                  history. Their unwavering trust led to a partnership focused on
+                  creating the ultimate coffee experience in Pittsburgh, a dream I
+                  couldn't have achieved on my own. With their incredible support
+                  and belief, I've been able to build and realize my vision:
+                  establishing what I believe will be the best coffee shop in
+                  Pittsburgh.
+                </p>
+                <p>
+                  My passion for coffee ignited in 2009, sparked by a $6 cup of
+                  coffee on a Clover machine from Cafe Grumpy in NYC. I was
+                  utterly captivated and surprised by the complexity, rich
+                  flavors, and compelling stories held within each bean.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Closing CTA */}
       <section className="relative overflow-hidden bg-terracotta py-24 text-center">
         <div className="absolute inset-0 opacity-25">
