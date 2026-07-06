@@ -285,6 +285,8 @@ export function About() {
           <img
             src="/images/artworkheadon.jpg"
             alt=""
+            loading="lazy"
+            decoding="async"
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-espresso/75 via-maroon/55 to-espresso/85" />
@@ -504,6 +506,8 @@ export function About() {
               <img
                 src="/images/eventvinyls.jpg"
                 alt="Vinyl records"
+                loading="lazy"
+                decoding="async"
                 className="h-64 w-full object-cover transition-transform duration-[1.2s] group-hover:scale-110 md:h-80"
               />
             </div>
@@ -511,6 +515,8 @@ export function About() {
               <img
                 src="/images/eventspeakers.jpg"
                 alt="Speakers in the studio"
+                loading="lazy"
+                decoding="async"
                 className="h-64 w-full object-cover transition-transform duration-[1.2s] group-hover:scale-110 md:h-80"
               />
             </div>

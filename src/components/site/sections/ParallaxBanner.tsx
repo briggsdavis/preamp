@@ -29,7 +29,13 @@ export function ParallaxBanner({
       className="relative flex h-[70vh] items-center justify-center overflow-hidden"
     >
       <motion.div style={{ y }} className="absolute inset-0 -z-10 scale-125">
-        <img src={image} alt="" className="h-full w-full object-cover" />
+        <img
+          src={image}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover"
+        />
         <div className="absolute inset-0 bg-espresso/55" />
       </motion.div>
 

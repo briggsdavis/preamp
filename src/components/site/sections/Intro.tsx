@@ -31,11 +31,15 @@ export function Intro() {
           <img
             src="/images/preampdecor4.jpg"
             alt=""
+            loading="lazy"
+            decoding="async"
             className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
           />
           <img
             src="/images/preampdecor5.jpg"
             alt=""
+            loading="lazy"
+            decoding="async"
             className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
           />
         </div>

@@ -22,6 +22,8 @@ export function Footer() {
             <img
               src="/images/preamplogo.png"
               alt="Pre Amp logo"
+              loading="lazy"
+              decoding="async"
               className="h-12 w-12 object-contain"
             />
             <p className="font-display text-3xl text-gold">Pre Amp</p>
