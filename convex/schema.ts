@@ -117,22 +117,28 @@ export default defineSchema({
   }),
 
   hiringSubmissions: defineTable({
-    firstName: v.string(),
-    lastName: v.string(),
+    // Simplified application fields (current form).
+    name: v.optional(v.string()),
     email: v.string(),
-    phone: v.string(),
-    city: v.string(),
-    state: v.string(),
-    position: v.string(),
-    desiredSalary: v.string(),
-    hoursDesired: v.string(),
-    transportation: v.string(),
+    phone: v.optional(v.string()),
     resumeStorageId: v.optional(v.id("_storage")),
     resumeName: v.optional(v.string()),
-    // Full payload (address, availability, employment history, restrictions).
-    details: v.any(),
+    coffeeExperience: v.optional(v.string()), // "yes" | "no"
+    availability: v.optional(v.array(v.string())), // ["Part-Time", "Full-Time"]
+    favoriteCoffeeShop: v.optional(v.string()),
+    favoriteRecord: v.optional(v.string()),
     // Whether an admin has marked this application as read.
     read: v.optional(v.boolean()),
+    // --- Legacy fields, kept optional so older applications still validate ---
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    position: v.optional(v.string()),
+    desiredSalary: v.optional(v.string()),
+    hoursDesired: v.optional(v.string()),
+    transportation: v.optional(v.string()),
+    details: v.optional(v.any()),
   }),
 
   emailCaptures: defineTable({

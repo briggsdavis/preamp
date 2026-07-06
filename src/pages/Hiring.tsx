@@ -13,19 +13,6 @@ const fieldClass =
 
 const labelClass = "mb-2 block font-semibold text-espresso";
 
-const sectionTitleClass =
-  "font-display text-4xl text-orange md:text-5xl";
-
-const DAYS = [
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday",
-];
-
 /** A labelled checkbox styled to match the retro form. */
 function CheckBox({ name, label }: { name: string; label: string }) {
   return (
@@ -66,57 +53,6 @@ function Radio({
   );
 }
 
-/** One employer block for the Employment History section. */
-function EmployerBlock({ index }: { index: number }) {
-  return (
-    <div className="space-y-5">
-      <h4 className="font-groovy text-xl uppercase tracking-[0.15em] text-orange">
-        Employer {index}
-      </h4>
-      <input
-        name={`emp${index}Company`}
-        placeholder="Company Name"
-        className={fieldClass}
-      />
-      <input
-        name={`emp${index}Phone`}
-        placeholder="Employer Phone"
-        className={fieldClass}
-      />
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label className={labelClass}>Start Date</label>
-          <input
-            type="datetime-local"
-            name={`emp${index}Start`}
-            className={fieldClass}
-          />
-        </div>
-        <div>
-          <label className={labelClass}>End Date</label>
-          <input
-            type="datetime-local"
-            name={`emp${index}End`}
-            className={fieldClass}
-          />
-        </div>
-      </div>
-      <input
-        name={`emp${index}Position`}
-        placeholder="Position"
-        className={fieldClass}
-      />
-      <div>
-        <p className={labelClass}>May we contact?</p>
-        <div className="flex gap-8">
-          <Radio name={`emp${index}Contact`} value="yes" label="Yes" />
-          <Radio name={`emp${index}Contact`} value="no" label="No" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function Hiring() {
   const submitHiring = useMutation(api.inquiries.submitHiring);
   const generateResumeUploadUrl = useMutation(
@@ -153,50 +89,21 @@ export function Hiring() {
         resumeName = resume.name;
       }
 
-      // Per-day availability (AM/PM checkboxes).
-      const availability: Record<string, string[]> = {};
-      for (const day of DAYS) {
-        const slots: string[] = [];
-        if (fd.get(`avail-${day}-am`)) slots.push("AM");
-        if (fd.get(`avail-${day}-pm`)) slots.push("PM");
-        if (slots.length) availability[day] = slots;
-      }
-
-      // Employment history blocks.
-      const employers = [1, 2]
-        .map((i) => ({
-          company: str(`emp${i}Company`),
-          phone: str(`emp${i}Phone`),
-          start: str(`emp${i}Start`),
-          end: str(`emp${i}End`),
-          position: str(`emp${i}Position`),
-          mayContact: str(`emp${i}Contact`),
-        }))
-        .filter((emp) => emp.company);
+      // Part-Time / Full-Time checkboxes.
+      const availability: string[] = [];
+      if (fd.get("avail-part")) availability.push("Part-Time");
+      if (fd.get("avail-full")) availability.push("Full-Time");
 
       await submitHiring({
-        firstName: str("firstName"),
-        lastName: str("lastName"),
+        name: str("name"),
         email: str("email"),
         phone: str("phone"),
-        city: str("city"),
-        state: str("state"),
-        position: str("position"),
-        desiredSalary: str("salary"),
-        hoursDesired: str("hours"),
-        transportation: str("transportation"),
+        coffeeExperience: str("coffeeExperience"),
+        availability,
+        favoriteCoffeeShop: str("favoriteCoffeeShop"),
+        favoriteRecord: str("favoriteRecord"),
         resumeStorageId,
         resumeName,
-        details: {
-          address: {
-            street: str("street"),
-            street2: str("street2"),
-            zip: str("zip"),
-          },
-          availability,
-          restrictions: str("restrictions"),
-          employers,
-        },
       });
       setSent(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -229,7 +136,7 @@ export function Hiring() {
       <section className="relative overflow-hidden bg-cream-deep py-20 md:py-28">
         <SquiggleLine side="left" rows={6} cornerRadius={120} marginY={120} />
 
-        <div className="relative mx-auto max-w-3xl px-5 md:px-8">
+        <div className="relative mx-auto max-w-2xl px-5 md:px-8">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -242,8 +149,8 @@ export function Hiring() {
                 Send Your Resume
               </h2>
               <p className="mt-4 text-lg text-espresso/80">
-                Upload your resume and we will get back to you as soon as
-                possible.
+                Keep it short and sweet — tell us who you are, drop your resume,
+                and we'll be in touch.
               </p>
             </header>
 
@@ -255,171 +162,106 @@ export function Hiring() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="mt-12 space-y-12">
-                {/* Contact Info */}
-                <div className="space-y-5">
-                  <h3 className={sectionTitleClass}>Contact Info</h3>
+              <form onSubmit={handleSubmit} className="mt-10 space-y-6">
+                <div>
+                  <label className={labelClass} htmlFor="name">
+                    Full Name
+                  </label>
                   <input
+                    id="name"
                     required
-                    name="firstName"
-                    placeholder="First Name (Required)"
+                    name="name"
+                    placeholder="Your full name"
                     className={fieldClass}
                   />
+                </div>
+
+                <div>
+                  <label className={labelClass} htmlFor="email">
+                    Email Address
+                  </label>
                   <input
-                    required
-                    name="lastName"
-                    placeholder="Last Name (Required)"
-                    className={fieldClass}
-                  />
-                  <input
-                    required
-                    name="street"
-                    placeholder="Street Address (Required)"
-                    className={fieldClass}
-                  />
-                  <input
-                    name="street2"
-                    placeholder="Street Address Line 2"
-                    className={fieldClass}
-                  />
-                  <input
-                    required
-                    name="city"
-                    placeholder="City (Required)"
-                    className={fieldClass}
-                  />
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <input
-                      required
-                      name="state"
-                      placeholder="State (Required)"
-                      className={fieldClass}
-                    />
-                    <input
-                      required
-                      name="zip"
-                      placeholder="Zip Code (Required)"
-                      className={fieldClass}
-                    />
-                  </div>
-                  <input
+                    id="email"
                     required
                     type="email"
                     name="email"
-                    placeholder="Email Address (Required)"
-                    className={fieldClass}
-                  />
-                  <div>
-                    <input
-                      required
-                      type="tel"
-                      name="phone"
-                      placeholder="Phone Number (Required)"
-                      pattern="[\(]?[0-9]{3}[\)]?[-\s]?[0-9]{3}[-\s]?[0-9]{4}"
-                      className={fieldClass}
-                    />
-                    <p className="mt-2 text-sm text-espresso/60">
-                      000-000-0000 or (000) 000-0000
-                    </p>
-                  </div>
-                </div>
-
-                {/* Job Details */}
-                <div className="space-y-5">
-                  <h3 className={sectionTitleClass}>Job Details</h3>
-                  <div>
-                    <label className={labelClass}>
-                      What Position Are You Applying For? (Required)
-                    </label>
-                    <select
-                      required
-                      name="position"
-                      defaultValue=""
-                      className={fieldClass}
-                    >
-                      <option value="" disabled>
-                        Select an option
-                      </option>
-                      <option value="barista">Barista</option>
-                      <option value="shift-lead">Shift Lead</option>
-                      <option value="kitchen">Kitchen / Food</option>
-                      <option value="manager">Manager</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <input
-                    required
-                    name="salary"
-                    placeholder="Desired Salary (Required)"
+                    placeholder="you@email.com"
                     className={fieldClass}
                   />
                 </div>
 
-                {/* Availability */}
-                <div className="space-y-6">
-                  <h3 className={sectionTitleClass}>Availability</h3>
-                  <input
-                    required
-                    name="hours"
-                    placeholder="Number of Hours Desired (Required)"
-                    className={fieldClass}
-                  />
-                  <div className="space-y-6">
-                    {DAYS.map((day) => (
-                      <div key={day}>
-                        <p className="mb-3 font-semibold text-espresso">
-                          {day} Availability (select all that apply)
-                        </p>
-                        <div className="grid grid-cols-2 gap-3">
-                          <CheckBox name={`avail-${day}-am`} label="AM" />
-                          <CheckBox name={`avail-${day}-pm`} label="PM" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-                    <label className={labelClass}>
-                      Physical Restrictions (i.e. heavy lifting)
-                    </label>
-                    <textarea
-                      name="restrictions"
-                      rows={4}
-                      className={`${fieldClass} resize-none`}
-                    />
-                  </div>
-                  <div>
-                    <p className={labelClass}>
-                      Do you have your own transportation? (Required)
-                    </p>
-                    <div className="flex gap-8">
-                      <Radio
-                        name="transportation"
-                        value="yes"
-                        label="Yes"
-                        required
-                      />
-                      <Radio name="transportation" value="no" label="No" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Employment History */}
-                <div className="space-y-10">
-                  <h3 className={sectionTitleClass}>Employment History</h3>
-                  <EmployerBlock index={1} />
-                  <EmployerBlock index={2} />
-                </div>
-
-                {/* Resume upload */}
                 <div>
-                  <label className={labelClass}>
-                    Upload Your Resume (pdf, doc, docx, jpg, jpeg):
+                  <label className={labelClass} htmlFor="phone">
+                    Phone Number
                   </label>
+                  <input
+                    id="phone"
+                    required
+                    type="tel"
+                    name="phone"
+                    placeholder="(000) 000-0000"
+                    pattern="[\(]?[0-9]{3}[\)]?[-\s]?[0-9]{3}[-\s]?[0-9]{4}"
+                    className={fieldClass}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Resume Upload</label>
                   <input
                     type="file"
                     name="resume"
                     accept=".pdf,.doc,.docx,.jpg,.jpeg"
                     className="w-full rounded-xl border-2 border-sand bg-white px-4 py-3 text-espresso file:mr-4 file:rounded-full file:border-0 file:bg-gold file:px-4 file:py-2 file:font-semibold file:text-espresso hover:file:bg-amber"
+                  />
+                  <p className="mt-2 text-sm text-espresso/60">
+                    pdf, doc, docx, jpg, or jpeg
+                  </p>
+                </div>
+
+                <div>
+                  <p className={labelClass}>
+                    Do you have coffee experience?
+                  </p>
+                  <div className="flex gap-8">
+                    <Radio
+                      name="coffeeExperience"
+                      value="yes"
+                      label="Yes"
+                      required
+                    />
+                    <Radio name="coffeeExperience" value="no" label="No" />
+                  </div>
+                </div>
+
+                <div>
+                  <p className={labelClass}>Availability</p>
+                  <div className="flex flex-wrap gap-8">
+                    <CheckBox name="avail-part" label="Part-Time" />
+                    <CheckBox name="avail-full" label="Full-Time" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={labelClass} htmlFor="favoriteCoffeeShop">
+                    Favorite Coffee Shop
+                  </label>
+                  <input
+                    id="favoriteCoffeeShop"
+                    name="favoriteCoffeeShop"
+                    placeholder="Where do you love to grab a cup?"
+                    className={fieldClass}
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass} htmlFor="favoriteRecord">
+                    Favorite Record
+                  </label>
+                  <input
+                    id="favoriteRecord"
+                    name="favoriteRecord"
+                    placeholder="What's spinning on your turntable?"
+                    className={fieldClass}
                   />
                 </div>
 

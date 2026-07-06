@@ -1,4 +1,10 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useDragControls } from "framer-motion";
@@ -578,6 +584,7 @@ export function MenuPage({
   pdf = null,
   reviewsEnabled = false,
   orderEnabled = false,
+  banner,
 }: {
   kicker: string;
   title: string;
@@ -596,6 +603,8 @@ export function MenuPage({
   reviewsEnabled?: boolean;
   /** When true, each item shows an "Order" button (Toast link or disabled). */
   orderEnabled?: boolean;
+  /** Optional highlighted callout shown under the page header (e.g. a promo). */
+  banner?: ReactNode;
 }) {
   const track = useTrack();
   const navigate = useNavigate();
@@ -739,6 +748,8 @@ export function MenuPage({
               </div>
             )}
           </header>
+
+          {banner && <div className="mb-12">{banner}</div>}
 
           {loading && sections.length === 0 && (
             <p className="text-center text-espresso/60">Loading the menu…</p>

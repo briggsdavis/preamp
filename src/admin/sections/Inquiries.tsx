@@ -260,35 +260,47 @@ function ContactTab() {
 
 // --- Hiring -----------------------------------------------------------------
 
+/** Display name for an application (new `name`, or legacy first + last). */
+function applicantName(r: {
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+}): string {
+  if (r.name && r.name.trim()) return r.name;
+  const legacy = [r.firstName, r.lastName].filter(Boolean).join(" ").trim();
+  return legacy || "—";
+}
+
 function HiringTab() {
   const { confirmThen } = useDialogs();
   const rows = useQuery(api.inquiries.listHiring);
   const del = useMutation(api.inquiries.deleteHiring);
   const markRead = useMutation(api.inquiries.setHiringRead);
   const [q, setQ] = useState("");
-  const [position, setPosition] = useState("all");
+  const [coffee, setCoffee] = useState("all");
   const [status, setStatus] = useState<ReadStatus>("all");
   const [openId, setOpenId] = useState<string | null>(null);
-
-  const positions = useMemo(() => {
-    const set = new Set<string>();
-    (rows ?? []).forEach((r) => set.add(r.position));
-    return Array.from(set).sort();
-  }, [rows]);
 
   const filtered = useMemo(() => {
     if (!rows) return [];
     const needle = q.trim().toLowerCase();
     return rows.filter((r) => {
       if (!matchesRead(r.read, status)) return false;
-      if (position !== "all" && r.position !== position) return false;
+      if (coffee !== "all" && (r.coffeeExperience ?? "") !== coffee)
+        return false;
       if (!needle) return true;
-      return [r.firstName, r.lastName, r.email, r.phone, r.city, r.state]
+      return [
+        applicantName(r),
+        r.email,
+        r.phone,
+        r.favoriteCoffeeShop,
+        r.favoriteRecord,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(needle);
     });
-  }, [rows, q, position, status]);
+  }, [rows, q, coffee, status]);
 
   if (rows === undefined) return <Loading />;
 
@@ -299,15 +311,12 @@ function HiringTab() {
         <ReadFilter value={status} onChange={setStatus} />
         <select
           className={`${field} max-w-xs`}
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
+          value={coffee}
+          onChange={(e) => setCoffee(e.target.value)}
         >
-          <option value="all">All positions</option>
-          {positions.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
+          <option value="all">All applicants</option>
+          <option value="yes">Coffee experience</option>
+          <option value="no">No coffee experience</option>
         </select>
         <span className="text-sm text-espresso/55">{filtered.length} result(s)</span>
       </div>
@@ -316,76 +325,103 @@ function HiringTab() {
         <Empty label="hiring applications" />
       ) : (
         <div className="mt-4 space-y-3">
-          {filtered.map((r) => (
-            <div
-              key={r._id}
-              className={`rounded-2xl border-2 bg-cream p-4 ${
-                r.read ? "border-sand opacity-70" : "border-brick/40"
-              }`}
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="flex items-center gap-2 font-semibold text-espresso">
-                    {!r.read && <UnreadDot />}
-                    {r.firstName} {r.lastName}
-                    <span className="ml-1 rounded-full bg-gold/30 px-2 py-0.5 text-xs font-semibold text-espresso">
-                      {r.position}
+          {filtered.map((r) => {
+            const availability = Array.isArray(r.availability)
+              ? r.availability
+              : [];
+            return (
+              <div
+                key={r._id}
+                className={`rounded-2xl border-2 bg-cream p-4 ${
+                  r.read ? "border-sand opacity-70" : "border-brick/40"
+                }`}
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="flex flex-wrap items-center gap-2 font-semibold text-espresso">
+                      {!r.read && <UnreadDot />}
+                      {applicantName(r)}
+                      {r.coffeeExperience && (
+                        <span className="ml-1 rounded-full bg-gold/30 px-2 py-0.5 text-xs font-semibold text-espresso">
+                          {r.coffeeExperience === "yes"
+                            ? "Coffee exp ✓"
+                            : "No coffee exp"}
+                        </span>
+                      )}
+                      {availability.map((a) => (
+                        <span
+                          key={a}
+                          className="rounded-full bg-espresso/10 px-2 py-0.5 text-xs font-semibold text-espresso/70"
+                        >
+                          {a}
+                        </span>
+                      ))}
+                    </p>
+                    <p className="text-sm text-espresso/70">
+                      <a className="hover:underline" href={`mailto:${r.email}`}>
+                        {r.email}
+                      </a>
+                      {r.phone ? ` · ${r.phone}` : ""}
+                    </p>
+                    {(r.favoriteCoffeeShop || r.favoriteRecord) && (
+                      <p className="mt-1 text-sm text-espresso/70">
+                        {r.favoriteCoffeeShop && (
+                          <>☕ {r.favoriteCoffeeShop}</>
+                        )}
+                        {r.favoriteCoffeeShop && r.favoriteRecord && " · "}
+                        {r.favoriteRecord && <>🎵 {r.favoriteRecord}</>}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-espresso/50">
+                      {fmtDate(r._creationTime)}
                     </span>
-                  </p>
-                  <p className="text-sm text-espresso/70">
-                    <a className="hover:underline" href={`mailto:${r.email}`}>
-                      {r.email}
-                    </a>{" "}
-                    · {r.phone} · {r.city}, {r.state}
-                  </p>
-                  <p className="mt-1 text-sm text-espresso/70">
-                    Desired: {r.desiredSalary} · {r.hoursDesired} hrs ·
-                    Transport: {r.transportation}
-                  </p>
+                    <ReadBtn
+                      read={!!r.read}
+                      onClick={() =>
+                        void markRead({ id: r._id, read: !r.read })
+                      }
+                    />
+                    <DeleteBtn
+                      onClick={() =>
+                        confirmThen("Delete this application?", () =>
+                          void del({ id: r._id as Id<"hiringSubmissions"> }),
+                        )
+                      }
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-espresso/50">
-                    {fmtDate(r._creationTime)}
-                  </span>
-                  <ReadBtn
-                    read={!!r.read}
-                    onClick={() =>
-                      void markRead({ id: r._id, read: !r.read })
-                    }
-                  />
-                  <DeleteBtn
-                    onClick={() =>
-                      confirmThen("Delete this application?", () =>
-                        void del({ id: r._id as Id<"hiringSubmissions"> }),
-                      )
-                    }
-                  />
+                <div className="mt-2 flex flex-wrap items-center gap-3">
+                  {r.resumeUrl && (
+                    <a
+                      href={r.resumeUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={btn.small}
+                    >
+                      Resume{r.resumeName ? `: ${r.resumeName}` : ""}
+                    </a>
+                  )}
+                  {/* Legacy applications carry a richer `details` blob. */}
+                  {r.details && (
+                    <button
+                      type="button"
+                      className="text-sm font-semibold text-brick hover:underline"
+                      onClick={() =>
+                        setOpenId(openId === r._id ? null : r._id)
+                      }
+                    >
+                      {openId === r._id ? "Hide details" : "View details"}
+                    </button>
+                  )}
                 </div>
-              </div>
-              <div className="mt-2 flex flex-wrap items-center gap-3">
-                {r.resumeUrl && (
-                  <a
-                    href={r.resumeUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={btn.small}
-                  >
-                    Resume{r.resumeName ? `: ${r.resumeName}` : ""}
-                  </a>
+                {openId === r._id && r.details && (
+                  <Details details={r.details} />
                 )}
-                <button
-                  type="button"
-                  className="text-sm font-semibold text-brick hover:underline"
-                  onClick={() =>
-                    setOpenId(openId === r._id ? null : r._id)
-                  }
-                >
-                  {openId === r._id ? "Hide details" : "View details"}
-                </button>
               </div>
-              {openId === r._id && <Details details={r.details} />}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

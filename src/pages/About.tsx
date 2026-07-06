@@ -1,269 +1,109 @@
-import { Fragment, useRef, type CSSProperties, type ReactNode } from "react";
+import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
-import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { RippleStripes } from "@/components/site/RippleStripes";
 
-/** A reusable alternating image/text feature row with a hover-zoom image. */
-function FeatureSection({
-  kicker,
-  title,
-  children,
-  image,
-  imageAlt = "",
-  reverse = false,
-  dark = false,
-  cta,
-}: {
+/**
+ * The four things Pre Amp is about, told with a short phrase and a photo each.
+ * Images are the closest stand-ins already in the repo — swap `image` for the
+ * real shot noted in `photoNote` when it's ready.
+ */
+interface AboutCard {
   kicker: string;
-  title: string;
-  children: ReactNode;
+  phrase: string;
   image: string;
-  imageAlt?: string;
-  reverse?: boolean;
-  dark?: boolean;
-  cta?: { label: string; to: string };
-}) {
-  return (
-    <section
-      className={`relative overflow-hidden ${
-        dark ? "bg-espresso text-cream" : "bg-cream text-espresso"
-      }`}
-    >
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-20 md:grid-cols-2 md:gap-16 md:py-28 md:px-8">
-        {/* Image */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.94 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.8 }}
-          className={`group relative overflow-hidden rounded-3xl shadow-2xl shadow-maroon/20 ${
-            reverse ? "md:order-2" : ""
-          }`}
-        >
-          <img
-            src={image}
-            alt={imageAlt}
-            className="h-[300px] w-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110 md:h-[460px]"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-espresso/40 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-        </motion.div>
-
-        {/* Copy */}
-        <motion.div
-          initial={{ opacity: 0, x: reverse ? -30 : 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-80px" }}
-          transition={{ duration: 0.8 }}
-          className={reverse ? "md:order-1" : ""}
-        >
-          <p
-            className={`font-groovy text-sm uppercase tracking-[0.35em] ${
-              dark ? "text-gold" : "text-terracotta"
-            }`}
-          >
-            {kicker}
-          </p>
-          <h2 className="mt-3 font-display text-4xl leading-tight md:text-5xl">
-            {title}
-          </h2>
-          <div
-            className={`mt-5 space-y-4 text-lg ${
-              dark ? "text-cream/85" : "text-espresso/80"
-            }`}
-          >
-            {children}
-          </div>
-          {cta && (
-            <Link
-              to={cta.to}
-              className="mt-7 inline-block rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-amber"
-            >
-              {cta.label}
-            </Link>
-          )}
-        </motion.div>
-      </div>
-    </section>
-  );
+  imageAlt: string;
+  photoNote: string;
+  to?: string;
+  accent: string; // tailwind text color for the kicker
 }
 
-/** Line icons for the value cards - inherit color via currentColor. */
-function PrecisionIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.6}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="8.5" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="12" cy="12" r="0.6" fill="currentColor" stroke="none" />
-      <path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3" />
-    </svg>
-  );
-}
-
-function WarmthIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.6}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {/* rising steam */}
-      <path d="M8.5 2.2c-.7.9-.7 1.9 0 2.8M12 2.2c-.7.9-.7 1.9 0 2.8M15.5 2.2c-.7.9-.7 1.9 0 2.8" />
-      {/* mug */}
-      <path d="M4 8.5h12.5v4.5a5.5 5.5 0 0 1-5.5 5.5H9.5A5.5 5.5 0 0 1 4 13V8.5z" />
-      {/* handle */}
-      <path d="M16.5 9.5h2.2a2.4 2.4 0 0 1 0 4.8h-2.2" />
-      {/* saucer */}
-      <path d="M5 21h11" />
-    </svg>
-  );
-}
-
-function RhythmIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.6}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 17V5l10-2v12" />
-      <circle cx="6.5" cy="17" r="2.5" />
-      <circle cx="16.5" cy="15" r="2.5" />
-      <path d="M9 9l10-2" />
-    </svg>
-  );
-}
-
-const VALUES = [
+const CARDS: AboutCard[] = [
   {
-    Icon: PrecisionIcon,
-    title: "Precision",
-    body: "Every espresso shot is treated like a fine spirit, with house-made syrups, unique infusions, balanced like a master bartender would.",
+    kicker: "The Coffee",
+    phrase: "Coffee we use",
+    image: "/images/menu-coffeepacket.webp",
+    imageAlt: "A bag of Passenger coffee beans",
+    photoNote: "Real shot: a bag of Passenger Coffee",
+    to: "/menu/coffee",
+    accent: "text-gold",
   },
   {
-    Icon: WarmthIcon,
-    title: "Warmth",
-    body: "Our space hums with the aroma of beans roasted to perfection, welcoming every kind of coffee lover up to the bar.",
+    kicker: "The Craft",
+    phrase: "Made from scratch",
+    image: "/images/menu-coffeepouring.webp",
+    imageAlt: "A barista crafting a drink at the bar",
+    photoNote: "Real shot: weighing out house-made syrups for a drink",
+    to: "/menu/coffee",
+    accent: "text-amber",
   },
   {
-    Icon: RhythmIcon,
-    title: "Rhythm",
-    body: "Vinyl spinning all day. Brews and beats, woven together so every visit hits the perfect note.",
+    kicker: "The Vibe",
+    phrase: "Spinning records daily",
+    image: "/images/eventvinyls.webp",
+    imageAlt: "Vinyl records at the studio",
+    photoNote: "Real shot / loop: the turntable always playing vinyl",
+    to: "/events",
+    accent: "text-terracotta",
+  },
+  {
+    kicker: "The Food",
+    phrase: "A rotating kitchen",
+    image: "/images/menu-sandwich.webp",
+    imageAlt: "A focaccia sandwich from the kitchen",
+    photoNote: "Real shot: the ever-changing food / pastry lineup",
+    to: "/menu/food",
+    accent: "text-gold",
   },
 ];
 
-/**
- * Renders text that "writes itself" letter by letter as it scrolls into view.
- *
- * The section's scroll progress is published once as the `--reveal` CSS variable
- * on the wrapper; each letter carries its own position (`--i`, 0→1) and derives
- * its opacity and blur from how far `--reveal` has passed it. Because all the
- * per-letter math lives in CSS `calc()`, only one motion value updates per frame
- * no matter how long the copy is, so the whole paragraph composes itself
- * smoothly as the reader arrives at it.
- */
-function ScrollRevealText({
-  text,
-  className,
-}: {
-  text: string;
-  className?: string;
-}) {
-  const ref = useRef<HTMLParagraphElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    // Start writing as the paragraph enters the lower viewport and finish as it
-    // settles comfortably into view.
-    offset: ["start 0.85", "end 0.6"],
-  });
-
-  const total = text.length;
-  const words = text.split(" ");
-  // Spread of the unblur per letter: higher = each letter snaps in faster, with
-  // more letters mid-transition at once for a flowing "handwriting" feel.
-  const SPREAD = 14;
-  // A letter at position `p` is fully clear once `--reveal >= p + 1/SPREAD`.
-  // `--reveal` (scroll progress) is clamped to 1, so spread the positions over
-  // [0, 1 - 1.4/SPREAD] instead of [0, 1]; that way the very last letter clears
-  // just before the scroll range ends rather than needing `--reveal > 1` (which
-  // never happens and used to leave the tail permanently blurred).
-  const REVEAL_RANGE = 1 - 1.4 / SPREAD;
-  let index = 0;
-
-  return (
-    <motion.p
-      ref={ref}
-      aria-label={text}
-      style={{ ["--reveal" as string]: scrollYProgress } as CSSProperties}
-      className={className}
+/** One big photo tile with a short caption overlaid, retro-styled. */
+function VisualCard({ card, index }: { card: AboutCard; index: number }) {
+  const inner = (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.6, delay: (index % 2) * 0.1 }}
+      className="group relative h-[320px] overflow-hidden rounded-[2rem] border-4 border-cream/10 shadow-2xl shadow-maroon/25 md:h-[420px]"
     >
-      {words.map((word, wi) => {
-        const letters = [...word].map((ch) => {
-          const i = index++;
-          return (
-            <span
-              key={i}
-              style={
-                {
-                  "--i": (i / total) * REVEAL_RANGE,
-                  opacity: `calc((var(--reveal) - var(--i)) * ${SPREAD})`,
-                  filter: `blur(clamp(0px, calc((1 - (var(--reveal) - var(--i)) * ${SPREAD}) * 8px), 8px))`,
-                  // hint the compositor; these two props animate every frame
-                  willChange: "opacity, filter",
-                } as CSSProperties
-              }
-            >
-              {ch}
-            </span>
-          );
-        });
-        // Account for the space that follows every word but the last, so letter
-        // positions line up with the original string.
-        if (wi < words.length - 1) index++;
-        return (
-          <Fragment key={wi}>
-            {/* keep each word intact so a half-written word never wraps */}
-            <span aria-hidden className="inline-block whitespace-nowrap">
-              {letters}
-            </span>
-            {wi < words.length - 1 ? " " : null}
-          </Fragment>
-        );
-      })}
-    </motion.p>
+      {/* photoNote: {card.photoNote} */}
+      <img
+        src={card.image}
+        alt={card.imageAlt}
+        loading="lazy"
+        decoding="async"
+        className="h-full w-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-espresso/85 via-espresso/25 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-7 md:p-8">
+        <p
+          className={`font-groovy text-xs uppercase tracking-[0.35em] ${card.accent}`}
+        >
+          {card.kicker}
+        </p>
+        <h3 className="mt-2 font-display text-3xl text-cream drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)] md:text-4xl">
+          {card.phrase}
+        </h3>
+      </div>
+      {card.to && (
+        <span className="absolute right-6 top-6 flex h-10 w-10 translate-y-1 items-center justify-center rounded-full bg-cream/90 text-lg text-espresso opacity-0 shadow transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+          →
+        </span>
+      )}
+    </motion.div>
+  );
+
+  return card.to ? (
+    <Link to={card.to} className="block">
+      {inner}
+    </Link>
+  ) : (
+    inner
   );
 }
-
-const ABOUT_INTRO =
-  "At Pre Amp, every sip hits the perfect note. Our space hums with the warmth " +
-  "of vinyl spinning and the aroma of beans roasted to perfection, welcoming " +
-  "every kind of coffee lover. Step up to our bar and watch our baristas, true " +
-  "coffee mixologists, meticulously craft your drink. Each espresso shot is " +
-  "treated like a fine spirit, blended with house-made syrups, unique infusions, " +
-  "and balanced with the precision of a master bartender. From bold and complex " +
-  "to smooth and sweet, every cup is a handcrafted liquid experience designed to " +
-  "awaken your senses.";
 
 export function About() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -296,28 +136,16 @@ export function About() {
           style={{ opacity: fade }}
           className="relative mx-auto max-w-3xl px-6 text-center"
         >
-          <motion.p
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
-            className="font-groovy text-sm uppercase tracking-[0.4em] text-cream/80"
-          >
+          <p className="font-groovy text-sm uppercase tracking-[0.4em] text-cream/80">
             Pre Amp Coffee Studio · Pittsburgh
-          </motion.p>
-          <motion.h1
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 font-display text-6xl text-cream drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)] md:text-8xl"
-          >
+          </p>
+          <h1 className="mt-4 font-display text-6xl text-cream drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)] md:text-8xl">
             Our Story
-          </motion.h1>
-          <motion.p
-            initial={false}
-            animate={{ opacity: 1, y: 0 }}
-            className="mx-auto mt-6 max-w-xl text-lg text-cream/90"
-          >
-            Every sip hits the perfect note. A coffee studio and vinyl listening
-            bar in the heart of Squirrel Hill.
-          </motion.p>
+          </h1>
+          <p className="mx-auto mt-6 max-w-xl text-lg text-cream/90">
+            Coffee, craft, records, and a kitchen that never sits still — a
+            listening bar in the heart of Squirrel Hill.
+          </p>
         </motion.div>
 
         {/* waveform shimmer along the bottom of the hero */}
@@ -326,198 +154,29 @@ export function About() {
         </div>
       </section>
 
-      {/* About Us - base section with the squiggle ribbon */}
+      {/* The four things we're about — quick, visual, no walls of text */}
       <section className="relative overflow-hidden bg-cream-deep py-24 md:py-32">
-        <SquiggleLine side="right" />
-        <div className="relative mx-auto max-w-3xl px-6 text-center md:px-8">
+        <div className="relative mx-auto max-w-7xl px-6 md:px-8">
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
+            className="text-center"
           >
             <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-              About Us
+              What We're About
             </p>
             <h2 className="mt-3 font-display text-4xl text-espresso md:text-6xl">
-              Every Sip Hits the Note
+              Four Things, No Filler
             </h2>
           </motion.div>
-          {/* Intro that "writes itself" letter by letter as you scroll into it. */}
-          <ScrollRevealText
-            text={ABOUT_INTRO}
-            className="mt-6 text-lg leading-relaxed text-espresso/80"
-          />
-        </div>
-      </section>
 
-      {/* Values / philosophy - hover cards */}
-      <section className="relative overflow-hidden bg-espresso py-24 md:py-32">
-        <div className="absolute inset-0 opacity-20">
-          <RippleStripes count={26} fade="none" drift="left" />
-        </div>
-        <div className="relative mx-auto max-w-7xl px-6 md:px-8">
-          <div className="text-center">
-            <p className="font-groovy text-sm uppercase tracking-[0.35em] text-gold">
-              Our Philosophy
-            </p>
-            <h2 className="mt-3 font-display text-4xl text-cream md:text-5xl">
-              What We Pour Into It
-            </h2>
-          </div>
-          <div className="mt-14 grid gap-7 md:grid-cols-3">
-            {VALUES.map((v, i) => (
-              <motion.div
-                key={v.title}
-                initial={{ opacity: 0, y: 28 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.1 }}
-                className="group rounded-3xl border border-cream/10 bg-espresso-soft/60 p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:border-gold/40 hover:bg-espresso-soft"
-              >
-                <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 text-gold transition-transform duration-300 group-hover:scale-110 group-hover:bg-gold/25">
-                  <v.Icon className="h-8 w-8" />
-                </span>
-                <h3 className="mt-5 font-display text-2xl text-cream">
-                  {v.title}
-                </h3>
-                <p className="mt-3 text-cream/75">{v.body}</p>
-              </motion.div>
+          <div className="mt-14 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+            {CARDS.map((card, i) => (
+              <VisualCard key={card.kicker} card={card} index={i} />
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Origin - Danny Ryan */}
-      <FeatureSection
-        kicker="Our Origin"
-        title="Meet Danny Ryan"
-        image="/images/menu-coffeepouring.webp"
-        imageAlt="Pouring espresso at the Pre Amp bar"
-      >
-        <p>
-          After a decade in restaurants, cafes, and a roastery in New York City,
-          Danny packed up his family for a new chapter: opening a cafe in
-          Pittsburgh in 2020. The pandemic had other plans, and in a twist of
-          fate, things worked out better than he could have imagined.
-        </p>
-        <p>
-          While seeking work, he met Tolga and Rick, who brought him on as
-          coffee lead at Coup De Ville. Their trust grew into a partnership
-          focused on creating the ultimate coffee experience in Pittsburgh, a
-          dream he couldn't have achieved alone.
-        </p>
-        <p>
-          His passion ignited in 2009 over a $6 cup brewed on a Clover machine
-          at Cafe Grumpy in NYC, captivated by the complexity, rich flavors,
-          and stories held within each bean.
-        </p>
-      </FeatureSection>
-
-      {/* Coffee */}
-      <FeatureSection
-        kicker="The Coffee"
-        title="Espresso, Treated Like a Spirit"
-        image="/images/menu-coffeeshot.webp"
-        imageAlt="A handcrafted espresso drink"
-        reverse
-        dark
-        cta={{ label: "Explore the Coffee →", to: "/menu/coffee" }}
-      >
-        <p>
-          House-made syrups, unique infusions, and a bartender's balance go into
-          every cup. Bold and complex or smooth and sweet, our baristas build
-          each drink like a fine cocktail.
-        </p>
-        <p>
-          From the signature Smokey Robinson to a bright Yuzu Espresso Tonic and
-          the slow-dripped Kyoto Cold Brew, there's a note for every palate.
-        </p>
-      </FeatureSection>
-
-      {/* Food */}
-      <FeatureSection
-        kicker="The Kitchen"
-        title="Made to Pair With Your Cup"
-        image="/images/menu-sandwich.webp"
-        imageAlt="A focaccia sandwich from the kitchen"
-        cta={{ label: "See the Food →", to: "/menu/food" }}
-      >
-        <p>
-          Our kitchen turns out house focaccia sandwiches, fresh sides, and
-          comfort plates, all built to sit alongside whatever you're sipping.
-        </p>
-        <p className="text-base text-espresso/70">
-          Kitchen hours: Wed – Sat 11am – 6pm · Sun 11am – 4pm (closed Mon &amp;
-          Tue).
-        </p>
-      </FeatureSection>
-
-      {/* Music & vinyl - with the waveform rhythm decoration */}
-      <section className="relative overflow-hidden bg-espresso text-cream">
-        {/* music rhythm band across the top */}
-        <div className="absolute inset-x-0 top-0 h-28 opacity-30">
-          <RippleStripes count={140} fade="none" variant="wave" gap={3} />
-        </div>
-        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 pb-24 pt-36 md:grid-cols-2 md:gap-16 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.8 }}
-          >
-            <p className="font-groovy text-sm uppercase tracking-[0.35em] text-gold">
-              The Sound
-            </p>
-            <h2 className="mt-3 font-display text-4xl leading-tight md:text-5xl">
-              Records Spinning, All Day
-            </h2>
-            <div className="mt-5 space-y-4 text-lg text-cream/85">
-              <p>
-                Pre Amp is as much a listening bar as it is a cafe. The needle
-                drops the moment we open, and the warmth of vinyl carries
-                through every pour.
-              </p>
-              <p>
-                Crate-dig with us, catch a guest selector, or just let the
-                playlist set the pace while your drink comes together at the
-                bar. Brews and beats. That's the whole idea.
-              </p>
-            </div>
-            <Link
-              to="/events"
-              className="mt-7 inline-block rounded-full border-2 border-cream/60 px-7 py-3 font-semibold text-cream transition-all hover:-translate-y-1 hover:border-cream hover:bg-cream/10"
-            >
-              See What's On →
-            </Link>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.94 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.8 }}
-            className="grid grid-cols-2 items-start gap-4"
-          >
-            <div className="group overflow-hidden rounded-3xl shadow-2xl shadow-black/30">
-              <img
-                src="/images/eventvinyls.webp"
-                alt="Vinyl records"
-                loading="lazy"
-                decoding="async"
-                className="h-64 w-full object-cover transition-transform duration-[1.2s] group-hover:scale-110 md:h-80"
-              />
-            </div>
-            <div className="group mt-8 overflow-hidden rounded-3xl shadow-2xl shadow-black/30">
-              <img
-                src="/images/eventspeakers.webp"
-                alt="Speakers in the studio"
-                loading="lazy"
-                decoding="async"
-                className="h-64 w-full object-cover transition-transform duration-[1.2s] group-hover:scale-110 md:h-80"
-              />
-            </div>
-          </motion.div>
         </div>
       </section>
 
