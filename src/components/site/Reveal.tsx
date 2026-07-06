@@ -11,14 +11,16 @@ interface RevealProps {
 }
 
 /**
- * Reveals its children with a soft blur + fade + lift as they scroll into
- * view. Used site-wide so every block resolves out of a gentle haze.
+ * Reveals its children with a fade + lift as they scroll into view. Used
+ * site-wide so every block eases up into place. Only opacity and transform
+ * animate — both GPU-composited, so the reveal stays smooth and never forces
+ * layout (no blur/filter, which Lighthouse flags as non-composited).
  */
 export function Reveal({ children, delay = 0, y = 24, className }: RevealProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y, filter: "blur(12px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
       // Hold off until the element is ~18% up from the bottom edge so it
       // animates where the eye actually is, not the instant it peeks in.
       viewport={{ once: true, margin: "0px 0px -18% 0px" }}

@@ -23,9 +23,8 @@ export function NotDeveloped() {
 
         <div className="relative mx-auto max-w-2xl px-6 text-center">
           <motion.div
-            initial={{ scale: 0.6, opacity: 0 }}
+            initial={false}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 160, damping: 14 }}
             className="mx-auto grid h-32 w-32 place-items-center rounded-full bg-espresso-soft shadow-2xl"
           >
             <div className="grid h-28 w-28 place-items-center rounded-full bg-gradient-to-br from-gold to-terracotta animate-spin-slow">
@@ -37,9 +36,8 @@ export function NotDeveloped() {
 
           {label && (
             <motion.p
-              initial={{ opacity: 0, y: 12, filter: "blur(10px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ delay: 0.2 }}
+              initial={false}
+              animate={{ opacity: 1, y: 0 }}
               className="mt-8 font-groovy text-sm uppercase tracking-[0.35em] text-amber"
             >
               {label}
@@ -47,18 +45,16 @@ export function NotDeveloped() {
           )}
 
           <motion.h1
-            initial={{ opacity: 0, y: 20, filter: "blur(14px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.3 }}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
             className="mt-4 font-display text-5xl leading-tight text-gold md:text-6xl"
           >
             Not Brewed Yet
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.4 }}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
             className="mx-auto mt-5 max-w-md text-lg text-cream/80"
           >
             This page is still steeping. We're looking forward to building it.
@@ -66,9 +62,8 @@ export function NotDeveloped() {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.5 }}
+            initial={false}
+            animate={{ opacity: 1, y: 0 }}
           >
             <Link
               to="/"

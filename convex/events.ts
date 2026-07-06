@@ -139,21 +139,21 @@ export const seed = mutation({
         description:
           "Crate-diggers welcome. We're spinning soul and funk all night with a guest selector behind the bar, so pull up a stool and stay a while.",
         startsAt: Date.UTC(2026, 5, 27, 23, 0), // Jun 27 2026, 7:00 PM EDT
-        path: "/images/eventvinyls.jpg",
+        path: "/images/eventvinyls.webp",
       },
       {
         title: "Single-Origin Cupping",
         description:
           "A guided tasting through our latest rotating origins. Learn to taste like the bar does, and take home a bag of your favorite.",
         startsAt: Date.UTC(2026, 6, 4, 14, 0), // Jul 4 2026, 10:00 AM EDT
-        path: "/images/eventbeans.jpg",
+        path: "/images/eventbeans.webp",
       },
       {
         title: "Live Set: Late Night Listening",
         description:
           "An intimate after-hours listening session on the big speakers. Limited seating, espresso martinis, and ambient grooves.",
         startsAt: Date.UTC(2026, 6, 12, 0, 0), // Jul 11 2026, 8:00 PM EDT
-        path: "/images/eventspeakers.jpg",
+        path: "/images/eventspeakers.webp",
       },
     ];
 

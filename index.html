@@ -29,14 +29,17 @@
         rel="stylesheet"
       />
     </noscript>
-    <!-- Preload the LCP hero artwork so it downloads in parallel with the JS
-         bundle instead of waiting for React to mount. -->
+    <!-- Preload the hero wordmark — the LCP element — at high priority so it
+         downloads in parallel with the JS bundle instead of waiting for React
+         to mount. The photographic backdrop is preloaded too, but at normal
+         priority so it can't out-compete the LCP. -->
     <link
       rel="preload"
       as="image"
-      href="/images/preampdecor.jpg"
+      href="/images/heroprimary.png"
       fetchpriority="high"
     />
+    <link rel="preload" as="image" href="/images/preampdecor.webp" />
     <title>Pre Amp Coffee Studio · Brews &amp; Beats in Pittsburgh</title>
   </head>
   <body>

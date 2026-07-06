@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 
 import { SITE } from "@/data/site";
 import { RippleStripes } from "@/components/site/RippleStripes";
+import { MapEmbed } from "@/components/site/MapEmbed";
 import { useTrack } from "@/lib/analytics";
 
 export function LocationCTA() {
@@ -14,8 +15,8 @@ export function LocationCTA() {
 
       <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-24 md:grid-cols-2 md:items-stretch md:px-8">
         <motion.div
-          initial={{ opacity: 0, x: -30, filter: "blur(12px)" }}
-          whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9 }}
         >
@@ -85,18 +86,16 @@ export function LocationCTA() {
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, scale: 0.95, filter: "blur(12px)" }}
-          whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.9 }}
           className="overflow-hidden rounded-3xl border-4 border-cream/60 shadow-2xl"
         >
-          <iframe
+          <MapEmbed
             title="Pre Amp Coffee Studio location map"
             src={SITE.mapsEmbed}
             className="h-full min-h-[420px] w-full"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
           />
         </motion.div>
       </div>

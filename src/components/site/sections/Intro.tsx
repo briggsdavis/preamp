@@ -8,8 +8,8 @@ export function Intro() {
       <SquiggleLine side="left" />
 
       <motion.div
-        initial={{ opacity: 0, y: 30, filter: "blur(12px)" }}
-        whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "0px 0px -18% 0px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 mx-auto max-w-3xl text-center"
@@ -29,14 +29,14 @@ export function Intro() {
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           <img
-            src="/images/preampdecor4.jpg"
+            src="/images/preampdecor4.webp"
             alt=""
             loading="lazy"
             decoding="async"
             className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
           />
           <img
-            src="/images/preampdecor5.jpg"
+            src="/images/preampdecor5.webp"
             alt=""
             loading="lazy"
             decoding="async"

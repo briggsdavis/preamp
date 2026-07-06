@@ -324,8 +324,8 @@ function UpcomingEvents({ events }: { events: EventDoc[] }) {
         return (
           <motion.article
             key={ev._id}
-            initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
-            whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: i * 0.05 }}
             className="grid gap-6 overflow-hidden rounded-2xl border-2 border-sand bg-cream shadow-lg shadow-maroon/10 sm:grid-cols-[260px_1fr]"
@@ -363,15 +363,14 @@ export function Events() {
       {/* Hero banner - half the viewport */}
       <section className="relative flex h-[50vh] min-h-[360px] items-center justify-center overflow-hidden">
         <img
-          src="/images/artworkheadon.jpg"
+          src="/images/artworkheadon.webp"
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-espresso/70 via-maroon/45 to-espresso/80" />
         <motion.h1
-          initial={{ opacity: 0, y: 24, filter: "blur(12px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 1, delay: 0.2 }}
+          initial={false}
+          animate={{ opacity: 1, y: 0 }}
           className="relative px-6 text-center font-display text-6xl text-cream drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)] md:text-8xl"
         >
           Events
