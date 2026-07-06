@@ -219,10 +219,9 @@ export function About() {
           >
             {/* Left: circular portrait with name + title */}
             <div className="flex flex-col items-center text-center">
-              {/* Swap the src for a real portrait of Danny when it's ready. */}
               <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-gold/60 shadow-2xl shadow-maroon/25 md:h-60 md:w-60">
                 <img
-                  src="/images/menu-coffeepouring.webp"
+                  src="/images/danny.jpg"
                   alt="Danny Ryan, owner of Pre Amp Coffee Studio"
                   loading="lazy"
                   decoding="async"
