@@ -1,12 +1,14 @@
 import { lazy, Suspense, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 
 import { Layout } from "@/components/site/Layout";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 import { useTrack } from "@/lib/analytics";
 
 // Admin (with its heavy charting deps) and the PDF viewer sit off the public
-// funnel, so load them on demand — this keeps them out of the main bundle and
+// funnel, so load them on demand - this keeps them out of the main bundle and
 // speeds up first load for regular visitors.
 const AdminApp = lazy(() =>
   import("@/admin/AdminApp").then((m) => ({ default: m.AdminApp })),
@@ -45,6 +47,9 @@ function MenuUnavailable() {
 export default function App() {
   const location = useLocation();
   const track = useTrack();
+  const settings = useQuery(api.settings.getPublicSettings);
+  // Only an explicit `false` turns Merch off; absent/loading settings keep it on.
+  const merchEnabled = settings?.merchEnabled !== false;
 
   // A menu item's page (/menu/<kind>/<slug>) is the menu page with a modal
   // open. Collapse it to the base menu route so opening/closing an item doesn't
@@ -94,7 +99,7 @@ export default function App() {
               </ErrorBoundary>
             }
           />
-          {/* An item's own page — renders the coffee menu with its modal open. */}
+          {/* An item's own page - renders the coffee menu with its modal open. */}
           <Route
             path="/menu/coffee/:slug"
             element={
@@ -121,7 +126,10 @@ export default function App() {
           />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/retail" element={<Merch />} />
+          <Route
+            path="/retail"
+            element={merchEnabled ? <Merch /> : <Navigate to="/" replace />}
+          />
           <Route path="/cold-brew" element={<ColdBrew />} />
           <Route
             path="/events"

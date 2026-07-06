@@ -39,7 +39,7 @@ export function Hero() {
         style={{ y: contentY, opacity: fade }}
         className="relative mx-auto flex w-full max-w-7xl flex-col items-center px-6 pt-28 text-center md:px-8"
       >
-        {/* LCP element — render immediately, no entrance animation. Explicit
+        {/* LCP element - render immediately, no entrance animation. Explicit
             dimensions reserve the aspect ratio so it never shifts layout. */}
         <img
           src="/images/heroprimary.png"

@@ -15,7 +15,7 @@ import { useDialogs } from "@/admin/dialogs";
 import { useUpload } from "@/admin/useUpload";
 import { DietaryTagPicker } from "@/admin/DietaryTagPicker";
 
-// Recharts is heavy — load the analytics panel (and recharts) only when opened.
+// Recharts is heavy - load the analytics panel (and recharts) only when opened.
 const MenuAnalyticsPanel = lazy(() =>
   import("@/admin/analyticsPanels").then((m) => ({
     default: m.MenuAnalyticsPanel,
@@ -577,7 +577,7 @@ function ItemEditor({
           {orderUrl.trim() && !isToastUrl(orderUrl) ? (
             <p className="mt-1 text-xs font-semibold text-brick">
               ⚠ This doesn't look like a Toast link (toasttab.com). Double-check
-              it before saving — the item's Order button points here.
+              it before saving - the item's Order button points here.
             </p>
           ) : (
             <p className="mt-1 text-xs text-espresso/50">
@@ -605,7 +605,7 @@ function ItemEditor({
         <DietaryTagPicker value={dietaryTags} onChange={setDietaryTags} />
         <div>
           <label className={label}>
-            Images — drag to reorder; the first is the primary one shown
+            Images - drag to reorder; the first is the primary one shown
           </label>
           <div className="flex flex-wrap gap-2">
             {images.map((img, i) => (

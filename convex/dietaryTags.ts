@@ -64,7 +64,7 @@ export const list = query({
 });
 
 /**
- * Admin: seed the built-in tags if the catalog is empty. Idempotent — no-ops
+ * Admin: seed the built-in tags if the catalog is empty. Idempotent - no-ops
  * once built-ins exist. The Menu manager calls this so the picker is populated.
  */
 export const seedBuiltins = mutation({

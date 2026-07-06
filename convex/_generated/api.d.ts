@@ -26,6 +26,7 @@ import type * as marketing from "../marketing.js";
 import type * as menu from "../menu.js";
 import type * as reviews from "../reviews.js";
 import type * as seedData from "../seedData.js";
+import type * as settings from "../settings.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   menu: typeof menu;
   reviews: typeof reviews;
   seedData: typeof seedData;
+  settings: typeof settings;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

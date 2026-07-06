@@ -65,7 +65,7 @@ export function MenuAnalyticsPanel({ menu }: { menu: "coffee" | "food" }) {
           <div className="grid grid-cols-3 gap-3">
             <PlainStat label="Item Views" value={nf.format(data.totals.views)} />
             <PlainStat label="Order Clicks" value={nf.format(data.totals.orders)} />
-            <PlainStat label="Top Item" value={data.rows[0]?.name ?? "—"} />
+            <PlainStat label="Top Item" value={data.rows[0]?.name ?? "-"} />
           </div>
 
           <div className="mt-4">

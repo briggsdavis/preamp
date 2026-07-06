@@ -232,7 +232,7 @@ export function Analytics() {
         ))}
       </div>
 
-      {/* Timeframe selector — applies to every view */}
+      {/* Timeframe selector - applies to every view */}
       <div className="mb-7">
         <TimeframeBar value={timeframe} onChange={setTimeframe} />
       </div>
@@ -296,7 +296,7 @@ function Dashboard({
         <Kpi label="Page Views" value={kpis.pageViews} prev={kpis.previous.pageViews}
           hint="Total pages loaded in this period." />
         <Kpi label="Visitors" value={kpis.visitors} prev={kpis.previous.visitors}
-          hint="Distinct visitors (counted once per day). Approximate — anonymous, cookieless." />
+          hint="Distinct visitors (counted once per day). Approximate - anonymous, cookieless." />
         <Kpi label="Order Clicks" value={kpis.orderClicks} prev={kpis.previous.orderClicks}
           hint="Clicks on any 'Order' button. Checkout itself happens on Toast and isn't tracked." />
         <Kpi label="Menu Clicks" value={kpis.menuClicks} prev={kpis.previous.menuClicks}
@@ -427,7 +427,7 @@ function orderButtonLabel(key: string): string {
 function OrderingDashboard({ data }: { data: DashboardData }) {
   const { kpis, funnel, orderBySource, orderByItem, orderTraffic } = data;
   const hasOrders = kpis.orderClicks > 0;
-  const topItem = orderByItem[0]?.key ?? "—";
+  const topItem = orderByItem[0]?.key ?? "-";
   const buttonRows = orderBySource.map((r) => ({
     key: orderButtonLabel(r.key),
     count: r.count,
@@ -437,7 +437,7 @@ function OrderingDashboard({ data }: { data: DashboardData }) {
     <div className="space-y-6">
       <div className="rounded-2xl border-2 border-dashed border-sand bg-cream px-5 py-3 text-xs text-espresso/55">
         These numbers measure <span className="font-semibold">Order-button clicks
-        (intent)</span>, not completed orders or revenue — checkout happens on
+        (intent)</span>, not completed orders or revenue - checkout happens on
         Toast and isn&apos;t visible here.
       </div>
 
@@ -497,7 +497,7 @@ function OrderingDashboard({ data }: { data: DashboardData }) {
         <Card>
           <CardTitle>Where Order-Clickers Came From</CardTitle>
           <p className="mt-1 text-xs text-espresso/50">
-            Traffic source of the visit where the Order click happened. Best-effort — in-app browsers often report as “direct”.
+            Traffic source of the visit where the Order click happened. Best-effort - in-app browsers often report as “direct”.
           </p>
           {orderTraffic.length === 0 ? (
             <Empty />
@@ -546,7 +546,7 @@ type ItemRow = {
 type SortKey = "views" | "orders" | "conversion" | "name";
 type Sort = { key: SortKey; dir: "asc" | "desc" };
 
-/** Order clicks ÷ views — how many lookers went on to click Order. */
+/** Order clicks ÷ views - how many lookers went on to click Order. */
 function conversion(r: { views: number; orders: number }): number {
   return r.views > 0 ? r.orders / r.views : 0;
 }
@@ -891,7 +891,7 @@ function ItemsTable({
                         {nf.format(r.orders)}
                       </td>
                       <td className="py-2 text-right tabular-nums text-espresso/60">
-                        {r.views > 0 ? pct(conversion(r)) : "—"}
+                        {r.views > 0 ? pct(conversion(r)) : "-"}
                       </td>
                     </tr>
                   ))}
@@ -1060,7 +1060,7 @@ function ReviewsKpi({ stats }: { stats: ReviewStats | undefined }) {
         Reviews Submitted
       </p>
       <p className="mt-1 font-display text-3xl leading-none text-espresso">
-        {stats ? nf.format(stats.total) : "—"}
+        {stats ? nf.format(stats.total) : "-"}
       </p>
       {stats && stats.newThisWeek > 0 ? (
         <p className="mt-2 text-xs font-semibold text-[#4a7c4e]">

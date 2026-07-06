@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Churchward is our primary display face (used by every heading). It's
          referenced deep in the CSS, so preload it to pull the request forward
-         and let it swap in early — otherwise headings reflow late (CLS). -->
+         and let it swap in early - otherwise headings reflow late (CLS). -->
     <link
       rel="preload"
       as="font"
@@ -39,7 +39,7 @@
         rel="stylesheet"
       />
     </noscript>
-    <!-- Preload the hero wordmark — the LCP element — at high priority so it
+    <!-- Preload the hero wordmark - the LCP element - at high priority so it
          downloads in parallel with the JS bundle instead of waiting for React
          to mount. The photographic backdrop is preloaded too, but at normal
          priority so it can't out-compete the LCP. -->

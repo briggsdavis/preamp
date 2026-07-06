@@ -3,7 +3,7 @@ import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 
 /**
- * Admin home "command center" — the landing after sign-in. A single lightweight
+ * Admin home "command center" - the landing after sign-in. A single lightweight
  * summary query (`analytics.getHomeSummary`) feeds an at-a-glance view: things
  * needing attention, today's traffic snapshot vs yesterday, unread inquiries,
  * pending reviews, live campaigns, and the week's top item. Every card jumps to

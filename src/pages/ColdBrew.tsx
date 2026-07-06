@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 import { SITE } from "@/data/site";
@@ -9,7 +8,7 @@ import { RippleStripes } from "@/components/site/RippleStripes";
 import { useSeo } from "@/lib/seo";
 
 /**
- * Cold Brew landing page — a pre-launch home for our Kyoto-style cold brew.
+ * Cold Brew landing page - a pre-launch home for our Kyoto-style cold brew.
  * The hero + story are live now; the catering / delivery / retail blocks are
  * "coming soon" placeholders wired to flip on for the upcoming cold brew launch.
  */
@@ -56,7 +55,7 @@ export function ColdBrew() {
   useSeo({
     title: `Kyoto Cold Brew · ${SITE.name} ${SITE.tagline}`,
     description:
-      "Slow-dripped Kyoto-style cold brew from Pre Amp Coffee Studio in Squirrel Hill — clean, syrupy, and made drip by drip. Office catering, home delivery, and bottles coming soon.",
+      "Slow-dripped Kyoto-style cold brew from Pre Amp Coffee Studio in Squirrel Hill - clean, syrupy, and made drip by drip. Office catering, home delivery, and bottles coming soon.",
     canonicalPath: "/cold-brew",
     image: "/images/menu-coffeemachine.webp",
   });
@@ -90,7 +89,7 @@ export function ColdBrew() {
             Kyoto Cold Brew
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-cream/90">
-            Twelve hours, one drop at a time. Clean, syrupy, impossibly smooth —
+            Twelve hours, one drop at a time. Clean, syrupy, impossibly smooth -
             and about to get a whole lot bigger.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
@@ -151,7 +150,7 @@ export function ColdBrew() {
               <p>
                 Kyoto-style cold brew is the slow road: ice-cold water falling
                 one drop at a time through a tall tower of fresh Passenger
-                grounds. No heat, no rush — just twelve patient hours.
+                grounds. No heat, no rush - just twelve patient hours.
               </p>
               <p>
                 The result is a cup that's clean, low-acid, and almost syrupy,
@@ -159,11 +158,19 @@ export function ColdBrew() {
                 big cube, or let a splash of milk carry it home.
               </p>
             </div>
+            <a
+              href={SITE.orderUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-7 inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
+            >
+              Order Now →
+            </a>
           </motion.div>
         </div>
       </section>
 
-      {/* What's coming — pre-launch placeholders */}
+      {/* What's coming - pre-launch placeholders */}
       <section
         id="whats-coming"
         className="relative scroll-mt-24 overflow-hidden bg-espresso py-24 md:py-32"
@@ -180,7 +187,7 @@ export function ColdBrew() {
               More Ways to Get Your Fix
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-cream/75">
-              We're scaling the drip. These are on the way — check back soon, or
+              We're scaling the drip. These are on the way - check back soon, or
               ask the bar to put you on the list.
             </p>
           </div>
@@ -220,7 +227,7 @@ export function ColdBrew() {
               Available Now at the Bar
             </h2>
             <p className="mt-5 text-lg text-espresso/80">
-              Right now, the Kyoto Cold Brew pours fresh at the studio —
+              Right now, the Kyoto Cold Brew pours fresh at the studio -
               {" "}
               {SITE.address}. Pull up a stool, order at the counter, or grab one
               on your way through. Catering, delivery, and bottles land here the
@@ -246,42 +253,6 @@ export function ColdBrew() {
             </a>
           </div>
         </div>
-      </section>
-
-      {/* Closing CTA */}
-      <section className="relative overflow-hidden bg-terracotta py-24 text-center">
-        <div className="absolute inset-0 opacity-25">
-          <RippleStripes count={26} fade="none" drift="right" />
-        </div>
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="relative mx-auto max-w-2xl px-6"
-        >
-          <h2 className="font-display text-5xl text-cream md:text-6xl">
-            Be First in Line
-          </h2>
-          <p className="mt-4 text-lg text-cream/90">
-            The cold brew launch is coming in hot. Say hi and we'll keep you
-            posted on catering, delivery, and bottles.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link
-              to="/contact"
-              className="rounded-full bg-cream px-7 py-3 font-semibold text-terracotta shadow-lg transition-all hover:-translate-y-1 hover:bg-gold hover:text-espresso"
-            >
-              Get In Touch
-            </Link>
-            <Link
-              to="/menu/coffee"
-              className="rounded-full border-2 border-cream/70 px-7 py-3 font-semibold text-cream transition-all hover:-translate-y-1 hover:border-cream hover:bg-cream/10"
-            >
-              See the Menu
-            </Link>
-          </div>
-        </motion.div>
       </section>
     </PageWrapper>
   );

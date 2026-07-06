@@ -12,7 +12,7 @@ interface MapEmbedProps {
  * Click-to-load Google Maps facade.
  *
  * The live Maps embed pulls in ~300KB of third-party JavaScript and runs
- * several long main-thread tasks — a heavy cost for a map most visitors never
+ * several long main-thread tasks - a heavy cost for a map most visitors never
  * interact with. So we render a cheap, on-brand placeholder first and only
  * mount the real <iframe> once the visitor asks to see it. No third-party code
  * touches the page (or the Lighthouse trace) until then.

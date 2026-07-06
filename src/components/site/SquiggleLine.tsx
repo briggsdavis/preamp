@@ -210,7 +210,7 @@ export function SquiggleLine({
   const bundleHalf = mid * gap;
 
   // On narrow (mobile) viewports the centred copy nearly fills the width, so
-  // the tall connector run — inset by `marginX` — strikes through the text
+  // the tall connector run - inset by `marginX` - strikes through the text
   // (e.g. the "Welcome in" section). There, bleed the vertical runs off the
   // left/right edges instead (insetX ≈ 0) so the ribbon frames the section at
   // the page edges rather than crossing the content.

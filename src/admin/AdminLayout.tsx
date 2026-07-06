@@ -15,8 +15,9 @@ import { Events } from "@/admin/sections/Events";
 import { Reviews } from "@/admin/sections/Reviews";
 import { AboutEditor } from "@/admin/sections/AboutEditor";
 import { PagePlaceholder } from "@/admin/sections/PagePlaceholder";
+import { SiteSettings } from "@/admin/sections/SiteSettings";
 
-// Recharts is heavy and admin-only — load the dashboard on demand so it never
+// Recharts is heavy and admin-only - load the dashboard on demand so it never
 // touches the public site or the rest of the admin bundle.
 const Analytics = lazy(() =>
   import("@/admin/sections/Analytics").then((m) => ({ default: m.Analytics })),
@@ -76,6 +77,10 @@ const NAV: NavGroup[] = [
   {
     label: "Reviews",
     items: [{ id: "reviews", label: "All Reviews" }],
+  },
+  {
+    label: "Settings",
+    items: [{ id: "settings", label: "Site Settings" }],
   },
 ];
 
@@ -298,6 +303,8 @@ function Panel({
       return <AboutEditor />;
     case "page-global":
       return <PagePlaceholder name="Global / Footer / Contact" />;
+    case "settings":
+      return <SiteSettings />;
     default:
       return null;
   }

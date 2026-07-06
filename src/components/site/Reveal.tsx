@@ -13,7 +13,7 @@ interface RevealProps {
 /**
  * Reveals its children with a fade + lift as they scroll into view. Used
  * site-wide so every block eases up into place. Only opacity and transform
- * animate — both GPU-composited, so the reveal stays smooth and never forces
+ * animate - both GPU-composited, so the reveal stays smooth and never forces
  * layout (no blur/filter, which Lighthouse flags as non-composited).
  */
 export function Reveal({ children, delay = 0, y = 24, className }: RevealProps) {

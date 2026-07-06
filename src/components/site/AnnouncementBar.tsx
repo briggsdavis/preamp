@@ -22,7 +22,7 @@ export function AnnouncementBar() {
     !!announcement && showsOnPage(announcement.showOn, pageKey);
 
   // Set the navbar's offset synchronously, before paint, so the bar and the
-  // navbar's shifted position land in the same frame — the bar appears in
+  // navbar's shifted position land in the same frame - the bar appears in
   // place instead of popping in and shoving the navbar down a beat later.
   useLayoutEffect(() => {
     document.documentElement.style.setProperty(

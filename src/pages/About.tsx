@@ -2,64 +2,75 @@ import { useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 
+import { cn } from "@/lib/utils";
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { RippleStripes } from "@/components/site/RippleStripes";
 
 /**
- * The four things Pre Amp is about, told with a short phrase and a photo each.
- * Images are the closest stand-ins already in the repo — swap `image` for the
- * real shot noted in `photoNote` when it's ready.
+ * The four things Pre Amp is about, each shown as a retro, analog-styled poster:
+ * a photo washed with fine grain and a light haze, with the title set at the top
+ * and a line of body copy at the bottom. Laid out as a masonry of varying
+ * heights, so the tiles stagger like a print spread.
  */
 interface AboutCard {
   kicker: string;
-  phrase: string;
+  title: string;
+  body: string;
   image: string;
   imageAlt: string;
-  photoNote: string;
   to?: string;
   accent: string; // tailwind text color for the kicker
+  height: string; // tailwind heights that stagger the masonry
 }
 
 const CARDS: AboutCard[] = [
   {
     kicker: "The Coffee",
-    phrase: "Coffee we use",
+    title: "Coffee we use",
+    body: "Single-origin Passenger beans, pulled and poured like a fine spirit.",
     image: "/images/menu-coffeepacket.webp",
     imageAlt: "A bag of Passenger coffee beans",
-    photoNote: "Real shot: a bag of Passenger Coffee",
     to: "/menu/coffee",
     accent: "text-gold",
+    height: "h-[440px] md:h-[520px]",
   },
   {
     kicker: "The Craft",
-    phrase: "Made from scratch",
+    title: "Made from scratch",
+    body: "House-made syrups and infusions in every cup, built by hand at the bar.",
     image: "/images/menu-coffeepouring.webp",
     imageAlt: "A barista crafting a drink at the bar",
-    photoNote: "Real shot: weighing out house-made syrups for a drink",
     to: "/menu/coffee",
     accent: "text-amber",
+    height: "h-[340px] md:h-[380px]",
   },
   {
     kicker: "The Vibe",
-    phrase: "Spinning records daily",
+    title: "Spinning records daily",
+    body: "Vinyl on the turntable from open to close. Brews and beats, always in rhythm.",
     image: "/images/eventvinyls.webp",
     imageAlt: "Vinyl records at the studio",
-    photoNote: "Real shot / loop: the turntable always playing vinyl",
     to: "/events",
     accent: "text-terracotta",
+    height: "h-[360px] md:h-[420px]",
   },
   {
     kicker: "The Food",
-    phrase: "A rotating kitchen",
+    title: "A rotating kitchen",
+    body: "Focaccia sandwiches, fresh sides, and pastries that change with the week.",
     image: "/images/menu-sandwich.webp",
     imageAlt: "A focaccia sandwich from the kitchen",
-    photoNote: "Real shot: the ever-changing food / pastry lineup",
     to: "/menu/food",
     accent: "text-gold",
+    height: "h-[300px] md:h-[340px]",
   },
 ];
 
-/** One big photo tile with a short caption overlaid, retro-styled. */
+/** Fine film-grain texture, layered over each poster for the analog look. */
+const GRAIN_URL =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
+/** One analog-styled poster tile: title on top, body copy on the bottom. */
 function VisualCard({ card, index }: { card: AboutCard; index: number }) {
   const inner = (
     <motion.div
@@ -67,32 +78,46 @@ function VisualCard({ card, index }: { card: AboutCard; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
       transition={{ duration: 0.6, delay: (index % 2) * 0.1 }}
-      className="group relative h-[320px] overflow-hidden rounded-[2rem] border-4 border-cream/10 shadow-2xl shadow-maroon/25 md:h-[420px]"
+      className={cn(
+        "group relative overflow-hidden rounded-[1.75rem] border border-cream/15 shadow-2xl shadow-maroon/25",
+        card.height,
+      )}
     >
-      {/* photoNote: {card.photoNote} */}
       <img
         src={card.image}
         alt={card.imageAlt}
         loading="lazy"
         decoding="async"
-        className="h-full w-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110"
+        className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-105"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-espresso/85 via-espresso/25 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 p-7 md:p-8">
-        <p
-          className={`font-groovy text-xs uppercase tracking-[0.35em] ${card.accent}`}
-        >
-          {card.kicker}
+      {/* Very light white haze for the faded, sun-bleached print feel. */}
+      <div className="pointer-events-none absolute inset-0 bg-white/15 mix-blend-soft-light" />
+      {/* Subtle film grain layered on top. */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-20 mix-blend-overlay"
+        style={{ backgroundImage: GRAIN_URL }}
+      />
+      {/* Top + bottom darkening so the copy stays legible on any photo. */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-espresso/70 via-espresso/5 to-espresso/80" />
+
+      <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-7">
+        <div>
+          <p
+            className={cn(
+              "font-groovy text-[0.7rem] uppercase tracking-[0.35em]",
+              card.accent,
+            )}
+          >
+            {card.kicker}
+          </p>
+          <h3 className="mt-2 font-display text-3xl leading-tight text-cream drop-shadow-[0_2px_12px_rgba(0,0,0,0.55)] md:text-4xl">
+            {card.title}
+          </h3>
+        </div>
+        <p className="max-w-xs text-sm leading-relaxed text-cream/85 drop-shadow-[0_1px_8px_rgba(0,0,0,0.6)]">
+          {card.body}
         </p>
-        <h3 className="mt-2 font-display text-3xl text-cream drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)] md:text-4xl">
-          {card.phrase}
-        </h3>
       </div>
-      {card.to && (
-        <span className="absolute right-6 top-6 flex h-10 w-10 translate-y-1 items-center justify-center rounded-full bg-cream/90 text-lg text-espresso opacity-0 shadow transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-          →
-        </span>
-      )}
     </motion.div>
   );
 
@@ -143,7 +168,7 @@ export function About() {
             Our Story
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-cream/90">
-            Coffee, craft, records, and a kitchen that never sits still — a
+            Coffee, craft, records, and a kitchen that never sits still - a
             listening bar in the heart of Squirrel Hill.
           </p>
         </motion.div>
@@ -154,7 +179,7 @@ export function About() {
         </div>
       </section>
 
-      {/* The four things we're about — quick, visual, no walls of text */}
+      {/* The four things we're about - quick, visual, no walls of text */}
       <section className="relative overflow-hidden bg-cream-deep py-24 md:py-32">
         <div className="relative mx-auto max-w-7xl px-6 md:px-8">
           <motion.div
@@ -172,9 +197,11 @@ export function About() {
             </h2>
           </motion.div>
 
-          <div className="mt-14 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mx-auto mt-14 max-w-4xl gap-6 [column-fill:_balance] sm:columns-2">
             {CARDS.map((card, i) => (
-              <VisualCard key={card.kicker} card={card} index={i} />
+              <div key={card.kicker} className="mb-6 break-inside-avoid">
+                <VisualCard card={card} index={i} />
+              </div>
             ))}
           </div>
         </div>

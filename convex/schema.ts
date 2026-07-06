@@ -41,6 +41,15 @@ export const popupPosition = v.union(
 export default defineSchema({
   ...authTables,
 
+  // --- Site settings --------------------------------------------------------
+  // Singleton row of global on/off switches the admin controls. Absent fields
+  // fall back to sensible defaults at read time, so a missing row = all on.
+  siteSettings: defineTable({
+    // When false, the Merch page is hidden from the nav and /retail redirects
+    // to the home page. Absent/true = the page is live.
+    merchEnabled: v.optional(v.boolean()),
+  }),
+
   // --- Menu -----------------------------------------------------------------
   menuSections: defineTable({
     menu: menuKind,

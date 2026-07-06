@@ -270,7 +270,7 @@ function AnnouncementForm({
             className={field}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Open late all summer — come hang!"
+            placeholder="Open late all summer - come hang!"
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

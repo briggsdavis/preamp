@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
 
 import { NAV, SITE, type NavItem, type NavLink as NavChild } from "@/data/site";
 import { cn } from "@/lib/utils";
@@ -96,9 +98,19 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const track = useTrack();
+  const settings = useQuery(api.settings.getPublicSettings);
+
+  // Drop the Merch link when the page is turned off in the admin. Absent/loading
+  // settings default to showing it (the common case), so nothing flickers.
+  const navItems = useMemo(() => {
+    if (settings?.merchEnabled === false) {
+      return NAV.filter((item) => item.to !== "/retail");
+    }
+    return NAV;
+  }, [settings?.merchEnabled]);
 
   useEffect(() => {
-    // Only tracks whether we've scrolled past the top — the bar is always
+    // Only tracks whether we've scrolled past the top - the bar is always
     // visible and never hides on scroll direction.
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
@@ -144,7 +156,7 @@ export function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-5 md:flex lg:gap-6">
-          {NAV.map((item) => (
+          {navItems.map((item) => (
             <DesktopItem key={item.label} item={item} />
           ))}
           <a
@@ -157,7 +169,7 @@ export function Navbar() {
                 destination: SITE.orderUrl,
               })
             }
-            className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold lowercase text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
+            className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold uppercase tracking-wide text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
           >
             Order now
           </a>
@@ -200,7 +212,7 @@ export function Navbar() {
             className="overflow-hidden border-t border-espresso/10 bg-cream md:hidden"
           >
             <div className="space-y-4 px-6 py-6">
-              {NAV.map((item) => (
+              {navItems.map((item) => (
                 <div key={item.label}>
                   {item.to ? (
                     <Link
@@ -253,7 +265,7 @@ export function Navbar() {
                     destination: SITE.orderUrl,
                   })
                 }
-                className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold lowercase text-cream"
+                className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold uppercase tracking-wide text-cream"
               >
                 Order now
               </a>

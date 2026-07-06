@@ -19,12 +19,12 @@ export function StickyOrderBar() {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    // If it was dismissed this session, never attach the listener — `scrolled`
+    // If it was dismissed this session, never attach the listener - `scrolled`
     // stays false and the bar never appears (no setState in the effect body).
     try {
       if (window.sessionStorage.getItem(DISMISS_KEY) === "1") return;
     } catch {
-      /* storage blocked — just show it */
+      /* storage blocked - just show it */
     }
     const onScroll = () => setScrolled(window.scrollY > 520);
     onScroll();

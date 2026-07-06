@@ -44,9 +44,9 @@ export function pct(n: number): string {
   return `${(n * 100).toFixed(n >= 0.1 ? 0 : 1)}%`;
 }
 
-/** Human duration from milliseconds ("1m 12s", "8s", "—"). */
+/** Human duration from milliseconds ("1m 12s", "8s", "-"). */
 export function duration(ms: number): string {
-  if (!ms || ms < 0) return "—";
+  if (!ms || ms < 0) return "-";
   const s = Math.round(ms / 1000);
   if (s < 60) return `${s}s`;
   const m = Math.floor(s / 60);
@@ -192,7 +192,7 @@ export function Kpi({
           <span className="font-normal text-espresso/40"> vs prev.</span>
         </p>
       ) : (
-        <p className="mt-2 text-xs text-espresso/35">—</p>
+        <p className="mt-2 text-xs text-espresso/35">-</p>
       )}
     </div>
   );
