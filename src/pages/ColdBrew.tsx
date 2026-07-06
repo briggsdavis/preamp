@@ -81,7 +81,7 @@ export function ColdBrew() {
 
         <motion.div
           style={{ opacity: fade }}
-          className="relative mx-auto max-w-3xl px-6 text-center"
+          className="relative mx-auto max-w-3xl px-6 pt-28 text-center"
         >
           <p className="font-groovy text-sm uppercase tracking-[0.4em] text-cream/80">
             Slow-dripped · Pre-Launch
