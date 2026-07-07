@@ -92,11 +92,13 @@ function VisualCard({ card, index }: { card: AboutCard; index: number }) {
       />
       {/* Very light white haze for the faded, sun-bleached print feel. */}
       <div className="pointer-events-none absolute inset-0 bg-white/15 mix-blend-soft-light" />
-      {/* Subtle film grain layered on top. */}
+      {/* Heavier film grain layered on top for a coarser analog texture. */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-20 mix-blend-overlay"
+        className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay"
         style={{ backgroundImage: GRAIN_URL }}
       />
+      {/* Small flat dark overlay to lift the overall contrast of the photo. */}
+      <div className="pointer-events-none absolute inset-0 bg-espresso/25" />
       {/* Top + bottom darkening so the copy stays legible on any photo. */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-espresso/70 via-espresso/5 to-espresso/80" />
 
