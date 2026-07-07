@@ -3,22 +3,84 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 
 /**
- * Site Settings - global on/off switches for the public site. Currently a
- * single toggle for the Merch page: turning it off hides "Merch" from the nav
- * and redirects /retail to the home page. Backed by the `siteSettings`
- * singleton via convex/settings.ts.
+ * Site Settings - global on/off switches for the public site. Each row toggles
+ * one page: turning it off hides that page from the nav and redirects its URL
+ * to the home page. (Gift Card is an external link, so its toggle only controls
+ * nav visibility.) Backed by the `siteSettings` singleton via convex/settings.ts.
  */
+
+/** The toggleable pages, in the order shown in the panel. */
+const PAGES = [
+  {
+    page: "coffee",
+    field: "coffeeEnabled",
+    title: "Coffee Menu",
+    description:
+      "When off, the Coffee menu is hidden from the nav and /menu/coffee redirects to the home page.",
+  },
+  {
+    page: "food",
+    field: "foodEnabled",
+    title: "Food Menu",
+    description:
+      "When off, the Food menu is hidden from the nav and /menu/food redirects to the home page.",
+  },
+  {
+    page: "events",
+    field: "eventsEnabled",
+    title: "Events Page",
+    description:
+      "When off, the Events page is hidden from the nav and /events redirects to the home page.",
+  },
+  {
+    page: "merch",
+    field: "merchEnabled",
+    title: "Merch Page",
+    description:
+      "When off, the Merch page is hidden from the nav and /retail redirects to the home page.",
+  },
+  {
+    page: "coldBrew",
+    field: "coldBrewEnabled",
+    title: "Cold Brew Page",
+    description:
+      "When off, the Cold Brew page is hidden from the nav and /cold-brew redirects to the home page.",
+  },
+  {
+    page: "about",
+    field: "aboutEnabled",
+    title: "About Page",
+    description:
+      "When off, the About page is hidden from the nav and /about redirects to the home page.",
+  },
+  {
+    page: "hiring",
+    field: "hiringEnabled",
+    title: "Hiring Page",
+    description:
+      "When off, the Hiring page is hidden from the nav and /hiring redirects to the home page.",
+  },
+  {
+    page: "giftCard",
+    field: "giftCardEnabled",
+    title: "Gift Card Link",
+    description:
+      "When off, the Gift Card link is removed from the nav. (It points to an external Toast page, so there is no site URL to redirect.)",
+  },
+] as const;
+
 export function SiteSettings() {
   const settings = useQuery(api.settings.getSettings);
-  const setMerchEnabled = useMutation(api.settings.setMerchEnabled);
-  const [saving, setSaving] = useState(false);
+  const setPageEnabled = useMutation(api.settings.setPageEnabled);
+  // Track which page is mid-save so only that row's toggle is disabled.
+  const [savingPage, setSavingPage] = useState<string | null>(null);
 
-  async function toggleMerch(next: boolean) {
-    setSaving(true);
+  async function togglePage(page: string, next: boolean) {
+    setSavingPage(page);
     try {
-      await setMerchEnabled({ enabled: next });
+      await setPageEnabled({ page: page as (typeof PAGES)[number]["page"], enabled: next });
     } finally {
-      setSaving(false);
+      setSavingPage(null);
     }
   }
 
@@ -27,7 +89,7 @@ export function SiteSettings() {
       <div className="mb-6">
         <h1 className="font-display text-4xl text-espresso">Site Settings</h1>
         <p className="mt-1 text-sm text-espresso/60">
-          Global switches for the public site. Changes go live immediately.
+          Show or hide pages on the public site. Changes go live immediately.
         </p>
       </div>
 
@@ -35,13 +97,16 @@ export function SiteSettings() {
         <div className="h-28 max-w-2xl animate-pulse rounded-2xl border-2 border-sand bg-cream" />
       ) : (
         <div className="max-w-2xl space-y-4">
-          <SettingRow
-            title="Merch Page"
-            description="When off, the Merch page is hidden from the navigation and its URL (/retail) redirects to the home page."
-            enabled={settings.merchEnabled}
-            saving={saving}
-            onChange={toggleMerch}
-          />
+          {PAGES.map((p) => (
+            <SettingRow
+              key={p.page}
+              title={p.title}
+              description={p.description}
+              enabled={settings[p.field]}
+              saving={savingPage === p.page}
+              onChange={(next) => togglePage(p.page, next)}
+            />
+          ))}
         </div>
       )}
     </div>

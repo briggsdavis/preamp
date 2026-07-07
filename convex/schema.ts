@@ -45,9 +45,18 @@ export default defineSchema({
   // Singleton row of global on/off switches the admin controls. Absent fields
   // fall back to sensible defaults at read time, so a missing row = all on.
   siteSettings: defineTable({
-    // When false, the Merch page is hidden from the nav and /retail redirects
-    // to the home page. Absent/true = the page is live.
-    merchEnabled: v.optional(v.boolean()),
+    // Per-page visibility switches. When a field is false the page is hidden
+    // from the nav and its route redirects to the home page. Absent/true = the
+    // page is live, so a missing row means everything is on.
+    merchEnabled: v.optional(v.boolean()), // /retail
+    aboutEnabled: v.optional(v.boolean()), // /about
+    coffeeEnabled: v.optional(v.boolean()), // /menu/coffee
+    foodEnabled: v.optional(v.boolean()), // /menu/food
+    eventsEnabled: v.optional(v.boolean()), // /events
+    coldBrewEnabled: v.optional(v.boolean()), // /cold-brew
+    hiringEnabled: v.optional(v.boolean()), // /hiring
+    // Gift Card is an external link, so this only controls its nav visibility.
+    giftCardEnabled: v.optional(v.boolean()),
   }),
 
   // --- Menu -----------------------------------------------------------------

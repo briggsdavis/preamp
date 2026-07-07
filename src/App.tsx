@@ -48,8 +48,15 @@ export default function App() {
   const location = useLocation();
   const track = useTrack();
   const settings = useQuery(api.settings.getPublicSettings);
-  // Only an explicit `false` turns Merch off; absent/loading settings keep it on.
+  // Per-page visibility. Only an explicit `false` turns a page off; absent or
+  // still-loading settings keep every page on, so routes never flash a redirect.
   const merchEnabled = settings?.merchEnabled !== false;
+  const aboutEnabled = settings?.aboutEnabled !== false;
+  const coffeeEnabled = settings?.coffeeEnabled !== false;
+  const foodEnabled = settings?.foodEnabled !== false;
+  const eventsEnabled = settings?.eventsEnabled !== false;
+  const coldBrewEnabled = settings?.coldBrewEnabled !== false;
+  const hiringEnabled = settings?.hiringEnabled !== false;
 
   // A menu item's page (/menu/<kind>/<slug>) is the menu page with a modal
   // open. Collapse it to the base menu route so opening/closing an item doesn't
@@ -94,64 +101,94 @@ export default function App() {
           <Route
             path="/menu/coffee"
             element={
-              <ErrorBoundary fallback={<MenuUnavailable />}>
-                <MenuCoffee />
-              </ErrorBoundary>
+              coffeeEnabled ? (
+                <ErrorBoundary fallback={<MenuUnavailable />}>
+                  <MenuCoffee />
+                </ErrorBoundary>
+              ) : (
+                <Navigate to="/" replace />
+              )
             }
           />
           {/* An item's own page - renders the coffee menu with its modal open. */}
           <Route
             path="/menu/coffee/:slug"
             element={
-              <ErrorBoundary fallback={<MenuUnavailable />}>
-                <MenuCoffee />
-              </ErrorBoundary>
+              coffeeEnabled ? (
+                <ErrorBoundary fallback={<MenuUnavailable />}>
+                  <MenuCoffee />
+                </ErrorBoundary>
+              ) : (
+                <Navigate to="/" replace />
+              )
             }
           />
           <Route
             path="/menu/food"
             element={
-              <ErrorBoundary fallback={<MenuUnavailable />}>
-                <MenuFood />
-              </ErrorBoundary>
+              foodEnabled ? (
+                <ErrorBoundary fallback={<MenuUnavailable />}>
+                  <MenuFood />
+                </ErrorBoundary>
+              ) : (
+                <Navigate to="/" replace />
+              )
             }
           />
           <Route
             path="/menu/food/:slug"
             element={
-              <ErrorBoundary fallback={<MenuUnavailable />}>
-                <MenuFood />
-              </ErrorBoundary>
+              foodEnabled ? (
+                <ErrorBoundary fallback={<MenuUnavailable />}>
+                  <MenuFood />
+                </ErrorBoundary>
+              ) : (
+                <Navigate to="/" replace />
+              )
             }
           />
-          <Route path="/about" element={<About />} />
+          <Route
+            path="/about"
+            element={aboutEnabled ? <About /> : <Navigate to="/" replace />}
+          />
           <Route path="/contact" element={<Contact />} />
           <Route
             path="/retail"
             element={merchEnabled ? <Merch /> : <Navigate to="/" replace />}
           />
-          <Route path="/cold-brew" element={<ColdBrew />} />
+          <Route
+            path="/cold-brew"
+            element={coldBrewEnabled ? <ColdBrew /> : <Navigate to="/" replace />}
+          />
           <Route
             path="/events"
             element={
-              <ErrorBoundary
-                fallback={
-                  <div className="bg-cream px-5 pb-20 pt-40 text-center">
-                    <h1 className="font-display text-4xl text-espresso">
-                      Events
-                    </h1>
-                    <p className="mt-4 text-espresso/60">
-                      We couldn't load events right now. Please check back soon.
-                    </p>
-                  </div>
-                }
-              >
-                <Events />
-              </ErrorBoundary>
+              eventsEnabled ? (
+                <ErrorBoundary
+                  fallback={
+                    <div className="bg-cream px-5 pb-20 pt-40 text-center">
+                      <h1 className="font-display text-4xl text-espresso">
+                        Events
+                      </h1>
+                      <p className="mt-4 text-espresso/60">
+                        We couldn't load events right now. Please check back
+                        soon.
+                      </p>
+                    </div>
+                  }
+                >
+                  <Events />
+                </ErrorBoundary>
+              ) : (
+                <Navigate to="/" replace />
+              )
             }
           />
           <Route path="/gift-cards" element={<NotDeveloped />} />
-          <Route path="/hiring" element={<Hiring />} />
+          <Route
+            path="/hiring"
+            element={hiringEnabled ? <Hiring /> : <Navigate to="/" replace />}
+          />
           <Route path="*" element={<NotDeveloped />} />
       </Routes>
     </Layout>
