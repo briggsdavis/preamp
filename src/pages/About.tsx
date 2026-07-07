@@ -221,7 +221,7 @@ export function About() {
           >
             {/* Left: circular portrait with name + title */}
             <div className="flex flex-col items-center text-center">
-              <div className="relative h-52 w-52 overflow-hidden rounded-full border-4 border-gold/60 shadow-2xl shadow-maroon/25 md:h-60 md:w-60">
+              <div className="relative h-[19.5rem] w-[19.5rem] overflow-hidden rounded-full border-4 border-gold/60 shadow-2xl shadow-maroon/25 md:h-[22.5rem] md:w-[22.5rem]">
                 <img
                   src="/images/danny.jpg"
                   alt="Danny Ryan, owner of Pre Amp Coffee Studio"
@@ -243,10 +243,10 @@ export function About() {
               <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
                 Meet the Owner
               </p>
-              <h2 className="mt-3 font-display text-4xl leading-tight text-espresso md:text-5xl">
+              <h2 className="mt-3 font-display text-3xl leading-tight text-espresso md:text-4xl">
                 A Decade in the Making
               </h2>
-              <div className="mt-5 space-y-4 text-lg text-espresso/80">
+              <div className="mt-5 space-y-4 text-base text-espresso/80">
                 <p>
                   After dedicating a decade to working in restaurants, cafes, and
                   a roastery in New York City, I finally decided to pack up my
