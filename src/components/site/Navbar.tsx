@@ -113,14 +113,44 @@ export function Navbar() {
   const track = useTrack();
   const settings = useQuery(api.settings.getPublicSettings);
 
-  // Drop the Merch link when the page is turned off in the admin. Absent/loading
-  // settings default to showing it (the common case), so nothing flickers.
+  // Drop links for any page turned off in the admin. A `to` is enabled unless
+  // its setting is an explicit `false`, so absent/loading settings keep every
+  // link visible (the common case) and nothing flickers. Dropdown children are
+  // filtered too, and a dropdown with no children left is dropped entirely.
   const navItems = useMemo(() => {
-    if (settings?.merchEnabled === false) {
-      return NAV.filter((item) => item.to !== "/retail");
-    }
-    return NAV;
-  }, [settings?.merchEnabled]);
+    const linkEnabled = (to?: string) => {
+      switch (to) {
+        case "/menu/coffee":
+          return settings?.coffeeEnabled !== false;
+        case "/menu/food":
+          return settings?.foodEnabled !== false;
+        case "/events":
+          return settings?.eventsEnabled !== false;
+        case "/retail":
+          return settings?.merchEnabled !== false;
+        case "/cold-brew":
+          return settings?.coldBrewEnabled !== false;
+        case "/about":
+          return settings?.aboutEnabled !== false;
+        case "/hiring":
+          return settings?.hiringEnabled !== false;
+        default:
+          // The Gift Card entry is an external Toast link, matched by URL.
+          if (to && /egiftcards/.test(to)) {
+            return settings?.giftCardEnabled !== false;
+          }
+          return true;
+      }
+    };
+
+    return NAV.flatMap((item) => {
+      if (item.children) {
+        const children = item.children.filter((c) => linkEnabled(c.to));
+        return children.length ? [{ ...item, children }] : [];
+      }
+      return linkEnabled(item.to) ? [item] : [];
+    });
+  }, [settings]);
 
   useEffect(() => {
     // Only tracks whether we've scrolled past the top - the bar is always
