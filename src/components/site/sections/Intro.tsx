@@ -33,14 +33,14 @@ export function Intro() {
             alt=""
             loading="lazy"
             decoding="async"
-            className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
+            className="h-[17.5rem] w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
           />
           <img
             src="/images/preampdecor5.webp"
             alt=""
             loading="lazy"
             decoding="async"
-            className="h-56 w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
+            className="h-[17.5rem] w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
           />
         </div>
       </motion.div>
