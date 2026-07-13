@@ -1,5 +1,10 @@
+import { useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "convex/react";
+import { api } from "@convex/_generated/api";
+
 import { MenuPage } from "@/components/menu/MenuPage";
-import { MERCH_SECTIONS } from "@/data/menu";
+import type { MenuSection } from "@/data/menu";
 
 /** Prominent in-store perk shown at the top of the merch page. */
 function MerchPerkBanner() {
@@ -17,11 +22,38 @@ function MerchPerkBanner() {
 }
 
 export function Merch() {
+  const { slug } = useParams();
+  const sections = useQuery(api.merch.listPublic);
+  const mappedSections = useMemo<MenuSection[]>(
+    () =>
+      (sections ?? []).map((section) => ({
+        title: section.title,
+        items: section.items.map((item) => ({
+          id: item._id,
+          name: item.title,
+          slug: item.slug,
+          price: item.price,
+          description: item.description,
+          image: item.image ?? "/images/preampdecor.webp",
+          images: item.image ? [item.image] : ["/images/preampdecor.webp"],
+          orderUrl: item.purchaseUrl,
+          likes: 0,
+          reviews: [],
+        })),
+      })),
+    [sections],
+  );
+
   return (
     <MenuPage
       kicker="Take some home"
       title="Merch"
-      sections={MERCH_SECTIONS}
+      routeBase="/retail"
+      openSlug={slug}
+      sections={mappedSections}
+      loading={sections === undefined}
+      orderEnabled
+      orderLabel="Buy Now"
       banner={<MerchPerkBanner />}
     />
   );

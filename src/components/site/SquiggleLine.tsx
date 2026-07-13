@@ -35,6 +35,8 @@ interface SquiggleLineProps {
   /** When set (>1), the ribbon serpentines left↔right across this many
    * horizontal rows instead of framing the section edges. */
   rows?: number;
+  /** For serpentine ribbons, travel vertically before the first horizontal run. */
+  leadInY?: number;
 }
 
 interface Pt {
@@ -131,6 +133,50 @@ function buildSerpentine(
   return { points, effR };
 }
 
+function buildSerpentineWithLeadIn(
+  W: number,
+  H: number,
+  R: number,
+  bundleHalf: number,
+  strokeWidth: number,
+  marginY: number,
+  marginX: number,
+  rows: number,
+  startLeft: boolean,
+  leadInY: number,
+): { points: Pt[]; effR: number } {
+  const insetX = bundleHalf + strokeWidth + 2 + marginX;
+  const xL = insetX;
+  const xR = W - insetX;
+
+  const topY = marginY;
+  const botY = H - marginY;
+  const firstRunY = Math.min(Math.max(leadInY, topY + 60), botY - 60);
+  const rowGap = rows > 1 ? (botY - firstRunY) / (rows - 1) : botY - firstRunY;
+  const effR = Math.min(R, rowGap / 2 - 6, (xR - xL) / 2 - 6);
+  const overshoot = effR + 90;
+
+  const firstX = startLeft ? xL : xR;
+  const points: Pt[] = [
+    { x: firstX, y: topY - overshoot },
+    { x: firstX, y: firstRunY },
+  ];
+
+  for (let i = 0; i < rows; i++) {
+    const y = firstRunY + i * rowGap;
+    const leftToRight = startLeft ? i % 2 === 0 : i % 2 === 1;
+    const a = leftToRight ? xL : xR;
+    const b = leftToRight ? xR : xL;
+    if (i > 0) points.push({ x: a, y });
+    points.push({ x: b, y });
+  }
+
+  const last = points[points.length - 1];
+  points.push({ x: last.x, y: botY + overshoot });
+
+  return { points, effR };
+}
+
 /**
  * Emit one strand of the ribbon, offset perpendicular by `o`, with rounded
  * corners. Every strand shares each corner's centre, so the strands stay
@@ -184,6 +230,7 @@ export function SquiggleLine({
   marginY = 52,
   marginX = 28,
   rows,
+  leadInY,
 }: SquiggleLineProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
@@ -220,7 +267,20 @@ export function SquiggleLine({
   const paths = useMemo(() => {
     if (size.w < 10 || size.h < 10) return null;
     const { points, effR } =
-      rows && rows > 1
+      rows && rows > 1 && leadInY
+        ? buildSerpentineWithLeadIn(
+            size.w,
+            size.h,
+            cornerRadius,
+            bundleHalf,
+            strokeWidth,
+            marginY,
+            effMarginX,
+            rows,
+            side !== "right",
+            leadInY,
+          )
+        : rows && rows > 1
         ? buildSerpentine(
             size.w,
             size.h,
@@ -243,7 +303,7 @@ export function SquiggleLine({
             side !== "right",
           );
     return RIBBON.map((_, i) => strandPath(points, effR, (i - mid) * gap));
-  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, effMarginX, gap, mid, side, rows]);
+  }, [size.w, size.h, cornerRadius, bundleHalf, strokeWidth, marginY, effMarginX, gap, mid, side, rows, leadInY]);
 
   // Draw the ribbon on as the section scrolls through the viewport.
   const { scrollYProgress } = useScroll({

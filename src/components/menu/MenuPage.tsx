@@ -131,9 +131,11 @@ function Stars({ rating }: { rating: number }) {
  */
 function OrderButton({
   item,
+  label = "Order",
   size = "sm",
 }: {
   item: MenuItem;
+  label?: string;
   size?: "sm" | "lg";
 }) {
   const track = useTrack();
@@ -146,7 +148,7 @@ function OrderButton({
         title="Online ordering for this item is coming soon"
         className={`inline-flex cursor-not-allowed items-center justify-center rounded-full bg-espresso/10 font-semibold text-espresso/40 ${sizing}`}
       >
-        Order
+        {label}
       </span>
     );
   }
@@ -166,7 +168,7 @@ function OrderButton({
       }}
       className={`inline-flex items-center justify-center rounded-full bg-terracotta font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md ${sizing}`}
     >
-      Order →
+      {label} →
     </a>
   );
 }
@@ -178,6 +180,7 @@ function MenuCard({
   tags,
   href,
   orderEnabled,
+  orderLabel,
   onToggleLike,
   onOpen,
 }: {
@@ -186,6 +189,7 @@ function MenuCard({
   tags: TagInfo[];
   href?: string;
   orderEnabled: boolean;
+  orderLabel?: string;
   onToggleLike: () => void;
   onOpen: () => void;
 }) {
@@ -240,7 +244,7 @@ function MenuCard({
               e.stopPropagation();
             }}
           >
-            <OrderButton item={item} />
+            <OrderButton item={item} label={orderLabel} />
           </div>
         )}
       </div>
@@ -255,6 +259,7 @@ function ItemModal({
   tags,
   reviewsEnabled,
   orderEnabled,
+  orderLabel,
   onToggleLike,
   onClose,
 }: {
@@ -263,6 +268,7 @@ function ItemModal({
   tags: TagInfo[];
   reviewsEnabled: boolean;
   orderEnabled: boolean;
+  orderLabel?: string;
   onToggleLike: () => void;
   onClose: () => void;
 }) {
@@ -426,7 +432,7 @@ function ItemModal({
 
           {orderEnabled && (
             <div className="mt-6">
-              <OrderButton item={item} size="lg" />
+              <OrderButton item={item} label={orderLabel} size="lg" />
               {!item.orderUrl && (
                 <p className="mt-2 text-sm text-espresso/50">
                   Online ordering for this item is coming soon.
@@ -578,12 +584,14 @@ export function MenuPage({
   kicker,
   title,
   menuKind,
+  routeBase,
   openSlug,
   sections,
   loading = false,
   pdf = null,
   reviewsEnabled = false,
   orderEnabled = false,
+  orderLabel = "Order",
   banner,
 }: {
   kicker: string;
@@ -594,6 +602,8 @@ export function MenuPage({
    * URL, tracking, or SEO.
    */
   menuKind?: "coffee" | "food";
+  /** Optional route base for non-menu product pages, e.g. /retail. */
+  routeBase?: string;
   /** When set, the item with this slug opens as a routed modal. */
   openSlug?: string;
   sections: MenuSection[];
@@ -603,6 +613,8 @@ export function MenuPage({
   reviewsEnabled?: boolean;
   /** When true, each item shows an "Order" button (Toast link or disabled). */
   orderEnabled?: boolean;
+  /** Label used for per-item purchase/order buttons. */
+  orderLabel?: string;
   /** Optional highlighted callout shown under the page header (e.g. a promo). */
   banner?: ReactNode;
 }) {
@@ -627,8 +639,8 @@ export function MenuPage({
   // Fallback open state for the unrouted (merch) mode.
   const [openId, setOpenId] = useState<string | null>(null);
 
-  const routed = !!menuKind;
-  const base = menuKind ? `/menu/${menuKind}` : "";
+  const routed = !!(menuKind || routeBase);
+  const base = routeBase ?? (menuKind ? `/menu/${menuKind}` : "");
 
   // Routed mode derives the open item from the URL slug (a real page);
   // unrouted mode uses local state.
@@ -684,7 +696,7 @@ export function MenuPage({
           type: "product",
           jsonLd: {
             "@context": "https://schema.org",
-            "@type": "MenuItem",
+            "@type": menuKind ? "MenuItem" : "Product",
             name: openItem.name,
             description: openItem.description,
             ...(openItem.image ? { image: openItem.image } : {}),
@@ -776,6 +788,7 @@ export function MenuPage({
                       tags={itemTags(item, tagLookup)}
                       href={hrefFor(item)}
                       orderEnabled={orderEnabled}
+                      orderLabel={orderLabel}
                       onToggleLike={() => toggleLike(item.id)}
                       onOpen={() => openItemNav(item)}
                     />
@@ -798,6 +811,7 @@ export function MenuPage({
               tags={itemTags(openItem, tagLookup)}
               reviewsEnabled={reviewsEnabled}
               orderEnabled={orderEnabled}
+              orderLabel={orderLabel}
               onToggleLike={() => toggleLike(openItem.id)}
               onClose={closeModal}
             />

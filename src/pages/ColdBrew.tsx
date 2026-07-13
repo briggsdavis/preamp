@@ -143,9 +143,6 @@ export function ColdBrew() {
             <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
               The Method
             </p>
-            <h2 className="mt-3 font-display text-4xl leading-tight text-espresso md:text-5xl">
-              Dripped, Not Steeped
-            </h2>
             <div className="mt-5 space-y-4 text-lg text-espresso/80">
               <p>
                 Kyoto-style cold brew is the slow road: ice-cold water falling

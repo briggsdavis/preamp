@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 import { SITE } from "@/data/site";
@@ -56,12 +55,6 @@ export function Hero() {
         </h1>
 
         <div className="mt-9 flex flex-wrap justify-center gap-4">
-          <Link
-            to="/menu/coffee"
-            className="rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg shadow-maroon/30 transition-all hover:-translate-y-1 hover:bg-amber"
-          >
-            Menu
-          </Link>
           <a
             href={SITE.orderUrl}
             target="_blank"

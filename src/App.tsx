@@ -64,6 +64,9 @@ export default function App() {
   const routeKey = location.pathname.replace(
     /^(\/menu\/(?:coffee|food))\/[^/]+$/,
     "$1",
+  ).replace(
+    /^(\/retail)\/[^/]+$/,
+    "$1",
   );
 
   // Jump to the top of the page on real route changes (not item open/close).
@@ -154,6 +157,10 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route
             path="/retail"
+            element={merchEnabled ? <Merch /> : <Navigate to="/" replace />}
+          />
+          <Route
+            path="/retail/:slug"
             element={merchEnabled ? <Merch /> : <Navigate to="/" replace />}
           />
           <Route

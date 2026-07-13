@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 import { SITE } from "@/data/site";
 import { RippleStripes } from "@/components/site/RippleStripes";
@@ -82,6 +83,27 @@ export function LocationCTA() {
             >
               Get Directions →
             </a>
+          </div>
+
+          <div className="mt-8 rounded-2xl bg-cream/12 p-5 backdrop-blur-sm">
+            <p className="font-display text-2xl text-cream">
+              Request a vinyl to be played
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-cream/80">
+              Send us the record, artist, or song you want to hear on the bar.
+            </p>
+            <Link
+              to="/contact?topic=vinyl-request&form=open"
+              onClick={() =>
+                track("cta_click", {
+                  cta: "vinyl-request",
+                  destination: "/contact?topic=vinyl-request&form=open",
+                })
+              }
+              className="mt-4 inline-block rounded-full bg-gold px-6 py-2.5 font-semibold text-espresso shadow-lg transition-all hover:-translate-y-1 hover:bg-amber"
+            >
+              Request Vinyl →
+            </Link>
           </div>
         </motion.div>
 

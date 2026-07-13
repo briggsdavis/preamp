@@ -15,6 +15,13 @@ import { authTables } from "@convex-dev/auth/server";
 /** Which public menu a section/item belongs to. */
 export const menuKind = v.union(v.literal("coffee"), v.literal("food"));
 
+/** Visitor-selected reason on the public contact form. */
+export const contactTopic = v.union(
+  v.literal("menu-inquiry"),
+  v.literal("vinyl-request"),
+  v.literal("general"),
+);
+
 /** A single seeded review embedded on a menu item. */
 const review = v.object({
   name: v.string(),
@@ -129,6 +136,7 @@ export default defineSchema({
     lastName: v.string(),
     email: v.string(),
     phone: v.string(),
+    topic: v.optional(contactTopic),
     message: v.string(),
     // Whether an admin has marked this inquiry as read.
     read: v.optional(v.boolean()),
@@ -164,6 +172,31 @@ export default defineSchema({
     source: v.string(), // pop-up internal title (or "unknown")
     popupId: v.optional(v.id("popups")),
   }).index("by_email", ["email"]),
+
+  // --- Merchandise ----------------------------------------------------------
+  merchSections: defineTable({
+    title: v.string(),
+    order: v.number(),
+  }),
+
+  merchItems: defineTable({
+    sectionId: v.id("merchSections"),
+    title: v.string(),
+    slug: v.optional(v.string()),
+    price: v.string(),
+    description: v.string(),
+    purchaseUrl: v.string(),
+    image: v.optional(
+      v.object({
+        storageId: v.optional(v.id("_storage")),
+        path: v.optional(v.string()),
+      }),
+    ),
+    archived: v.optional(v.boolean()),
+    order: v.number(),
+  })
+    .index("by_section", ["sectionId"])
+    .index("by_slug", ["slug"]),
 
   // --- Marketing ------------------------------------------------------------
   announcements: defineTable({

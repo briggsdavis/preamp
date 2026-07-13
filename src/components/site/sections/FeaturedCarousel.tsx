@@ -17,6 +17,37 @@ interface FeaturedItem {
   image: string | null;
 }
 
+const FALLBACK_FEATURED_ITEMS: FeaturedItem[] = [
+  {
+    _id: "fallback-smokey-robinson",
+    name: "Smokey Robinson",
+    price: "$5.75",
+    description: "Our house signature: smooth, sweet, a little smoky.",
+    image: "/images/menu-coffeeshot.webp",
+  },
+  {
+    _id: "fallback-yuzu-espresso-tonic",
+    name: "Yuzu Espresso Tonic",
+    price: "$6.00",
+    description: "Bright, citrusy and effervescent over ice.",
+    image: "/images/menu-coffeepouring.webp",
+  },
+  {
+    _id: "fallback-focaccia-sandwich",
+    name: "Focaccia Sandwich",
+    price: "$11.00",
+    description: "House focaccia, seasonal fillings, dressed greens.",
+    image: "/images/menu-sandwich.webp",
+  },
+  {
+    _id: "fallback-kyoto-cold-brew",
+    name: "Kyoto Cold Brew",
+    price: "$5.25",
+    description: "Slow-dripped overnight for a clean, syrupy cup.",
+    image: "/images/menu-coffee.webp",
+  },
+];
+
 function FeaturedCard({ item }: { item: FeaturedItem }) {
   const track = useTrack();
   // Prefer the item's own Toast link; fall back to the site-wide ordering page
@@ -72,7 +103,13 @@ function FeaturedCard({ item }: { item: FeaturedItem }) {
 }
 
 /** The animated marquee strip of featured items. */
-function BestSellersStrip({ items }: { items: FeaturedItem[] }) {
+function BestSellersStrip({
+  items,
+  showLine = true,
+}: {
+  items: FeaturedItem[];
+  showLine?: boolean;
+}) {
   const trackEvent = useTrack();
   const trackRef = useRef<HTMLDivElement>(null);
   // Render the list twice so the strip can wrap seamlessly.
@@ -148,14 +185,14 @@ function BestSellersStrip({ items }: { items: FeaturedItem[] }) {
 
   return (
     <section className="relative overflow-hidden bg-cream-deep py-24">
-      <SquiggleLine />
+      {showLine && <SquiggleLine />}
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "0px 0px -18% 0px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        className="relative mx-auto mb-12 max-w-6xl px-6 md:px-8"
+        className="relative z-20 mx-auto mb-12 max-w-6xl px-6 md:px-8"
       >
         <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
           Now Pouring
@@ -166,7 +203,7 @@ function BestSellersStrip({ items }: { items: FeaturedItem[] }) {
       </motion.div>
 
       <div
-        className="relative"
+        className="relative z-20"
         onMouseEnter={() => (paused.current = true)}
         onMouseLeave={() => (paused.current = false)}
       >
@@ -182,7 +219,7 @@ function BestSellersStrip({ items }: { items: FeaturedItem[] }) {
         <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-cream-deep to-transparent" />
       </div>
 
-      <div className="relative mx-auto mt-12 max-w-6xl px-6 text-center md:px-8">
+      <div className="relative z-20 mx-auto mt-12 max-w-6xl px-6 text-center md:px-8">
         <p className="text-espresso/70">See something you like?</p>
         <a
           href={SITE.orderUrl}
@@ -203,17 +240,24 @@ function BestSellersStrip({ items }: { items: FeaturedItem[] }) {
   );
 }
 
-/** Reads featured menu items; hides the whole section when there are none. */
-function FeaturedCarouselInner() {
+/** Reads featured menu items; falls back locally when the backend is absent. */
+function FeaturedCarouselInner({ showLine }: { showLine?: boolean }) {
   const items = useQuery(api.menu.listFeatured) as FeaturedItem[] | undefined;
-  if (!items || items.length === 0) return null;
-  return <BestSellersStrip items={items} />;
+  const shownItems = items && items.length > 0 ? items : FALLBACK_FEATURED_ITEMS;
+  return <BestSellersStrip items={shownItems} showLine={showLine} />;
 }
 
-export function FeaturedCarousel() {
+export function FeaturedCarousel({ showLine = true }: { showLine?: boolean }) {
   return (
-    <ErrorBoundary fallback={null}>
-      <FeaturedCarouselInner />
+    <ErrorBoundary
+      fallback={
+        <BestSellersStrip
+          items={FALLBACK_FEATURED_ITEMS}
+          showLine={showLine}
+        />
+      }
+    >
+      <FeaturedCarouselInner showLine={showLine} />
     </ErrorBoundary>
   );
 }

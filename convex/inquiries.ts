@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { requireAdmin } from "./admin";
+import { contactTopic } from "./schema";
 
 /** Minimal, forgiving email shape check (server-side guard). */
 function isValidEmail(email: string): boolean {
@@ -48,6 +49,7 @@ export const submitContact = mutation({
     lastName: v.string(),
     email: v.string(),
     phone: v.string(),
+    topic: contactTopic,
     message: v.string(),
   },
   handler: async (ctx, args) => {
@@ -63,11 +65,13 @@ export const submitContact = mutation({
 });
 
 export const listContact = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { topics: v.optional(v.array(contactTopic)) },
+  handler: async (ctx, { topics }) => {
     await requireAdmin(ctx);
     const rows = await ctx.db.query("contactSubmissions").order("desc").collect();
-    return rows;
+    if (!topics || topics.length === 0) return rows;
+    const wanted = new Set(topics);
+    return rows.filter((row) => wanted.has(row.topic ?? "general"));
   },
 });
 

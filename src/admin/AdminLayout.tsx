@@ -16,6 +16,7 @@ import { Reviews } from "@/admin/sections/Reviews";
 import { AboutEditor } from "@/admin/sections/AboutEditor";
 import { PagePlaceholder } from "@/admin/sections/PagePlaceholder";
 import { SiteSettings } from "@/admin/sections/SiteSettings";
+import { Merchandise } from "@/admin/sections/Merchandise";
 
 // Recharts is heavy and admin-only - load the dashboard on demand so it never
 // touches the public site or the rest of the admin bundle.
@@ -49,6 +50,7 @@ const NAV: NavGroup[] = [
     items: [
       { id: "page-home", label: "Home" },
       { id: "page-about", label: "About" },
+      { id: "page-cold-brew", label: "Cold Brew" },
       { id: "page-global", label: "Global / Footer / Contact" },
     ],
   },
@@ -64,6 +66,7 @@ const NAV: NavGroup[] = [
     items: [
       { id: "announcements", label: "Announcement Bar" },
       { id: "popups", label: "Pop-up" },
+      { id: "merchandise", label: "Merchandise" },
     ],
   },
   {
@@ -297,10 +300,14 @@ function Panel({
       return <Announcements />;
     case "popups":
       return <Popups />;
+    case "merchandise":
+      return <Merchandise />;
     case "page-home":
       return <PagePlaceholder name="Home" />;
     case "page-about":
       return <AboutEditor />;
+    case "page-cold-brew":
+      return <PagePlaceholder name="Cold Brew" />;
     case "page-global":
       return <PagePlaceholder name="Global / Footer / Contact" />;
     case "settings":

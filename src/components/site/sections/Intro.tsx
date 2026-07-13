@@ -2,17 +2,17 @@ import { motion } from "framer-motion";
 
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 
-export function Intro() {
+export function Intro({ showLine = true }: { showLine?: boolean }) {
   return (
     <section className="relative overflow-hidden px-6 py-24 md:py-32">
-      <SquiggleLine side="left" />
+      {showLine && <SquiggleLine side="left" />}
 
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "0px 0px -18% 0px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 mx-auto max-w-3xl text-center"
+        className="relative z-20 mx-auto max-w-3xl text-center"
       >
         <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
           Welcome in

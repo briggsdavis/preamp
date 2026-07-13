@@ -8,22 +8,26 @@ import { CoffeeQuiz } from "@/components/site/sections/CoffeeQuiz";
 import { Testimonials } from "@/components/site/sections/Testimonials";
 import { LocationCTA } from "@/components/site/sections/LocationCTA";
 import { RestaurantGroup } from "@/components/site/sections/RestaurantGroup";
+import { SquiggleLine } from "@/components/site/SquiggleLine";
 
 export function Home() {
   return (
     <PageWrapper>
       <Hero />
       <Marquee />
-      <Intro />
-
-      <ParallaxBanner
-        image="/images/preampdecor2.webp"
-        kicker="The Cup"
-        heading="Dialed Daily"
-        sub="Passenger beans, pulled and poured with care, from espresso to slow Kyoto cold brew."
-      />
-
-      <FeaturedCarousel />
+      <div className="relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 z-10">
+          <SquiggleLine
+            side="left"
+            rows={4}
+            marginY={28}
+            marginX={28}
+            leadInY={520}
+          />
+        </div>
+        <Intro showLine={false} />
+        <FeaturedCarousel showLine={false} />
+      </div>
 
       <ParallaxBanner
         image="/images/preampdecor3.webp"

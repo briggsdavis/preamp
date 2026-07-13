@@ -5,6 +5,11 @@ import type { Id } from "@convex/_generated/dataModel";
 
 import { field, btn } from "@/admin/ui";
 import { useDialogs } from "@/admin/dialogs";
+import {
+  CONTACT_TOPICS,
+  contactTopicLabel,
+  type ContactTopic,
+} from "@/lib/contactTopics";
 
 /**
  * Inquiries dashboard with three tabs: contact-form submissions, hiring
@@ -58,6 +63,56 @@ function ReadFilter({
           {o.label}
         </button>
       ))}
+    </div>
+  );
+}
+
+function TopicFilter({
+  value,
+  onChange,
+}: {
+  value: ContactTopic[];
+  onChange: (topics: ContactTopic[]) => void;
+}) {
+  function toggle(topic: ContactTopic) {
+    onChange(
+      value.includes(topic)
+        ? value.filter((existing) => existing !== topic)
+        : [...value, topic],
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border-2 border-sand bg-cream px-3 py-2">
+      <span className="text-xs font-semibold uppercase tracking-wide text-espresso/50">
+        Topic
+      </span>
+      {CONTACT_TOPICS.map((topic) => {
+        const active = value.includes(topic.value);
+        return (
+          <button
+            key={topic.value}
+            type="button"
+            onClick={() => toggle(topic.value)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              active
+                ? "bg-brick text-cream"
+                : "bg-cream-deep text-espresso/65 hover:bg-sand"
+            }`}
+          >
+            {topic.label}
+          </button>
+        );
+      })}
+      {value.length > 0 && (
+        <button
+          type="button"
+          onClick={() => onChange([])}
+          className="text-xs font-semibold text-brick hover:underline"
+        >
+          Clear
+        </button>
+      )}
     </div>
   );
 }
@@ -176,11 +231,15 @@ function SummaryCard({
 
 function ContactTab() {
   const { confirmThen } = useDialogs();
-  const rows = useQuery(api.inquiries.listContact);
   const del = useMutation(api.inquiries.deleteContact);
   const markRead = useMutation(api.inquiries.setContactRead);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<ReadStatus>("all");
+  const [topics, setTopics] = useState<ContactTopic[]>([]);
+  const rows = useQuery(
+    api.inquiries.listContact,
+    topics.length > 0 ? { topics } : {},
+  );
 
   const filtered = useMemo(() => {
     if (!rows) return [];
@@ -188,7 +247,14 @@ function ContactTab() {
     return rows.filter((r) => {
       if (!matchesRead(r.read, status)) return false;
       if (!needle) return true;
-      return [r.firstName, r.lastName, r.email, r.phone, r.message]
+      return [
+        r.firstName,
+        r.lastName,
+        r.email,
+        r.phone,
+        contactTopicLabel(r.topic),
+        r.message,
+      ]
         .join(" ")
         .toLowerCase()
         .includes(needle);
@@ -202,6 +268,7 @@ function ContactTab() {
       <div className="flex flex-wrap items-center gap-3">
         <SearchBar value={q} onChange={setQ} count={filtered.length} inline />
         <ReadFilter value={status} onChange={setStatus} />
+        <TopicFilter value={topics} onChange={setTopics} />
         <span className="text-sm text-espresso/55">{filtered.length} result(s)</span>
       </div>
       {filtered.length === 0 ? (
@@ -220,6 +287,9 @@ function ContactTab() {
                   <p className="flex items-center gap-2 font-semibold text-espresso">
                     {!r.read && <UnreadDot />}
                     {r.firstName} {r.lastName}
+                    <span className="rounded-full bg-gold/30 px-2 py-0.5 text-xs font-semibold text-espresso">
+                      {contactTopicLabel(r.topic)}
+                    </span>
                   </p>
                   <p className="text-sm text-espresso/70">
                     <a className="hover:underline" href={`mailto:${r.email}`}>

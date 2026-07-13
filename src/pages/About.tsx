@@ -305,6 +305,12 @@ export function About() {
               Get In Touch
             </Link>
             <Link
+              to="/contact?topic=vinyl-request&form=open"
+              className="rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg transition-all hover:-translate-y-1 hover:bg-amber"
+            >
+              Request Vinyl
+            </Link>
+            <Link
               to="/menu/coffee"
               className="rounded-full border-2 border-cream/70 px-7 py-3 font-semibold text-cream transition-all hover:-translate-y-1 hover:border-cream hover:bg-cream/10"
             >

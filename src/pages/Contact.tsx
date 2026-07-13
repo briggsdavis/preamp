@@ -1,20 +1,35 @@
-import { useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
+import { useLocation } from "react-router-dom";
 
 import { SITE } from "@/data/site";
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { RippleStripes } from "@/components/site/RippleStripes";
 import { MapEmbed } from "@/components/site/MapEmbed";
+import { CONTACT_TOPICS, type ContactTopic } from "@/lib/contactTopics";
 
 /** Shared field styling for the cream-on-white inputs used across the form. */
 const fieldClass =
   "w-full rounded-xl border-2 border-sand bg-white px-4 py-3 text-espresso placeholder:text-espresso/55 outline-none transition-colors focus:border-gold";
 
 export function Contact() {
+  const location = useLocation();
+  const requestedTopic = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const topic = params.get("topic");
+    return CONTACT_TOPICS.some((option) => option.value === topic)
+      ? (topic as ContactTopic)
+      : null;
+  }, [location.search]);
+  const shouldOpenForm = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    return !!requestedTopic || params.get("form") === "open";
+  }, [location.search, requestedTopic]);
   const submitContact = useMutation(api.inquiries.submitContact);
-  const [formOpen, setFormOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(shouldOpenForm);
+  const [topic, setTopic] = useState<ContactTopic>(requestedTopic ?? "general");
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -30,6 +45,7 @@ export function Contact() {
         lastName: String(fd.get("lastName") ?? ""),
         email: String(fd.get("email") ?? ""),
         phone: String(fd.get("phone") ?? ""),
+        topic,
         message: String(fd.get("message") ?? ""),
       });
       setSent(true);
@@ -231,6 +247,19 @@ export function Contact() {
                           placeholder="Phone Number"
                           className={fieldClass}
                         />
+                        <select
+                          required
+                          name="topic"
+                          value={topic}
+                          onChange={(e) => setTopic(e.target.value as ContactTopic)}
+                          className={fieldClass}
+                        >
+                          {CONTACT_TOPICS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
                         <textarea
                           required
                           name="message"
