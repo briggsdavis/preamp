@@ -28,7 +28,13 @@ const MenuAnalyticsPanel = lazy(() =>
  * move between sections / delete) against the Convex backend.
  */
 
-type Menu = "coffee" | "food";
+type Menu = string;
+
+type MenuPageMeta = {
+  slug: string;
+  title: string;
+  eyebrow: string;
+};
 
 type SectionData = {
   _id: Id<"menuSections">;
@@ -70,6 +76,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
   const { confirmThen, prompt } = useDialogs();
   const data = useQuery(api.menu.getMenu, { menu });
 
+  const updateMenuPage = useMutation(api.menu.updateMenuPage);
   const createSection = useMutation(api.menu.createSection);
   const renameSection = useMutation(api.menu.renameSection);
   const deleteSection = useMutation(api.menu.deleteSection);
@@ -77,6 +84,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
   const deleteItem = useMutation(api.menu.deleteItem);
   const setItemFeatured = useMutation(api.menu.setItemFeatured);
   const seed = useMutation(api.menu.seed);
+  const seedMerch = useMutation(api.menu.seedMerch);
   const seedTags = useMutation(api.dietaryTags.seedBuiltins);
 
   // Make sure the curated dietary tags exist so the item editor's picker is
@@ -96,6 +104,9 @@ export function MenuManager({ menu }: { menu: Menu }) {
   }
 
   const sections = data.sections as SectionData[];
+  const page = data.page as MenuPageMeta | null;
+  const isMerch = menu === "merch";
+  const analyticsMenu = menu === "coffee" || menu === "food" ? menu : null;
 
   async function addSection() {
     const title = await prompt({
@@ -116,17 +127,31 @@ export function MenuManager({ menu }: { menu: Menu }) {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-4xl capitalize text-espresso">
-          {menu} Menu
-        </h1>
+        <div>
+          <h1 className="font-display text-4xl text-espresso">
+            {page?.title ?? (isMerch ? "Merch" : `${menu} Menu`)}
+          </h1>
+          {page && (
+            <p className="mt-1 font-groovy text-xs uppercase tracking-[0.25em] text-terracotta">
+              {page.eyebrow}
+            </p>
+          )}
+        </div>
         <button type="button" className={btn.primary} onClick={addSection}>
           + Section
         </button>
       </div>
 
-      <MenuPdf menu={menu} pdf={data.pdf} />
+      {page && (
+        <MenuPageFields
+          page={page}
+          onSave={(fields) => updateMenuPage({ slug: menu, ...fields })}
+        />
+      )}
 
-      <div className="mt-5 rounded-2xl border-2 border-sand bg-cream">
+      {!isMerch && <MenuPdf menu={menu} pdf={data.pdf} />}
+
+      {analyticsMenu && <div className="mt-5 rounded-2xl border-2 border-sand bg-cream">
         <button
           type="button"
           onClick={() => setShowAnalytics((v) => !v)}
@@ -147,29 +172,31 @@ export function MenuManager({ menu }: { menu: Menu }) {
               </p>
             }
           >
-            <MenuAnalyticsPanel menu={menu} />
+            <MenuAnalyticsPanel menu={analyticsMenu} />
           </Suspense>
         )}
-      </div>
+      </div>}
 
       <div className="mt-8 space-y-8">
         {sections.length === 0 && (
           <div className="rounded-2xl border-2 border-dashed border-sand p-6">
             <p className="text-espresso/60">
-              No sections yet. Add one to start building the {menu} menu, or
-              seed the original coffee &amp; food menu in one click.
+              No sections yet. Add one to start building this {isMerch ? "merch catalog" : "menu"}, or
+              seed the original content in one click.
             </p>
             <button
               type="button"
               className={`${btn.secondary} mt-4`}
               onClick={() =>
                 confirmThen(
-                  "Seed the original coffee & food menu? This only runs if the menu is empty.",
-                  () => void seed({}),
+                  isMerch
+                    ? "Seed the original merch catalog? This only runs if merch is empty."
+                    : "Seed the original coffee & food menu? This only runs if the menu is empty.",
+                  () => void (isMerch ? seedMerch({}) : seed({})),
                 )
               }
             >
-              Seed original menu
+              Seed original {isMerch ? "merch" : "menu"}
             </button>
           </div>
         )}
@@ -322,9 +349,68 @@ export function MenuManager({ menu }: { menu: Menu }) {
           sections={sections}
           item={editing.item}
           sectionId={editing.sectionId}
+          linkLabel={isMerch ? "Product link" : "Toast order link"}
+          linkHelp={
+            isMerch
+              ? "The public Shop button opens this link in a new tab. Full external URLs and plain domains both work."
+              : "The item's public Order button opens this link. Leave blank to disable that button for this item."
+          }
+          warnToast={!isMerch}
           onClose={() => setEditing(null)}
         />
       )}
+    </div>
+  );
+}
+
+function MenuPageFields({
+  page,
+  onSave,
+}: {
+  page: MenuPageMeta;
+  onSave: (fields: { title: string; eyebrow: string }) => Promise<unknown>;
+}) {
+  const [title, setTitle] = useState(page.title);
+  const [eyebrow, setEyebrow] = useState(page.eyebrow);
+  const [saving, setSaving] = useState(false);
+  const dirty = title !== page.title || eyebrow !== page.eyebrow;
+
+  async function save() {
+    if (!dirty || !title.trim()) return;
+    setSaving(true);
+    try {
+      await onSave({ title: title.trim(), eyebrow: eyebrow.trim() });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="mt-5 grid gap-3 rounded-2xl border-2 border-sand bg-cream p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
+      <div>
+        <label className={label}>Page title</label>
+        <input
+          className={field}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className={label}>Eyebrow text</label>
+        <input
+          className={field}
+          value={eyebrow}
+          onChange={(e) => setEyebrow(e.target.value)}
+        />
+      </div>
+      <button
+        type="button"
+        className={btn.primary}
+        disabled={!dirty || saving || !title.trim()}
+        onClick={() => void save()}
+      >
+        {saving ? "Saving…" : "Save"}
+      </button>
     </div>
   );
 }
@@ -416,12 +502,18 @@ function ItemEditor({
   sections,
   item,
   sectionId,
+  linkLabel,
+  linkHelp,
+  warnToast,
   onClose,
 }: {
   menu: Menu;
   sections: SectionData[];
   item: ItemData | null;
   sectionId: Id<"menuSections">;
+  linkLabel: string;
+  linkHelp: string;
+  warnToast: boolean;
   onClose: () => void;
 }) {
   const upload = useUpload();
@@ -566,23 +658,22 @@ function ItemEditor({
           />
         </div>
         <div>
-          <label className={label}>Toast order link</label>
+          <label className={label}>{linkLabel}</label>
           <input
             className={field}
             value={orderUrl}
             onChange={(e) => setOrderUrl(e.target.value)}
-            placeholder="https://order.toasttab.com/online/…"
+            placeholder={warnToast ? "https://order.toasttab.com/online/…" : "https://example.com/product"}
             inputMode="url"
           />
-          {orderUrl.trim() && !isToastUrl(orderUrl) ? (
+          {warnToast && orderUrl.trim() && !isToastUrl(orderUrl) ? (
             <p className="mt-1 text-xs font-semibold text-brick">
               ⚠ This doesn't look like a Toast link (toasttab.com). Double-check
               it before saving - the item's Order button points here.
             </p>
           ) : (
             <p className="mt-1 text-xs text-espresso/50">
-              The item's public “Order” button opens this link. Leave blank to
-              disable that button for this item.
+              {linkHelp}
             </p>
           )}
         </div>

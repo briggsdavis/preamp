@@ -47,7 +47,24 @@ async function imageUrl(
   return image.path ?? null;
 }
 
+async function imageUrls(ctx: QueryCtx, item: Doc<"merchItems">) {
+  const refs =
+    item.images && item.images.length > 0
+      ? item.images
+      : item.image
+        ? [item.image]
+        : [];
+  return await Promise.all(
+    refs.map(async (ref) => ({
+      url: await imageUrl(ctx, ref),
+      storageId: ref.storageId,
+      path: ref.path,
+    })),
+  );
+}
+
 async function publicItem(ctx: QueryCtx, item: Doc<"merchItems">) {
+  const images = await imageUrls(ctx, item);
   return {
     _id: item._id,
     sectionId: item.sectionId,
@@ -56,7 +73,8 @@ async function publicItem(ctx: QueryCtx, item: Doc<"merchItems">) {
     price: item.price,
     description: item.description,
     purchaseUrl: item.purchaseUrl,
-    image: await imageUrl(ctx, item.image),
+    image: images[0]?.url ?? null,
+    images,
     imageRef: item.image,
     archived: item.archived ?? false,
     order: item.order,
@@ -201,6 +219,14 @@ const itemFields = {
       path: v.optional(v.string()),
     }),
   ),
+  images: v.optional(
+    v.array(
+      v.object({
+        storageId: v.optional(v.id("_storage")),
+        path: v.optional(v.string()),
+      }),
+    ),
+  ),
 };
 
 export const createItem = mutation({
@@ -216,6 +242,8 @@ export const createItem = mutation({
     const order = siblings.reduce((max, item) => Math.max(max, item.order), -1) + 1;
     return await ctx.db.insert("merchItems", {
       ...args,
+      image:
+        args.images && args.images.length > 0 ? args.images[0] : args.image,
       slug: await uniqueSlug(ctx, args.title),
       archived: false,
       order,
@@ -234,6 +262,10 @@ export const updateItem = mutation({
     await ctx.db.patch(itemId, {
       ...fields,
       ...(slug ? { slug } : {}),
+      image:
+        fields.images && fields.images.length > 0
+          ? fields.images[0]
+          : fields.image,
     });
   },
 });

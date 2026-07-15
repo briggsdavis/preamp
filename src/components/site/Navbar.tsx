@@ -15,6 +15,7 @@ function trackNavChild(
 ) {
   if (child.to === "/menu/coffee") track("menu_click", { menu: "coffee", clickSource: "navbar" });
   else if (child.to === "/menu/food") track("menu_click", { menu: "food", clickSource: "navbar" });
+  else if (child.to.startsWith("/menu/")) track("menu_click", { menu: child.to.split("/")[2], clickSource: "navbar" });
   else if (/egiftcards/.test(child.to)) track("cta_click", { cta: "gift_card", destination: child.to });
 }
 
@@ -112,6 +113,7 @@ export function Navbar() {
   const location = useLocation();
   const track = useTrack();
   const settings = useQuery(api.settings.getPublicSettings);
+  const menuPages = useQuery(api.menu.listMenuPages);
 
   // Drop links for any page turned off in the admin. A `to` is enabled unless
   // its setting is an explicit `false`, so absent/loading settings keep every
@@ -143,14 +145,29 @@ export function Navbar() {
       }
     };
 
-    return NAV.flatMap((item) => {
+    const withLiveMenus = NAV.map((item) =>
+      item.label === "Menu"
+        ? {
+            ...item,
+            children: (
+              menuPages?.map((page) => ({
+                label: page.title,
+                to: `/menu/${page.slug}`,
+                external: false,
+              })) ?? item.children ?? []
+            ),
+          }
+        : item,
+    );
+
+    return withLiveMenus.flatMap((item) => {
       if (item.children) {
         const children = item.children.filter((c) => linkEnabled(c.to));
         return children.length ? [{ ...item, children }] : [];
       }
       return linkEnabled(item.to) ? [item] : [];
     });
-  }, [settings]);
+  }, [settings, menuPages]);
 
   useEffect(() => {
     // Only tracks whether we've scrolled past the top - the bar is always

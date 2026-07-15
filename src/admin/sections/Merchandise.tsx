@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
@@ -22,6 +22,7 @@ type MerchItem = {
   description: string;
   purchaseUrl: string;
   image: string | null;
+  images?: MerchImage[];
   imageRef?: {
     storageId?: Id<"_storage">;
     path?: string;
@@ -270,33 +271,63 @@ function MerchEditor({
   const [purchaseUrl, setPurchaseUrl] = useState(item?.purchaseUrl ?? "");
   const [targetSection, setTargetSection] =
     useState<Id<"merchSections">>(sectionId);
-  const [image, setImage] = useState<MerchImage | null>(
-    item?.image
-      ? {
-          url: item.image,
-          storageId: item.imageRef?.storageId,
-          path: item.imageRef?.path,
-        }
-      : null,
+  const [images, setImages] = useState<MerchImage[]>(
+    item?.images && item.images.length > 0
+      ? item.images
+      : item?.image
+        ? [
+            {
+              url: item.image,
+              storageId: item.imageRef?.storageId,
+              path: item.imageRef?.path,
+            },
+          ]
+        : [],
   );
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dragIndex = useRef<number | null>(null);
 
-  async function onImage(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+  async function addImages(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!file) return;
+    if (!files.length) return;
     setUploading(true);
     setError(null);
     try {
-      const storageId = await upload(file);
-      setImage({ storageId, url: URL.createObjectURL(file) });
+      const uploaded: MerchImage[] = [];
+      for (const file of files) {
+        const storageId = await upload(file);
+        uploaded.push({ storageId, url: URL.createObjectURL(file) });
+      }
+      setImages((prev) => [...prev, ...uploaded]);
     } catch {
       setError("Image upload failed. Try again.");
     } finally {
       setUploading(false);
     }
+  }
+
+  function removeImage(index: number) {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function reorder(from: number, to: number) {
+    setImages((prev) => {
+      if (
+        from === to ||
+        from < 0 ||
+        to < 0 ||
+        from >= prev.length ||
+        to >= prev.length
+      )
+        return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -312,10 +343,10 @@ function MerchEditor({
       price: price.trim(),
       description: description.trim(),
       purchaseUrl: purchaseUrl.trim(),
-      image:
-        image?.storageId || image?.path
-          ? { storageId: image.storageId, path: image.path }
-          : undefined,
+      images: images.map((image) => ({
+        storageId: image.storageId,
+        path: image.path,
+      })),
     };
     try {
       if (item) {
@@ -390,34 +421,66 @@ function MerchEditor({
           </select>
         </div>
         <div>
-          <label className={label}>Image</label>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="h-24 w-24 overflow-hidden rounded-lg border-2 border-sand bg-cream-deep">
-              {image?.url && (
-                <img
-                  src={image.url}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              )}
-            </div>
-            <label className={`${btn.small} cursor-pointer`}>
-              {uploading ? "Uploading…" : image ? "Replace image" : "+ Image"}
+          <label className={label}>
+            Images - drag to reorder; the first is the primary one shown
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {images.map((image, index) => (
+              <div
+                key={index}
+                draggable
+                onDragStart={() => (dragIndex.current = index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => {
+                  if (dragIndex.current !== null)
+                    reorder(dragIndex.current, index);
+                  dragIndex.current = null;
+                }}
+                className="relative h-24 w-24 cursor-grab overflow-hidden rounded-lg border-2 border-sand bg-cream-deep active:cursor-grabbing"
+              >
+                {image.url && (
+                  <img
+                    src={image.url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                )}
+                {index === 0 && (
+                  <span className="absolute inset-x-0 bottom-0 bg-brick/90 py-0.5 text-center text-[0.6rem] font-semibold text-cream">
+                    Primary
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  aria-label="Remove image"
+                  className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-espresso/80 text-xs text-cream"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand text-center text-xs font-semibold text-espresso/60 transition-colors hover:border-gold hover:text-espresso">
+              {uploading ? "Uploading…" : "+ Add"}
               <input
                 type="file"
                 accept="image/*"
+                multiple
                 className="hidden"
-                onChange={onImage}
+                onChange={addImages}
               />
             </label>
-            {image && (
-              <button
-                type="button"
-                className={btn.danger}
-                onClick={() => setImage(null)}
-              >
-                Remove
-              </button>
+          </div>
+        </div>
+        <div>
+          <label className={label}>Preview</label>
+          <div className="h-24 w-24 overflow-hidden rounded-lg border-2 border-sand bg-cream-deep">
+            {images[0]?.url && (
+              <img
+                src={images[0].url}
+                alt=""
+                className="h-full w-full object-cover"
+              />
             )}
           </div>
         </div>

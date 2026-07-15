@@ -2,7 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAdmin } from "./admin";
 import { menuKind } from "./schema";
-import { COFFEE_SEED, FOOD_SEED, type SeedSection } from "./seedData";
+import { COFFEE_SEED, FOOD_SEED, MERCH_SEED, type SeedSection } from "./seedData";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 
@@ -28,9 +28,14 @@ function slugify(name: string): string {
 }
 
 /** Pick a slug for `name` that's unique among a menu's items. */
-async function uniqueSlug(
+const DEFAULT_MENU_PAGES = [
+  { slug: "coffee", title: "Coffee", eyebrow: "From the bar", order: 0, builtIn: true },
+  { slug: "food", title: "Food", eyebrow: "From the kitchen", order: 1, builtIn: true },
+] as const;
+
+async function uniqueItemSlug(
   ctx: MutationCtx,
-  menu: "coffee" | "food",
+  menu: string,
   name: string,
   excludeId?: Id<"menuItems">,
 ): Promise<string> {
@@ -48,6 +53,47 @@ async function uniqueSlug(
   let n = 2;
   while (taken.has(`${base}-${n}`)) n++;
   return `${base}-${n}`;
+}
+
+function pageSlugify(title: string): string {
+  return (
+    title
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 48) || "menu"
+  );
+}
+
+async function uniquePageSlug(
+  ctx: MutationCtx,
+  title: string,
+  excludeId?: Id<"menuPages">,
+): Promise<string> {
+  const base = pageSlugify(title);
+  const pages = await ctx.db.query("menuPages").collect();
+  const taken = new Set(
+    pages.filter((p) => p._id !== excludeId).map((p) => p.slug),
+  );
+  if (!taken.has(base)) return base;
+  let n = 2;
+  while (taken.has(`${base}-${n}`)) n++;
+  return `${base}-${n}`;
+}
+
+function defaultMenuPage(slug: string) {
+  return DEFAULT_MENU_PAGES.find((p) => p.slug === slug) ?? null;
+}
+
+async function ensureDefaultMenuPages(ctx: MutationCtx) {
+  for (const page of DEFAULT_MENU_PAGES) {
+    const existing = await ctx.db
+      .query("menuPages")
+      .withIndex("by_slug", (q) => q.eq("slug", page.slug))
+      .unique();
+    if (!existing) await ctx.db.insert("menuPages", page);
+  }
 }
 
 async function itemImages(
@@ -80,6 +126,24 @@ async function itemImages(
 export const getMenu = query({
   args: { menu: menuKind },
   handler: async (ctx, { menu }) => {
+    const pageRow = await ctx.db
+      .query("menuPages")
+      .withIndex("by_slug", (q) => q.eq("slug", menu))
+      .unique();
+    const fallbackPage = defaultMenuPage(menu);
+    const page = pageRow
+      ? {
+          _id: pageRow._id,
+          slug: pageRow.slug,
+          title: pageRow.title,
+          eyebrow: pageRow.eyebrow,
+          order: pageRow.order,
+          builtIn: pageRow.builtIn ?? false,
+        }
+      : fallbackPage
+        ? { ...fallbackPage, _id: null }
+        : null;
+
     const sections = await ctx.db
       .query("menuSections")
       .withIndex("by_menu", (q) => q.eq("menu", menu))
@@ -134,11 +198,71 @@ export const getMenu = query({
       : null;
 
     return {
+      page,
       sections: sectionsOut,
       pdf: meta?.pdfStorageId
         ? { url: pdfUrl, name: meta.pdfName ?? "menu.pdf" }
         : null,
     };
+  },
+});
+
+export const listMenuPages = query({
+  args: {},
+  handler: async (ctx) => {
+    const rows = await ctx.db.query("menuPages").collect();
+    const bySlug = new Map(rows.map((row) => [row.slug, row]));
+    const merged = [
+      ...DEFAULT_MENU_PAGES.map((page) => bySlug.get(page.slug) ?? page),
+      ...rows.filter((row) => !DEFAULT_MENU_PAGES.some((p) => p.slug === row.slug)),
+    ];
+    return merged
+      .map((page) => ({
+        _id: "_id" in page ? page._id : null,
+        slug: page.slug,
+        title: page.title,
+        eyebrow: page.eyebrow,
+        order: page.order,
+        builtIn: page.builtIn ?? false,
+      }))
+      .sort((a, b) => a.order - b.order);
+  },
+});
+
+export const createMenuPage = mutation({
+  args: { title: v.string(), eyebrow: v.string() },
+  handler: async (ctx, { title, eyebrow }) => {
+    await requireAdmin(ctx);
+    await ensureDefaultMenuPages(ctx);
+    const rows = await ctx.db.query("menuPages").collect();
+    const order = rows.reduce((max, page) => Math.max(max, page.order), -1) + 1;
+    const slug = await uniquePageSlug(ctx, title);
+    await ctx.db.insert("menuPages", {
+      slug,
+      title,
+      eyebrow,
+      order,
+      builtIn: false,
+    });
+    return { slug };
+  },
+});
+
+export const updateMenuPage = mutation({
+  args: {
+    slug: v.string(),
+    title: v.string(),
+    eyebrow: v.string(),
+  },
+  handler: async (ctx, { slug, title, eyebrow }) => {
+    await requireAdmin(ctx);
+    await ensureDefaultMenuPages(ctx);
+    const page = await ctx.db
+      .query("menuPages")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .unique();
+    if (!page) throw new Error("Menu page not found.");
+    await ctx.db.patch(page._id, { title, eyebrow });
   },
 });
 
@@ -208,6 +332,7 @@ export const createSection = mutation({
   args: { menu: menuKind, title: v.string() },
   handler: async (ctx, { menu, title }) => {
     await requireAdmin(ctx);
+    if (menu !== "merch") await ensureDefaultMenuPages(ctx);
     const existing = await ctx.db
       .query("menuSections")
       .withIndex("by_menu", (q) => q.eq("menu", menu))
@@ -280,7 +405,7 @@ export const createItem = mutation({
       .withIndex("by_section", (q) => q.eq("sectionId", args.sectionId))
       .collect();
     const order = siblings.reduce((max, i) => Math.max(max, i.order), -1) + 1;
-    const slug = await uniqueSlug(ctx, section.menu, args.name);
+    const slug = await uniqueItemSlug(ctx, section.menu, args.name);
     return await ctx.db.insert("menuItems", {
       sectionId: args.sectionId,
       menu: section.menu,
@@ -307,7 +432,7 @@ export const updateItem = mutation({
     const slug =
       existing?.slug ??
       (existing
-        ? await uniqueSlug(ctx, existing.menu, fields.name, itemId)
+        ? await uniqueItemSlug(ctx, existing.menu, fields.name, itemId)
         : undefined);
     // Persist the fields and clear any legacy single-image fields.
     await ctx.db.patch(itemId, {
@@ -329,7 +454,9 @@ export const ensureSlugs = mutation({
   handler: async (ctx) => {
     await requireAdmin(ctx);
     let filled = 0;
-    for (const menu of ["coffee", "food"] as const) {
+    const menus = await ctx.db.query("menuSections").collect();
+    const menuSlugs = [...new Set(menus.map((section) => section.menu))];
+    for (const menu of menuSlugs) {
       const items = await ctx.db
         .query("menuItems")
         .withIndex("by_menu", (q) => q.eq("menu", menu))
@@ -337,7 +464,7 @@ export const ensureSlugs = mutation({
       for (const item of items) {
         if (item.slug) continue;
         await ctx.db.patch(item._id, {
-          slug: await uniqueSlug(ctx, menu, item.name, item._id),
+          slug: await uniqueItemSlug(ctx, menu, item.name, item._id),
         });
         filled++;
       }
@@ -446,7 +573,7 @@ export const removeMenuPdf = mutation({
 
 async function seedMenu(
   ctx: MutationCtx,
-  menu: "coffee" | "food",
+  menu: string,
   sections: SeedSection[],
 ) {
   const usedSlugs = new Set<string>();
@@ -495,12 +622,29 @@ export const seed = mutation({
   args: {},
   handler: async (ctx) => {
     await requireAdmin(ctx);
+    await ensureDefaultMenuPages(ctx);
     const existing = await ctx.db.query("menuSections").first();
     if (existing) {
       return { seeded: false, reason: "Menu already has data." };
     }
     await seedMenu(ctx, "coffee", COFFEE_SEED);
     await seedMenu(ctx, "food", FOOD_SEED);
+    return { seeded: true };
+  },
+});
+
+export const seedMerch = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx);
+    const existing = await ctx.db
+      .query("menuSections")
+      .withIndex("by_menu", (q) => q.eq("menu", "merch"))
+      .first();
+    if (existing) {
+      return { seeded: false, reason: "Merch already has data." };
+    }
+    await seedMenu(ctx, "merch", MERCH_SEED);
     return { seeded: true };
   },
 });

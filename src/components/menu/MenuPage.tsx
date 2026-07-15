@@ -124,6 +124,12 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+function externalHref(url: string): string {
+  const trimmed = url.trim();
+  if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 /**
  * Per-item "Order" button. When the item has a Toast link it opens it in a new
  * tab and records an `order_click`; with no link it renders disabled (decision:
@@ -131,12 +137,12 @@ function Stars({ rating }: { rating: number }) {
  */
 function OrderButton({
   item,
-  label = "Order",
   size = "sm",
+  label = "Order",
 }: {
   item: MenuItem;
-  label?: string;
   size?: "sm" | "lg";
+  label?: string;
 }) {
   const track = useTrack();
   const sizing = size === "lg" ? "px-6 py-2.5 text-base" : "px-4 py-2 text-sm";
@@ -145,7 +151,7 @@ function OrderButton({
     return (
       <span
         aria-disabled="true"
-        title="Online ordering for this item is coming soon"
+        title={`${label} link for this item is coming soon`}
         className={`inline-flex cursor-not-allowed items-center justify-center rounded-full bg-espresso/10 font-semibold text-espresso/40 ${sizing}`}
       >
         {label}
@@ -153,9 +159,11 @@ function OrderButton({
     );
   }
 
+  const href = externalHref(item.orderUrl);
+
   return (
     <a
-      href={item.orderUrl}
+      href={href}
       target="_blank"
       rel="noreferrer"
       onClick={(e) => {
@@ -163,7 +171,7 @@ function OrderButton({
         track("order_click", {
           clickSource: "menu-item",
           menuItemName: item.name,
-          destination: item.orderUrl ?? undefined,
+          destination: href,
         });
       }}
       className={`inline-flex items-center justify-center rounded-full bg-terracotta font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md ${sizing}`}
@@ -435,7 +443,7 @@ function ItemModal({
               <OrderButton item={item} label={orderLabel} size="lg" />
               {!item.orderUrl && (
                 <p className="mt-2 text-sm text-espresso/50">
-                  Online ordering for this item is coming soon.
+                  {orderLabel} links for this item are coming soon.
                 </p>
               )}
             </div>
@@ -601,7 +609,7 @@ export function MenuPage({
    * omitted (e.g. the merch page) the modal opens as client-only state with no
    * URL, tracking, or SEO.
    */
-  menuKind?: "coffee" | "food";
+  menuKind?: string;
   /** Optional route base for non-menu product pages, e.g. /retail. */
   routeBase?: string;
   /** When set, the item with this slug opens as a routed modal. */

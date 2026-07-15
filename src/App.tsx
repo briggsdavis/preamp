@@ -17,8 +17,7 @@ const PdfViewer = lazy(() =>
   import("@/pages/PdfViewer").then((m) => ({ default: m.PdfViewer })),
 );
 import { Home } from "@/pages/Home";
-import { MenuCoffee } from "@/pages/MenuCoffee";
-import { MenuFood } from "@/pages/MenuFood";
+import { MenuDynamic } from "@/pages/MenuDynamic";
 import { About } from "@/pages/About";
 import { Merch } from "@/pages/Merch";
 import { ColdBrew } from "@/pages/ColdBrew";
@@ -61,13 +60,12 @@ export default function App() {
   // A menu item's page (/menu/<kind>/<slug>) is the menu page with a modal
   // open. Collapse it to the base menu route so opening/closing an item doesn't
   // trigger a full page transition or scroll reset behind the modal.
-  const routeKey = location.pathname.replace(
-    /^(\/menu\/(?:coffee|food))\/[^/]+$/,
-    "$1",
-  ).replace(
-    /^(\/retail)\/[^/]+$/,
-    "$1",
-  );
+  const routeKey = location.pathname
+    .replace(/^(\/menu\/[^/]+)\/[^/]+$/, "$1")
+    .replace(/^(\/retail)\/[^/]+$/, "$1");
+  const hiddenBuiltInMenu =
+    (location.pathname.startsWith("/menu/coffee") && !coffeeEnabled) ||
+    (location.pathname.startsWith("/menu/food") && !foodEnabled);
 
   // Jump to the top of the page on real route changes (not item open/close).
   useEffect(() => {
@@ -102,48 +100,24 @@ export default function App() {
       <Routes location={location} key={routeKey}>
           <Route path="/" element={<Home />} />
           <Route
-            path="/menu/coffee"
+            path="/menu/:menuSlug"
             element={
-              coffeeEnabled ? (
+              !hiddenBuiltInMenu ? (
                 <ErrorBoundary fallback={<MenuUnavailable />}>
-                  <MenuCoffee />
+                  <MenuDynamic />
                 </ErrorBoundary>
               ) : (
                 <Navigate to="/" replace />
               )
             }
           />
-          {/* An item's own page - renders the coffee menu with its modal open. */}
+          {/* An item's own page - renders the menu with its modal open. */}
           <Route
-            path="/menu/coffee/:slug"
+            path="/menu/:menuSlug/:slug"
             element={
-              coffeeEnabled ? (
+              !hiddenBuiltInMenu ? (
                 <ErrorBoundary fallback={<MenuUnavailable />}>
-                  <MenuCoffee />
-                </ErrorBoundary>
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
-          />
-          <Route
-            path="/menu/food"
-            element={
-              foodEnabled ? (
-                <ErrorBoundary fallback={<MenuUnavailable />}>
-                  <MenuFood />
-                </ErrorBoundary>
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
-          />
-          <Route
-            path="/menu/food/:slug"
-            element={
-              foodEnabled ? (
-                <ErrorBoundary fallback={<MenuUnavailable />}>
-                  <MenuFood />
+                  <MenuDynamic />
                 </ErrorBoundary>
               ) : (
                 <Navigate to="/" replace />

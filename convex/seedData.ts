@@ -142,3 +142,26 @@ export const FOOD_SEED: SeedSection[] = [
     ],
   },
 ];
+
+export const MERCH_SEED: SeedSection[] = [
+  {
+    title: "T-Shirts",
+    items: [
+      it("Logo Tee", "$28.00", "Soft cotton tee with the Pre Amp wordmark.", "/images/preampdecor2.webp", 73, [
+        { name: "Casey L.", rating: 5, text: "Softest tee I own." },
+      ]),
+      it("Vinyl Tee", "$30.00", "Records-and-coffee graphic on a vintage wash.", "/images/preampdecor3.webp", 56, []),
+      it("Studio Tee", "$28.00", "Minimal studio crest, front and center.", "/images/preampdecor4.webp", 41, []),
+    ],
+  },
+  {
+    title: "Hats",
+    items: [
+      it("Dad Hat", "$25.00", "Unstructured 6-panel with embroidered logo.", "/images/preampdecor5.webp", 62, [
+        { name: "Marcus T.", rating: 5, text: "Goes with everything." },
+      ]),
+      it("Beanie", "$22.00", "Cuffed knit beanie for cold-brew weather.", "/images/preampdecor6.webp", 38, []),
+      it("Trucker Hat", "$24.00", "Mesh-back trucker with a woven patch.", "/images/preampdecor7.webp", 29, []),
+    ],
+  },
+];

@@ -28,18 +28,28 @@ export function Merch() {
     () =>
       (sections ?? []).map((section) => ({
         title: section.title,
-        items: section.items.map((item) => ({
-          id: item._id,
-          name: item.title,
-          slug: item.slug,
-          price: item.price,
-          description: item.description,
-          image: item.image ?? "/images/preampdecor.webp",
-          images: item.image ? [item.image] : ["/images/preampdecor.webp"],
-          orderUrl: item.purchaseUrl,
-          likes: 0,
-          reviews: [],
-        })),
+        items: section.items.map((item) => {
+          const images =
+            item.images && item.images.length > 0
+              ? item.images
+                  .map((image) => image.url)
+                  .filter((url): url is string => !!url)
+              : item.image
+                ? [item.image]
+                : ["/images/preampdecor.webp"];
+          return {
+            id: item._id,
+            name: item.title,
+            slug: item.slug,
+            price: item.price,
+            description: item.description,
+            image: images[0] ?? "/images/preampdecor.webp",
+            images,
+            orderUrl: item.purchaseUrl,
+            likes: 0,
+            reviews: [],
+          };
+        }),
       })),
     [sections],
   );
@@ -51,10 +61,10 @@ export function Merch() {
       routeBase="/retail"
       openSlug={slug}
       sections={mappedSections}
+      banner={<MerchPerkBanner />}
       loading={sections === undefined}
       orderEnabled
       orderLabel="Buy Now"
-      banner={<MerchPerkBanner />}
     />
   );
 }

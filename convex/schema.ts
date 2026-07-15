@@ -12,8 +12,8 @@ import { authTables } from "@convex-dev/auth/server";
  * Docs: https://docs.convex.dev/database/schemas
  */
 
-/** Which public menu a section/item belongs to. */
-export const menuKind = v.union(v.literal("coffee"), v.literal("food"));
+/** Which public menu/catalog a section/item belongs to. */
+export const menuKind = v.string();
 
 /** Visitor-selected reason on the public contact form. */
 export const contactTopic = v.union(
@@ -67,6 +67,14 @@ export default defineSchema({
   }),
 
   // --- Menu -----------------------------------------------------------------
+  menuPages: defineTable({
+    slug: v.string(),
+    title: v.string(),
+    eyebrow: v.string(),
+    order: v.number(),
+    builtIn: v.optional(v.boolean()),
+  }).index("by_slug", ["slug"]),
+
   menuSections: defineTable({
     menu: menuKind,
     title: v.string(),
@@ -186,6 +194,14 @@ export default defineSchema({
     price: v.string(),
     description: v.string(),
     purchaseUrl: v.string(),
+    images: v.optional(
+      v.array(
+        v.object({
+          storageId: v.optional(v.id("_storage")),
+          path: v.optional(v.string()),
+        }),
+      ),
+    ),
     image: v.optional(
       v.object({
         storageId: v.optional(v.id("_storage")),

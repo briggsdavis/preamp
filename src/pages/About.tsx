@@ -66,6 +66,13 @@ const CARDS: AboutCard[] = [
   },
 ];
 
+const OWNER_GALLERY = [
+  { src: "/images/preampdecor.webp", alt: "Pre Amp interior placeholder" },
+  { src: "/images/preampdecor2.webp", alt: "Pre Amp merch placeholder" },
+  { src: "/images/menu-coffeeshot.webp", alt: "Coffee detail placeholder" },
+  { src: "/images/eventvinyls.webp", alt: "Vinyl records placeholder" },
+];
+
 /** Fine film-grain texture, layered over each poster for the analog look. */
 const GRAIN_URL =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
@@ -275,6 +282,27 @@ export function About() {
               </div>
             </div>
           </motion.div>
+
+          <div className="mx-auto mt-14 grid max-w-7xl grid-cols-2 gap-4 md:-mx-24 md:grid-cols-4 md:gap-5">
+            {OWNER_GALLERY.map((image, index) => (
+              <motion.div
+                key={image.src}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.65, delay: index * 0.08 }}
+                className="aspect-square overflow-hidden rounded-[1.5rem] border border-sand/80 bg-cream-deep shadow-lg shadow-maroon/10"
+              >
+                <img
+                  src={image.src}
+                  alt={image.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 

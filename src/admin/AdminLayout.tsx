@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
@@ -8,6 +8,7 @@ import { DialogProvider } from "@/admin/dialogs";
 
 import { Home } from "@/admin/sections/Home";
 import { MenuManager } from "@/admin/sections/MenuManager";
+import { MenuPages } from "@/admin/sections/MenuPages";
 import { Inquiries } from "@/admin/sections/Inquiries";
 import { Announcements } from "@/admin/sections/Announcements";
 import { Popups } from "@/admin/sections/Popups";
@@ -56,17 +57,17 @@ const NAV: NavGroup[] = [
   },
   {
     label: "Menu",
-    items: [
-      { id: "menu-coffee", label: "Coffee" },
-      { id: "menu-food", label: "Food" },
-    ],
+    items: [{ id: "menu-pages", label: "Pages" }],
+  },
+  {
+    label: "Merch",
+    items: [{ id: "merch", label: "Merch Editor" }],
   },
   {
     label: "Marketing",
     items: [
       { id: "announcements", label: "Announcement Bar" },
       { id: "popups", label: "Pop-up" },
-      { id: "merchandise", label: "Merchandise" },
     ],
   },
   {
@@ -96,6 +97,31 @@ export function AdminLayout() {
   // Live counts for the sidebar "needs attention" badges.
   const inquiryCounts = useQuery(api.inquiries.counts);
   const reviewStats = useQuery(api.reviews.stats);
+  const menuPages = useQuery(api.menu.listMenuPages);
+
+  const nav = useMemo(
+    () =>
+      NAV.map((group) =>
+        group.label === "Menu"
+          ? {
+              ...group,
+              items: [
+                { id: "menu-pages", label: "Pages" },
+                ...(
+                  menuPages ?? [
+                    { slug: "coffee", title: "Coffee" },
+                    { slug: "food", title: "Food" },
+                  ]
+                ).map((page) => ({
+                  id: `menu-${page.slug}`,
+                  label: page.title,
+                })),
+              ],
+            }
+          : group,
+      ),
+    [menuPages],
+  );
 
   function badgeFor(label: string): number {
     if (label === "Inquiries") return inquiryCounts?.totalUnread ?? 0;
@@ -120,7 +146,7 @@ export function AdminLayout() {
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {NAV.map((group) => {
+          {nav.map((group) => {
             const isSingle = group.items.length === 1;
             return (
               <div key={group.label} className="mb-2">
@@ -286,10 +312,10 @@ function Panel({
           <Analytics />
         </Suspense>
       );
-    case "menu-coffee":
-      return <MenuManager menu="coffee" />;
-    case "menu-food":
-      return <MenuManager menu="food" />;
+    case "menu-pages":
+      return <MenuPages onNavigate={onNavigate} />;
+    case "merch":
+      return <Merchandise />;
     case "inquiries":
       return <Inquiries />;
     case "events":
@@ -300,8 +326,6 @@ function Panel({
       return <Announcements />;
     case "popups":
       return <Popups />;
-    case "merchandise":
-      return <Merchandise />;
     case "page-home":
       return <PagePlaceholder name="Home" />;
     case "page-about":
@@ -313,6 +337,9 @@ function Panel({
     case "settings":
       return <SiteSettings />;
     default:
+      if (selected.startsWith("menu-")) {
+        return <MenuManager menu={selected.slice("menu-".length)} />;
+      }
       return null;
   }
 }
