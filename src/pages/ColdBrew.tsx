@@ -6,10 +6,12 @@ import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { RippleStripes } from "@/components/site/RippleStripes";
 import {
   EditableImage,
+  EditableIcon,
   EditableLink,
   EditableText,
   useInlineEditingMode,
 } from "@/components/cms/InlineEditing";
+import { COLD_BREW_ICON_OPTIONS } from "@/components/site/ContentIcon";
 import { useSeo } from "@/lib/seo";
 import {
   fillTemplate,
@@ -27,13 +29,13 @@ import {
 /** A pre-launch feature card: title, blurb, and a "coming soon" ribbon. */
 function ComingSoonCard({
   index,
-  emoji,
+  icon,
   badge,
   title,
   blurb,
 }: {
   index: number;
-  emoji: string;
+  icon: string;
   badge: string;
   title: string;
   blurb: string;
@@ -49,8 +51,13 @@ function ComingSoonCard({
       <span className="absolute right-4 top-4 rounded-full bg-gold/20 px-3 py-1 font-groovy text-[0.65rem] uppercase tracking-[0.15em] text-gold">
         <EditableText path={`launch.cards.${index}.badge`} value={badge} />
       </span>
-      <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 text-3xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-gold/25">
-        <EditableText path={`launch.cards.${index}.icon`} value={emoji} />
+      <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 text-gold transition-transform duration-300 group-hover:scale-110 group-hover:bg-gold/25">
+        <EditableIcon
+          path={`launch.cards.${index}.icon`}
+          value={icon}
+          options={COLD_BREW_ICON_OPTIONS}
+          className="h-8 w-8"
+        />
       </span>
       <h3 className="mt-5 font-display text-2xl text-cream">
         <EditableText path={`launch.cards.${index}.title`} value={title} />
@@ -86,7 +93,7 @@ export function ColdBrew() {
       {/* Hero banner */}
       <section
         ref={heroRef}
-        className="relative flex min-h-[78vh] items-center justify-center overflow-hidden"
+        className="relative isolate flex min-h-[78vh] items-center justify-center overflow-hidden"
       >
         <motion.div
           style={editing ? undefined : { y: bgY }}
@@ -189,7 +196,7 @@ export function ColdBrew() {
               <ComingSoonCard
                 key={index}
                 index={index}
-                emoji={card.icon}
+                icon={card.icon}
                 badge={card.badge}
                 title={card.title}
                 blurb={card.body}

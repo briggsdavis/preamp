@@ -17,8 +17,9 @@ import { useTrack } from "@/lib/analytics";
 import { useSeo } from "@/lib/seo";
 import type { MenuItem, MenuSection } from "@/data/menu";
 import { useGlobalContent } from "@/lib/siteContent";
+import { ContentIcon, dietaryIconName } from "@/components/site/ContentIcon";
 
-/** A resolved dietary tag (label + emoji icon + color) for rendering pills. */
+/** A resolved dietary tag (label + vector icon + color) for rendering pills. */
 export interface TagInfo {
   key: string;
   label: string;
@@ -59,7 +60,10 @@ function DietaryPills({
             background: `${t.color}14`,
           }}
         >
-          <span aria-hidden>{t.icon}</span>
+          <ContentIcon
+            name={dietaryIconName(t.key, t.icon)}
+            className={size === "lg" ? "h-4 w-4" : "h-3.5 w-3.5"}
+          />
           {t.label}
         </span>
       ))}

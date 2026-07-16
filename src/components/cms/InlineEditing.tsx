@@ -13,8 +13,13 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { Check } from "lucide-react";
 
 import type { CmsImage } from "@/lib/siteContent";
+import {
+  ContentIcon,
+  type IconOption,
+} from "@/components/site/ContentIcon";
 
 type InlineEditingContextValue = {
   beginTransaction: () => void;
@@ -42,6 +47,10 @@ export function InlineEditingProvider({
 
 export function useInlineEditingMode() {
   return useContext(InlineEditingContext) !== null;
+}
+
+export function useInlineEditor() {
+  return useContext(InlineEditingContext);
 }
 
 export function EditableText({
@@ -143,7 +152,11 @@ export function EditableImage({
         title="Replace image"
         aria-label={`Replace image, recommended aspect ratio ${ratio}`}
         disabled={uploading}
-        onClick={() => inputRef.current?.click()}
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          inputRef.current?.click();
+        }}
         className="absolute inset-0 z-30 cursor-pointer border-2 border-transparent bg-transparent transition-none hover:border-gold hover:bg-espresso/15 focus-visible:border-gold focus-visible:outline-none"
       >
         <span className="absolute right-3 top-3 rounded bg-espresso/85 px-2.5 py-1 text-xs font-bold text-cream shadow-md">
@@ -166,10 +179,14 @@ type LinkValue = { label: string; href: string };
 export function EditableLink({
   path,
   value,
+  labelKey = "label",
+  labelTitle = "Button text",
   children,
 }: {
   path: string;
   value: LinkValue;
+  labelKey?: string;
+  labelTitle?: string;
   children: ReactElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>;
 }) {
   const editing = useContext(InlineEditingContext);
@@ -227,11 +244,11 @@ export function EditableLink({
             data-cms-control
           >
             <label className="block text-xs font-bold uppercase text-espresso/60">
-              Button text
+              {labelTitle}
               <input
                 autoFocus
                 value={value.label}
-                onChange={(event) => editing.updateValue(`${path}.label`, event.target.value)}
+                onChange={(event) => editing.updateValue(`${path}.${labelKey}`, event.target.value)}
                 className="mt-1.5 w-full rounded-md border-2 border-sand bg-white px-3 py-2 text-sm font-normal text-espresso outline-none focus:border-gold"
               />
             </label>
@@ -255,6 +272,98 @@ export function EditableLink({
           document.body,
         )}
     </span>
+  );
+}
+
+export function EditableIcon({
+  path,
+  value,
+  options,
+  className,
+}: {
+  path: string;
+  value: string;
+  options: IconOption[];
+  className?: string;
+}) {
+  const editing = useContext(InlineEditingContext);
+  const [open, setOpen] = useState(false);
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ left: 0, top: 0 });
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (popoverRef.current?.contains(target) || anchorRef.current?.contains(target)) return;
+      setOpen(false);
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [open]);
+
+  if (!editing) return <ContentIcon name={value} className={className} />;
+
+  return (
+    <>
+      <button
+        ref={anchorRef}
+        type="button"
+        title="Choose icon"
+        aria-label="Choose icon"
+        className="inline-flex items-center justify-center rounded-full outline-none ring-gold focus-visible:ring-2"
+        data-cms-control
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          const rect = event.currentTarget.getBoundingClientRect();
+          const width = 272;
+          setPosition({
+            left: Math.max(12, Math.min(rect.left, window.innerWidth - width - 12)),
+            top: Math.min(rect.bottom + 8, window.innerHeight - 250),
+          });
+          setOpen(true);
+        }}
+      >
+        <ContentIcon name={value} className={className} />
+      </button>
+      {open &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            role="dialog"
+            aria-label="Choose icon"
+            className="fixed z-[220] w-[17rem] rounded-lg border-2 border-sand bg-cream p-3 text-espresso shadow-2xl"
+            style={position}
+            data-cms-control
+          >
+            <div className="grid grid-cols-4 gap-2">
+              {options.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  title={option.label}
+                  aria-label={option.label}
+                  onClick={() => {
+                    editing.replaceValue(path, option.value);
+                    setOpen(false);
+                  }}
+                  className={`relative grid aspect-square place-items-center rounded-md border-2 bg-white ${
+                    value === option.value ? "border-gold text-brick" : "border-sand text-espresso/70 hover:border-gold"
+                  }`}
+                >
+                  <ContentIcon name={option.value} className="h-6 w-6" />
+                  {value === option.value && (
+                    <Check className="absolute right-1 top-1 h-3.5 w-3.5" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
 

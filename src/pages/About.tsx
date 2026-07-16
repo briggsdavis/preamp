@@ -30,7 +30,7 @@ export function About() {
       {/* Hero banner */}
       <section
         ref={heroRef}
-        className="relative flex min-h-[82vh] items-center justify-center overflow-hidden"
+        className="relative isolate flex min-h-[82vh] items-center justify-center overflow-hidden"
       >
         <motion.div
           style={editing ? undefined : { y: bgY }}

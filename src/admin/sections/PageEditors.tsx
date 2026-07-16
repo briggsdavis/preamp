@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { MotionConfig } from "framer-motion";
+import { Redo2, Undo2 } from "lucide-react";
 
 import { LoadingEditor, useCmsEditor } from "@/admin/CmsEditorKit";
 import { useUpload } from "@/admin/useUpload";
@@ -72,9 +73,9 @@ function CanvasToolbar({
         aria-label="Undo"
         disabled={!canUndo}
         onClick={onUndo}
-        className="h-10 rounded-md border-2 border-sand px-3 text-sm font-semibold text-espresso transition-none hover:border-gold disabled:cursor-not-allowed disabled:opacity-30"
+        className="grid h-10 w-10 place-items-center rounded-md border-2 border-sand text-espresso transition-none hover:border-gold disabled:cursor-not-allowed disabled:opacity-30"
       >
-        Undo
+        <Undo2 className="h-4 w-4" />
       </button>
       <button
         type="button"
@@ -82,9 +83,9 @@ function CanvasToolbar({
         aria-label="Redo"
         disabled={!canRedo}
         onClick={onRedo}
-        className="h-10 rounded-md border-2 border-sand px-3 text-sm font-semibold text-espresso transition-none hover:border-gold disabled:cursor-not-allowed disabled:opacity-30"
+        className="grid h-10 w-10 place-items-center rounded-md border-2 border-sand text-espresso transition-none hover:border-gold disabled:cursor-not-allowed disabled:opacity-30"
       >
-        Redo
+        <Redo2 className="h-4 w-4" />
       </button>
       <span
         className={`ml-2 min-w-32 text-right text-xs font-semibold ${

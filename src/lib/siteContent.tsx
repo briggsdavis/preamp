@@ -3,6 +3,7 @@ import { createContext, useContext, type ReactNode } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { RD_RESTAURANTS } from "@/data/site";
 
 export type CmsKey = "home" | "about" | "cold-brew" | "global";
 
@@ -14,6 +15,7 @@ export type CmsImage = {
 };
 
 export type CmsLink = { label: string; href: string };
+export type CmsRestaurant = { name: string; image: CmsImage; href: string };
 
 export type HomeContent = {
   hero: {
@@ -34,7 +36,12 @@ export type HomeContent = {
   quiz: { kicker: string; title: string; body: string };
   reviews: { kicker: string; title: string };
   location: { kicker: string; title: string; body: string };
-  restaurantGroup: { kicker: string; title: string; button: CmsLink };
+  restaurantGroup: {
+    kicker: string;
+    title: string;
+    button: CmsLink;
+    restaurants: CmsRestaurant[];
+  };
 };
 
 export type AboutContent = {
@@ -164,6 +171,11 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
     kicker: "The Family",
     title: "Proud to be part of Richard Deshantz's restaurant group.",
     button: { label: "Visit the restaurant group →", href: "https://richarddeshantz.com/" },
+    restaurants: RD_RESTAURANTS.map((restaurant) => ({
+      name: restaurant.name,
+      image: image(restaurant.image ?? "", `${restaurant.name} restaurant`),
+      href: restaurant.href ?? "",
+    })),
   },
 };
 
@@ -229,9 +241,9 @@ export const DEFAULT_COLD_BREW_CONTENT: ColdBrewContent = {
     title: "More Ways to Get Your Fix",
     body: "We're scaling the drip. These are on the way - check back soon, or ask the bar to put you on the list.",
     cards: [
-      { icon: "🏢", badge: "Coming soon", title: "Office Catering", body: "Kegs and carafes of cold brew delivered to your team. Keep the whole office wired and happy through the afternoon slump." },
-      { icon: "🚲", badge: "Coming soon", title: "Home Delivery", body: "Fresh cold brew brought right to your door on a schedule that fits your week. Never run dry on a Monday again." },
-      { icon: "🍾", badge: "Coming soon", title: "Bottles & Growlers", body: "Take the studio home. Grab-and-go bottles and refillable growlers to stock your own fridge with the good stuff." },
+      { icon: "building-2", badge: "Coming soon", title: "Office Catering", body: "Kegs and carafes of cold brew delivered to your team. Keep the whole office wired and happy through the afternoon slump." },
+      { icon: "bike", badge: "Coming soon", title: "Home Delivery", body: "Fresh cold brew brought right to your door on a schedule that fits your week. Never run dry on a Monday again." },
+      { icon: "milk", badge: "Coming soon", title: "Bottles & Growlers", body: "Take the studio home. Grab-and-go bottles and refillable growlers to stock your own fridge with the good stuff." },
     ],
   },
   availability: {
@@ -286,6 +298,20 @@ export function mergeContent<K extends CmsKey>(key: K, saved: unknown): ContentF
         ? { ...base, ...value }
         : value;
   }
+
+  if (key === "cold-brew") {
+    const coldBrew = output as unknown as ColdBrewContent;
+    const legacyIcons: Record<string, string> = {
+      "🏢": "building-2",
+      "🚲": "bike",
+      "🍾": "milk",
+    };
+    coldBrew.launch.cards = coldBrew.launch.cards.map((card) => ({
+      ...card,
+      icon: legacyIcons[card.icon] ?? card.icon,
+    }));
+  }
+
   return output as ContentFor<K>;
 }
 

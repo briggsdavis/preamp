@@ -3,10 +3,16 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 
 import { field, label, btn } from "@/admin/ui";
+import { Check, Plus, Trash2 } from "lucide-react";
+import {
+  ContentIcon,
+  DIETARY_ICON_OPTIONS,
+  dietaryIconName,
+} from "@/components/site/ContentIcon";
 
 /**
  * Dietary tag picker for the menu item editor. Shows the curated + custom tag
- * catalog as toggle chips, and lets an admin add a new custom tag (name, emoji
+ * catalog as toggle chips, and lets an admin add a new custom tag (name, icon,
  * icon, color) inline. Selection is a list of tag `key`s stored on the item.
  * Tags are optional - an item can have none.
  */
@@ -42,7 +48,7 @@ export function DietaryTagPicker({
 
   const [adding, setAdding] = useState(false);
   const [newLabel, setNewLabel] = useState("");
-  const [icon, setIcon] = useState("🏷️");
+  const [icon, setIcon] = useState("tag");
   const [color, setColor] = useState("#6b4a2f");
   const [error, setError] = useState<string | null>(null);
 
@@ -57,11 +63,11 @@ export function DietaryTagPicker({
     if (!clean) return;
     setError(null);
     try {
-      await create({ label: clean, icon: icon.trim() || "🏷️", color });
+      await create({ label: clean, icon: icon.trim() || "tag", color });
       const key = slugifyKey(clean);
       if (!value.includes(key)) onChange([...value, key]);
       setNewLabel("");
-      setIcon("🏷️");
+      setIcon("tag");
       setColor("#6b4a2f");
       setAdding(false);
     } catch (e) {
@@ -91,9 +97,9 @@ export function DietaryTagPicker({
                     : { color: "#7a6a5a", borderColor: "#e3d3b8", background: "transparent" }
                 }
               >
-                <span aria-hidden>{t.icon}</span>
+                <ContentIcon name={dietaryIconName(t.key, t.icon)} className="h-4 w-4" />
                 {t.label}
-                {selected && <span className="ml-0.5">✓</span>}
+                {selected && <Check className="ml-0.5 h-3.5 w-3.5" />}
               </button>
               {!t.builtin && (
                 <button
@@ -109,7 +115,7 @@ export function DietaryTagPicker({
                   }}
                   className="absolute -right-1.5 -top-1.5 hidden h-4 w-4 items-center justify-center rounded-full bg-espresso text-[0.6rem] text-cream group-hover:flex"
                 >
-                  ✕
+                  <Trash2 className="h-2.5 w-2.5" />
                 </button>
               )}
             </span>
@@ -130,14 +136,26 @@ export function DietaryTagPicker({
                 autoFocus
               />
             </div>
-            <div>
+            <div className="basis-full">
               <label className={label}>Icon</label>
-              <input
-                className={`${field} w-16 text-center`}
-                value={icon}
-                onChange={(e) => setIcon(e.target.value)}
-                maxLength={4}
-              />
+              <div className="flex flex-wrap gap-2">
+                {DIETARY_ICON_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    title={option.label}
+                    aria-label={option.label}
+                    onClick={() => setIcon(option.value)}
+                    className={`grid h-10 w-10 place-items-center rounded-md border-2 ${
+                      icon === option.value
+                        ? "border-gold bg-gold/10 text-brick"
+                        : "border-sand bg-cream text-espresso/65"
+                    }`}
+                  >
+                    <ContentIcon name={option.value} className="h-5 w-5" />
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label className={label}>Color</label>
@@ -170,7 +188,8 @@ export function DietaryTagPicker({
           onClick={() => setAdding(true)}
           className="mt-3 text-sm font-semibold text-brick hover:underline"
         >
-          + New custom tag
+          <Plus className="mr-1 inline h-4 w-4" />
+          New custom tag
         </button>
       )}
     </div>

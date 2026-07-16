@@ -6,26 +6,26 @@ import { requireAdmin } from "./admin";
 
 /**
  * Dietary tag catalog. A curated set of built-in tags is seeded on first use;
- * admins can also add custom tags with their own label, emoji icon, and color.
+ * admins can also add custom tags with their own label, icon, and color.
  * Menu items reference tags by `key` (see menuItems.dietaryTags).
  */
 
 /** The curated built-ins, seeded once. Keys are stable and never change. */
 const BUILTINS: { key: string; label: string; icon: string; color: string }[] =
   [
-    { key: "vegan", label: "Vegan", icon: "🌱", color: "#4a7c4e" },
-    { key: "vegetarian", label: "Vegetarian", icon: "🥬", color: "#6a9a3f" },
-    { key: "gluten-free", label: "Gluten-Free", icon: "🌾", color: "#b5852f" },
-    { key: "dairy-free", label: "Dairy-Free", icon: "🥛", color: "#7d9bb5" },
-    { key: "nut-free", label: "Nut-Free", icon: "🥜", color: "#a6653f" },
-    { key: "decaf", label: "Decaf", icon: "🌙", color: "#4a5a6b" },
+    { key: "vegan", label: "Vegan", icon: "sprout", color: "#3f7d44" },
+    { key: "vegetarian", label: "Vegetarian", icon: "leaf", color: "#4f8f3a" },
+    { key: "gluten-free", label: "Gluten-Free", icon: "wheat-off", color: "#a47724" },
+    { key: "dairy-free", label: "Dairy-Free", icon: "milk-off", color: "#4f7f9e" },
+    { key: "nut-free", label: "Nut-Free", icon: "nut-off", color: "#9a603c" },
+    { key: "decaf", label: "Decaf", icon: "moon", color: "#586579" },
     {
       key: "contains-caffeine",
       label: "Contains Caffeine",
-      icon: "☕",
+      icon: "coffee",
       color: "#6b4a2f",
     },
-    { key: "spicy", label: "Spicy", icon: "🌶️", color: "#b5432f" },
+    { key: "spicy", label: "Spicy", icon: "flame", color: "#b5432f" },
   ];
 
 function slugifyKey(s: string): string {
@@ -49,6 +49,18 @@ async function ensureSeeded(ctx: MutationCtx) {
       .unique();
     if (!existing) {
       await ctx.db.insert("dietaryTags", { ...b, builtin: true, order: i });
+    } else if (
+      existing.icon !== b.icon ||
+      existing.color !== b.color ||
+      existing.label !== b.label
+    ) {
+      await ctx.db.patch(existing._id, {
+        label: b.label,
+        icon: b.icon,
+        color: b.color,
+        builtin: true,
+        order: i,
+      });
     }
   }
 }
@@ -99,7 +111,7 @@ export const create = mutation({
     return await ctx.db.insert("dietaryTags", {
       key,
       label: clean,
-      icon: icon.trim().slice(0, 8) || "🏷️",
+      icon: icon.trim().slice(0, 32) || "tag",
       color: color.trim() || "#6b4a2f",
       builtin: false,
       order,
@@ -121,7 +133,7 @@ export const update = mutation({
     // Key stays stable so items keep their references; only display fields change.
     await ctx.db.patch(id, {
       label: clean,
-      icon: icon.trim().slice(0, 8) || "🏷️",
+      icon: icon.trim().slice(0, 32) || "tag",
       color: color.trim() || "#6b4a2f",
     });
   },

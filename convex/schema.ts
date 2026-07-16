@@ -97,7 +97,7 @@ export default defineSchema({
   dietaryTags: defineTable({
     key: v.string(), // stable slug, referenced by menuItems.dietaryTags
     label: v.string(),
-    icon: v.string(), // emoji
+    icon: v.string(), // named vector icon
     color: v.string(), // hex, used for the pill background tint
     builtin: v.boolean(),
     order: v.number(),

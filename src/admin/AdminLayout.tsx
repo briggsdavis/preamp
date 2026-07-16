@@ -1,14 +1,14 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
+import { Plus } from "lucide-react";
 
 import { DialogProvider } from "@/admin/dialogs";
 
 import { Home } from "@/admin/sections/Home";
 import { MenuManager } from "@/admin/sections/MenuManager";
-import { MenuPages } from "@/admin/sections/MenuPages";
 import { Inquiries } from "@/admin/sections/Inquiries";
 import { Announcements } from "@/admin/sections/Announcements";
 import { Popups } from "@/admin/sections/Popups";
@@ -22,6 +22,7 @@ import {
 import { GlobalEditor } from "@/admin/sections/GlobalEditor";
 import { SiteSettings } from "@/admin/sections/SiteSettings";
 import { Merchandise } from "@/admin/sections/Merchandise";
+import { Modal, btn, field, label } from "@/admin/ui";
 
 // Recharts is heavy and admin-only - load the dashboard on demand so it never
 // touches the public site or the rest of the admin bundle.
@@ -61,7 +62,7 @@ const NAV: NavGroup[] = [
   },
   {
     label: "Menu",
-    items: [{ id: "menu-pages", label: "Pages" }],
+    items: [],
   },
   {
     label: "Merch",
@@ -97,11 +98,13 @@ export function AdminLayout() {
   const [selected, setSelected] = useState("home");
   // Dropdowns start collapsed; the admin expands what they need.
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [addingMenuPage, setAddingMenuPage] = useState(false);
 
   // Live counts for the sidebar "needs attention" badges.
   const inquiryCounts = useQuery(api.inquiries.counts);
   const reviewStats = useQuery(api.reviews.stats);
   const menuPages = useQuery(api.menu.listMenuPages);
+  const createMenuPage = useMutation(api.menu.createMenuPage);
   const isPageCanvas = ["page-home", "page-about", "page-cold-brew"].includes(selected);
 
   const nav = useMemo(
@@ -110,9 +113,7 @@ export function AdminLayout() {
         group.label === "Menu"
           ? {
               ...group,
-              items: [
-                { id: "menu-pages", label: "Pages" },
-                ...(
+              items: (
                   menuPages ?? [
                     { slug: "coffee", title: "Coffee" },
                     { slug: "food", title: "Food" },
@@ -121,7 +122,6 @@ export function AdminLayout() {
                   id: `menu-${page.slug}`,
                   label: page.title,
                 })),
-              ],
             }
           : group,
       ),
@@ -199,6 +199,16 @@ export function AdminLayout() {
                                 onClick={() => setSelected(item.id)}
                               />
                             ))}
+                            {group.label === "Menu" && (
+                              <button
+                                type="button"
+                                onClick={() => setAddingMenuPage(true)}
+                                className="mt-2 flex w-full items-center gap-2 rounded-md border-2 border-dashed border-sand px-3 py-2 text-left text-sm font-semibold text-espresso/65 hover:border-gold hover:text-espresso"
+                              >
+                                <Plus className="h-4 w-4" />
+                                Add menu page
+                              </button>
+                            )}
                           </div>
                         </motion.div>
                       )}
@@ -235,8 +245,10 @@ export function AdminLayout() {
 
       {/* Content */}
       <main
-        className={`min-w-0 flex-1 overflow-x-hidden ${
-          isPageCanvas ? "p-0" : "px-6 py-8 md:px-10"
+        className={`min-w-0 flex-1 ${
+          isPageCanvas
+            ? "overflow-x-clip p-0"
+            : "overflow-x-hidden px-6 py-8 md:px-10"
         }`}
       >
         {isPageCanvas ? (
@@ -255,8 +267,88 @@ export function AdminLayout() {
           </AnimatePresence>
         )}
       </main>
+      {addingMenuPage && (
+        <NewMenuPageDialog
+          onClose={() => setAddingMenuPage(false)}
+          onCreate={async ({ title, eyebrow }) => {
+            const created = await createMenuPage({ title, eyebrow });
+            setAddingMenuPage(false);
+            setOpenGroups((previous) => ({ ...previous, Menu: true }));
+            setSelected(`menu-${created.slug}`);
+          }}
+        />
+      )}
     </div>
     </DialogProvider>
+  );
+}
+
+function NewMenuPageDialog({
+  onClose,
+  onCreate,
+}: {
+  onClose: () => void;
+  onCreate: (value: { title: string; eyebrow: string }) => Promise<void>;
+}) {
+  const [title, setTitle] = useState("");
+  const [eyebrow, setEyebrow] = useState("Menu");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const cleanTitle = title.trim();
+    if (!cleanTitle || saving) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await onCreate({
+        title: cleanTitle,
+        eyebrow: eyebrow.trim() || "Menu",
+      });
+    } catch {
+      setError("Could not create this menu page. Please try again.");
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Modal title="New menu page" onClose={onClose}>
+      <form onSubmit={(event) => void submit(event)} className="space-y-4">
+        <label className="block">
+          <span className={label}>Page name</span>
+          <input
+            autoFocus
+            required
+            className={field}
+            value={title}
+            placeholder="Lunch Specials"
+            onChange={(event) => setTitle(event.target.value)}
+          />
+        </label>
+        <label className="block">
+          <span className={label}>Small heading</span>
+          <input
+            className={field}
+            value={eyebrow}
+            placeholder="From the counter"
+            onChange={(event) => setEyebrow(event.target.value)}
+          />
+        </label>
+        <p className="text-xs text-espresso/55">
+          The page URL will be generated automatically from its name.
+        </p>
+        {error && <p className="text-sm font-semibold text-brick">{error}</p>}
+        <div className="flex justify-end gap-3 pt-2">
+          <button type="button" className={btn.secondary} onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className={btn.primary} disabled={saving || !title.trim()}>
+            {saving ? "Creating..." : "Create Page"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
@@ -325,8 +417,6 @@ function Panel({
           <Analytics />
         </Suspense>
       );
-    case "menu-pages":
-      return <MenuPages onNavigate={onNavigate} />;
     case "merch":
       return <Merchandise />;
     case "inquiries":
