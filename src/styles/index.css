@@ -216,3 +216,23 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+/* Inline CMS canvas: preserve the site design while freezing all motion. */
+.cms-page-canvas *,
+.cms-page-canvas *::before,
+.cms-page-canvas *::after {
+  animation-play-state: paused !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+.cms-page-canvas .cms-editable-text:hover,
+.cms-page-canvas .cms-editable-text:focus {
+  box-shadow: 0 0 0 2px var(--color-gold);
+  background-color: color-mix(in srgb, var(--color-cream) 18%, transparent);
+}
+
+.cms-page-canvas a:hover,
+.cms-page-canvas button:hover,
+.cms-page-canvas .group:hover img {
+  transform: none !important;
+}

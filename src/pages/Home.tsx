@@ -42,6 +42,13 @@ export function Home() {
         kicker={content.roomBanner.kicker}
         heading={content.roomBanner.title}
         sub={content.roomBanner.body}
+        cmsImage={content.roomBanner.image}
+        cmsPaths={{
+          image: "roomBanner.image",
+          kicker: "roomBanner.kicker",
+          heading: "roomBanner.title",
+          sub: "roomBanner.body",
+        }}
       />
 
       <CoffeeQuiz />

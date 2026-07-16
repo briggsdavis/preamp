@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
 import { cn } from "@/lib/utils";
+import { useInlineEditingMode } from "@/components/cms/InlineEditing";
 
 /**
  * The five-strand "sunset" ribbon, ramped orange → brown to match the brand
@@ -232,6 +233,7 @@ export function SquiggleLine({
   rows,
   leadInY,
 }: SquiggleLineProps) {
+  const editing = useInlineEditingMode();
   const ref = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const [size, setSize] = useState({ w: 0, h: 0 });
@@ -311,7 +313,7 @@ export function SquiggleLine({
     offset: ["start end", "end start"],
   });
   const drawn = useTransform(scrollYProgress, [0.05, 1], [0, 1]);
-  const pathLength = reduce ? 1 : drawn;
+  const pathLength = reduce || editing ? 1 : drawn;
 
   return (
     <div

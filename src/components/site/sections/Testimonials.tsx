@@ -7,6 +7,7 @@ import { TESTIMONIALS } from "@/data/site";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 import { useHomeContent } from "@/lib/siteContent";
+import { EditableText, useInlineEditingMode } from "@/components/cms/InlineEditing";
 
 interface Slide {
   quote: string;
@@ -47,17 +48,18 @@ function FeaturedTestimonials() {
 
 function TestimonialsView({ slides }: { slides: Slide[] }) {
   const content = useHomeContent().reviews;
+  const editing = useInlineEditingMode();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
   // Advance every 3 seconds.
   useEffect(() => {
-    if (paused || slides.length <= 1) return;
+    if (editing || paused || slides.length <= 1) return;
     const id = setInterval(() => {
       setIndex((i) => (i + 1) % slides.length);
     }, 3000);
     return () => clearInterval(id);
-  }, [paused, slides.length]);
+  }, [editing, paused, slides.length]);
 
   if (slides.length === 0) return null;
   const t = slides[Math.min(index, slides.length - 1)];
@@ -74,10 +76,10 @@ function TestimonialsView({ slides }: { slides: Slide[] }) {
           className="text-center"
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-            {content.kicker}
+            <EditableText path="reviews.kicker" value={content.kicker} />
           </p>
           <h2 className="mt-3 font-groovy text-4xl text-espresso md:text-5xl">
-            {content.title}
+            <EditableText path="reviews.title" value={content.title} />
           </h2>
         </motion.div>
 

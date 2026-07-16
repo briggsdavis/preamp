@@ -7,6 +7,11 @@ import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 import { useTrack } from "@/lib/analytics";
 import { useGlobalContent, useHomeContent } from "@/lib/siteContent";
+import {
+  EditableLink,
+  EditableText,
+  useInlineEditingMode,
+} from "@/components/cms/InlineEditing";
 
 interface FeaturedItem {
   _id: string;
@@ -114,6 +119,7 @@ function BestSellersStrip({
   const trackEvent = useTrack();
   const content = useHomeContent().featured;
   const global = useGlobalContent();
+  const editing = useInlineEditingMode();
   const buttonUrl = content.button.href || global.orderUrl;
   const trackRef = useRef<HTMLDivElement>(null);
   // Render the list twice so the strip can wrap seamlessly.
@@ -154,7 +160,7 @@ function BestSellersStrip({
     };
     if (!reduce) window.addEventListener("scroll", onScroll, { passive: true });
 
-    const base = reduce ? 0 : 42;
+    const base = reduce || editing ? 0 : 42;
     let last = performance.now();
     let raf = 0;
     const frame = (now: number) => {
@@ -185,7 +191,7 @@ function BestSellersStrip({
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", onScroll);
     };
-  }, []);
+  }, [editing]);
 
   return (
     <section className="relative overflow-hidden bg-cream-deep py-24">
@@ -199,10 +205,10 @@ function BestSellersStrip({
         className="relative z-20 mx-auto mb-12 max-w-6xl px-6 md:px-8"
       >
         <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-          {content.kicker}
+          <EditableText path="featured.kicker" value={content.kicker} />
         </p>
         <h2 className="mt-3 font-groovy text-4xl text-espresso md:text-5xl">
-          {content.title}
+          <EditableText path="featured.title" value={content.title} />
         </h2>
       </motion.div>
 
@@ -224,21 +230,25 @@ function BestSellersStrip({
       </div>
 
       <div className="relative z-20 mx-auto mt-12 max-w-6xl px-6 text-center md:px-8">
-        <p className="text-espresso/70">{content.body}</p>
-        <a
-          href={buttonUrl}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() =>
-            trackEvent("order_click", {
-              clickSource: "featured",
-              destination: buttonUrl,
-            })
-          }
-          className="mt-3 inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
-        >
-          {content.button.label}
-        </a>
+        <p className="text-espresso/70">
+          <EditableText path="featured.body" value={content.body} />
+        </p>
+        <EditableLink path="featured.button" value={content.button}>
+          <a
+            href={buttonUrl}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() =>
+              trackEvent("order_click", {
+                clickSource: "featured",
+                destination: buttonUrl,
+              })
+            }
+            className="mt-3 inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
+          >
+            {content.button.label}
+          </a>
+        </EditableLink>
       </div>
     </section>
   );

@@ -7,6 +7,7 @@ import { QUIZ, predictDrink, type Drink } from "@/data/site";
 import { SectionLines } from "@/components/site/SectionLines";
 import { useTrack } from "@/lib/analytics";
 import { useGlobalContent, useHomeContent } from "@/lib/siteContent";
+import { EditableText } from "@/components/cms/InlineEditing";
 
 /** Normalize a drink/item name for loose matching (drop brand + punctuation). */
 function normName(s: string): string {
@@ -91,13 +92,13 @@ export function CoffeeQuiz() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-amber">
-            {content.kicker}
+            <EditableText path="quiz.kicker" value={content.kicker} />
           </p>
           <h2 className="mt-3 font-groovy text-4xl leading-tight md:text-5xl">
-            {content.title}
+            <EditableText path="quiz.title" value={content.title} />
           </h2>
           <p className="mt-5 max-w-md text-cream/70">
-            {content.body}
+            <EditableText path="quiz.body" value={content.body} />
           </p>
         </motion.div>
 

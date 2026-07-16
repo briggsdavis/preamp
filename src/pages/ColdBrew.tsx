@@ -4,6 +4,12 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { RippleStripes } from "@/components/site/RippleStripes";
+import {
+  EditableImage,
+  EditableLink,
+  EditableText,
+  useInlineEditingMode,
+} from "@/components/cms/InlineEditing";
 import { useSeo } from "@/lib/seo";
 import {
   fillTemplate,
@@ -20,11 +26,13 @@ import {
 
 /** A pre-launch feature card: title, blurb, and a "coming soon" ribbon. */
 function ComingSoonCard({
+  index,
   emoji,
   badge,
   title,
   blurb,
 }: {
+  index: number;
   emoji: string;
   badge: string;
   title: string;
@@ -39,13 +47,17 @@ function ComingSoonCard({
       className="group relative overflow-hidden rounded-3xl border border-cream/10 bg-espresso-soft/60 p-8 text-center transition-all duration-300 hover:-translate-y-2 hover:border-gold/40 hover:bg-espresso-soft"
     >
       <span className="absolute right-4 top-4 rounded-full bg-gold/20 px-3 py-1 font-groovy text-[0.65rem] uppercase tracking-[0.15em] text-gold">
-        {badge}
+        <EditableText path={`launch.cards.${index}.badge`} value={badge} />
       </span>
       <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-gold/15 text-3xl transition-transform duration-300 group-hover:scale-110 group-hover:bg-gold/25">
-        {emoji}
+        <EditableText path={`launch.cards.${index}.icon`} value={emoji} />
       </span>
-      <h3 className="mt-5 font-display text-2xl text-cream">{title}</h3>
-      <p className="mt-3 text-cream/75">{blurb}</p>
+      <h3 className="mt-5 font-display text-2xl text-cream">
+        <EditableText path={`launch.cards.${index}.title`} value={title} />
+      </h3>
+      <p className="mt-3 text-cream/75">
+        <EditableText path={`launch.cards.${index}.body`} value={blurb} />
+      </p>
     </motion.div>
   );
 }
@@ -53,6 +65,7 @@ function ComingSoonCard({
 export function ColdBrew() {
   const content = useCmsContent("cold-brew");
   const global = useGlobalContent();
+  const editing = useInlineEditingMode();
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -75,45 +88,36 @@ export function ColdBrew() {
         ref={heroRef}
         className="relative flex min-h-[78vh] items-center justify-center overflow-hidden"
       >
-        <motion.div style={{ y: bgY }} className="absolute inset-0 -z-10 scale-110">
-          <img
-            src={imageUrl(content.hero.image)}
-            alt={content.hero.image.alt}
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
+        <motion.div
+          style={editing ? undefined : { y: bgY }}
+          className={`absolute inset-0 scale-110 ${editing ? "z-0" : "-z-10"}`}
+        >
+          <EditableImage path="hero.image" value={content.hero.image} ratio="16:9" className="h-full w-full">
+            <img src={imageUrl(content.hero.image)} alt={content.hero.image.alt} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+          </EditableImage>
           <div className="absolute inset-0 bg-gradient-to-b from-espresso/75 via-maroon/55 to-espresso/85" />
         </motion.div>
 
         <motion.div
-          style={{ opacity: fade }}
-          className="relative mx-auto max-w-3xl px-6 pt-28 text-center"
+          style={editing ? undefined : { opacity: fade }}
+          className="relative z-10 mx-auto max-w-3xl px-6 pt-28 text-center"
         >
           <p className="font-groovy text-sm uppercase tracking-[0.4em] text-cream/80">
-            {content.hero.kicker}
+            <EditableText path="hero.kicker" value={content.hero.kicker} />
           </p>
           <h1 className="mt-4 font-display text-6xl text-cream drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)] md:text-8xl">
-            {content.hero.title}
+            <EditableText path="hero.title" value={content.hero.title} />
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-cream/90">
-            {content.hero.body}
+            <EditableText path="hero.body" value={content.hero.body} />
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <a
-              href={content.hero.primary.href || global.orderUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg shadow-black/20 transition-all hover:-translate-y-1 hover:bg-amber"
-            >
-              {content.hero.primary.label}
-            </a>
-            <a
-              href={content.hero.secondary.href}
-              className="rounded-full border-2 border-cream/70 px-7 py-3 font-semibold text-cream transition-all hover:-translate-y-1 hover:border-cream hover:bg-cream/10"
-            >
-              {content.hero.secondary.label}
-            </a>
+            <EditableLink path="hero.primary" value={content.hero.primary}>
+              <a href={content.hero.primary.href || global.orderUrl} target="_blank" rel="noreferrer" className="rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg shadow-black/20 transition-all hover:-translate-y-1 hover:bg-amber">{content.hero.primary.label}</a>
+            </EditableLink>
+            <EditableLink path="hero.secondary" value={content.hero.secondary}>
+              <a href={content.hero.secondary.href} className="rounded-full border-2 border-cream/70 px-7 py-3 font-semibold text-cream transition-all hover:-translate-y-1 hover:border-cream hover:bg-cream/10">{content.hero.secondary.label}</a>
+            </EditableLink>
           </div>
         </motion.div>
 
@@ -133,13 +137,9 @@ export function ColdBrew() {
             transition={{ duration: 0.8 }}
             className="group relative overflow-hidden rounded-3xl shadow-2xl shadow-maroon/20"
           >
-            <img
-              src={imageUrl(content.method.image)}
-              alt={content.method.image.alt}
-              loading="lazy"
-              decoding="async"
-              className="h-[300px] w-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110 md:h-[460px]"
-            />
+            <EditableImage path="method.image" value={content.method.image} ratio="4:5" className="h-[300px] w-full md:h-[460px]">
+              <img src={imageUrl(content.method.image)} alt={content.method.image.alt} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-110" />
+            </EditableImage>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, x: 30 }}
@@ -148,21 +148,18 @@ export function ColdBrew() {
             transition={{ duration: 0.8 }}
           >
             <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-              {content.method.kicker}
+              <EditableText path="method.kicker" value={content.method.kicker} />
             </p>
             <div className="mt-5 space-y-4 text-lg text-espresso/80">
               {content.method.paragraphs.map((paragraph, index) => (
-                <p key={index}>{paragraph}</p>
+                <p key={index}>
+                  <EditableText path={`method.paragraphs.${index}`} value={paragraph} />
+                </p>
               ))}
             </div>
-            <a
-              href={content.method.button.href || global.orderUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-7 inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
-            >
-              {content.method.button.label}
-            </a>
+            <EditableLink path="method.button" value={content.method.button}>
+              <a href={content.method.button.href || global.orderUrl} target="_blank" rel="noreferrer" className="mt-7 inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick">{content.method.button.label}</a>
+            </EditableLink>
           </motion.div>
         </div>
       </section>
@@ -178,19 +175,20 @@ export function ColdBrew() {
         <div className="relative mx-auto max-w-7xl px-6 md:px-8">
           <div className="text-center">
             <p className="font-groovy text-sm uppercase tracking-[0.35em] text-gold">
-              {content.launch.kicker}
+              <EditableText path="launch.kicker" value={content.launch.kicker} />
             </p>
             <h2 className="mt-3 font-display text-4xl text-cream md:text-5xl">
-              {content.launch.title}
+              <EditableText path="launch.title" value={content.launch.title} />
             </h2>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-cream/75">
-              {content.launch.body}
+              <EditableText path="launch.body" value={content.launch.body} />
             </p>
           </div>
           <div className="mt-14 grid gap-7 md:grid-cols-3">
-            {content.launch.cards.map((card) => (
+            {content.launch.cards.map((card, index) => (
               <ComingSoonCard
-                key={card.title}
+                key={index}
+                index={index}
                 emoji={card.icon}
                 badge={card.badge}
                 title={card.title}
@@ -211,32 +209,22 @@ export function ColdBrew() {
             transition={{ duration: 0.8 }}
           >
             <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-              {content.availability.kicker}
+              <EditableText path="availability.kicker" value={content.availability.kicker} />
             </p>
             <h2 className="mt-3 font-display text-4xl text-espresso md:text-5xl">
-              {content.availability.title}
+              <EditableText path="availability.title" value={content.availability.title} />
             </h2>
             <p className="mt-5 text-lg text-espresso/80">
-              {fillTemplate(content.availability.body, global)}
+              <EditableText path="availability.body" value={fillTemplate(content.availability.body, global)} />
             </p>
           </motion.div>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <a
-              href={content.availability.orderButton.href || global.orderUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
-            >
-              {content.availability.orderButton.label}
-            </a>
-            <a
-              href={content.availability.directionsButton.href || global.mapsLink}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full border-2 border-espresso/30 px-7 py-3 font-semibold text-espresso transition-all hover:-translate-y-1 hover:border-espresso hover:bg-espresso/5"
-            >
-              {content.availability.directionsButton.label}
-            </a>
+            <EditableLink path="availability.orderButton" value={content.availability.orderButton}>
+              <a href={content.availability.orderButton.href || global.orderUrl} target="_blank" rel="noreferrer" className="rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick">{content.availability.orderButton.label}</a>
+            </EditableLink>
+            <EditableLink path="availability.directionsButton" value={content.availability.directionsButton}>
+              <a href={content.availability.directionsButton.href || global.mapsLink} target="_blank" rel="noreferrer" className="rounded-full border-2 border-espresso/30 px-7 py-3 font-semibold text-espresso transition-all hover:-translate-y-1 hover:border-espresso hover:bg-espresso/5">{content.availability.directionsButton.label}</a>
+            </EditableLink>
           </div>
         </div>
       </section>

@@ -1,9 +1,13 @@
 import { Reveal } from "@/components/site/Reveal";
 import { useHomeContent } from "@/lib/siteContent";
+import { EditableText } from "@/components/cms/InlineEditing";
 
 /** Endless retro ticker tape that scrolls horizontally. */
 export function Marquee() {
-  const items = useHomeContent().marquee.items.flatMap((item) => [item, "★"]);
+  const items = useHomeContent().marquee.items.flatMap((item, index) => [
+    { text: item, index },
+    { text: "★", index: -1 },
+  ]);
   const line = [...items, ...items];
   return (
     <Reveal y={0}>
@@ -14,7 +18,11 @@ export function Marquee() {
               key={i}
               className="font-groovy text-lg uppercase tracking-[0.2em] text-cream"
             >
-              {item}
+              {item.index >= 0 ? (
+                <EditableText path={`marquee.items.${item.index}`} value={item.text} />
+              ) : (
+                item.text
+              )}
             </span>
           ))}
         </div>

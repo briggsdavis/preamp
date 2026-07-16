@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { RD_RESTAURANTS, type Restaurant } from "@/data/site";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { useHomeContent } from "@/lib/siteContent";
+import { EditableLink, EditableText } from "@/components/cms/InlineEditing";
 
 const HUES = [
   "var(--color-gold)",
@@ -91,10 +92,10 @@ export function RestaurantGroup() {
           className="text-center"
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-            {content.kicker}
+            <EditableText path="restaurantGroup.kicker" value={content.kicker} />
           </p>
           <h2 className="mx-auto mt-3 max-w-2xl font-groovy text-3xl leading-tight text-espresso md:text-4xl">
-            {content.title}
+            <EditableText path="restaurantGroup.title" value={content.title} />
           </h2>
         </motion.div>
 
@@ -111,14 +112,16 @@ export function RestaurantGroup() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           className="mt-12 text-center"
         >
-          <a
-            href={content.button.href}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
-          >
-            {content.button.label}
-          </a>
+          <EditableLink path="restaurantGroup.button" value={content.button}>
+            <a
+              href={content.button.href}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
+            >
+              {content.button.label}
+            </a>
+          </EditableLink>
         </motion.div>
       </div>
     </section>

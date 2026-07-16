@@ -301,11 +301,33 @@ export function fillTemplate(value: string, global: GlobalContent): string {
 
 export function useCmsContent<K extends CmsKey>(key: K): ContentFor<K> {
   const row = useQuery(api.cms.get, { key });
+  const preview = useContext(CmsPreviewContext);
+  if (preview?.key === key) return preview.content as ContentFor<K>;
   return mergeContent(key, row?.content);
 }
 
 const GlobalContentContext = createContext<GlobalContent>(DEFAULT_GLOBAL_CONTENT);
 const HomeContentContext = createContext<HomeContent>(DEFAULT_HOME_CONTENT);
+const CmsPreviewContext = createContext<{
+  key: CmsKey;
+  content: unknown;
+} | null>(null);
+
+export function CmsContentPreviewProvider<K extends CmsKey>({
+  cmsKey,
+  content,
+  children,
+}: {
+  cmsKey: K;
+  content: ContentFor<K>;
+  children: ReactNode;
+}) {
+  return (
+    <CmsPreviewContext.Provider value={{ key: cmsKey, content }}>
+      {children}
+    </CmsPreviewContext.Provider>
+  );
+}
 
 export function GlobalContentProvider({ children }: { children: ReactNode }) {
   const content = useCmsContent("global");

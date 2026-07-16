@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { imageUrl, useHomeContent } from "@/lib/siteContent";
+import { EditableImage, EditableText } from "@/components/cms/InlineEditing";
 
 export function Intro({ showLine = true }: { showLine?: boolean }) {
   const content = useHomeContent().intro;
@@ -17,25 +18,26 @@ export function Intro({ showLine = true }: { showLine?: boolean }) {
         className="relative z-20 mx-auto max-w-3xl text-center"
       >
         <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-          {content.kicker}
+          <EditableText path="intro.kicker" value={content.kicker} />
         </p>
         <h2 className="mt-4 font-groovy text-4xl leading-tight text-espresso md:text-5xl">
-          {content.title}
+          <EditableText path="intro.title" value={content.title} />
         </h2>
         <p className="mt-6 text-lg leading-relaxed text-espresso/75">
-          {content.body}
+          <EditableText path="intro.body" value={content.body} />
         </p>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
           {content.images.map((item, index) => (
-            <img
-              key={index}
-              src={imageUrl(item)}
-              alt={item.alt}
-              loading="lazy"
-              decoding="async"
-              className="h-[17.5rem] w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
-            />
+            <EditableImage key={index} path={`intro.images.${index}`} value={item} ratio="4:3" className="h-[17.5rem] w-full">
+              <img
+                src={imageUrl(item)}
+                alt={item.alt}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
+              />
+            </EditableImage>
           ))}
         </div>
       </motion.div>

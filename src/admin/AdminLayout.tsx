@@ -102,6 +102,7 @@ export function AdminLayout() {
   const inquiryCounts = useQuery(api.inquiries.counts);
   const reviewStats = useQuery(api.reviews.stats);
   const menuPages = useQuery(api.menu.listMenuPages);
+  const isPageCanvas = ["page-home", "page-about", "page-cold-brew"].includes(selected);
 
   const nav = useMemo(
     () =>
@@ -233,18 +234,26 @@ export function AdminLayout() {
       </aside>
 
       {/* Content */}
-      <main className="flex-1 overflow-x-hidden px-6 py-8 md:px-10">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={selected}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-          >
-            <Panel selected={selected} onNavigate={setSelected} />
-          </motion.div>
-        </AnimatePresence>
+      <main
+        className={`min-w-0 flex-1 overflow-x-hidden ${
+          isPageCanvas ? "p-0" : "px-6 py-8 md:px-10"
+        }`}
+      >
+        {isPageCanvas ? (
+          <Panel selected={selected} onNavigate={setSelected} />
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selected}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <Panel selected={selected} onNavigate={setSelected} />
+            </motion.div>
+          </AnimatePresence>
+        )}
       </main>
     </div>
     </DialogProvider>

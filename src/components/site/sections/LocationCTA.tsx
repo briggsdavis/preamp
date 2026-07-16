@@ -9,6 +9,7 @@ import {
   useGlobalContent,
   useHomeContent,
 } from "@/lib/siteContent";
+import { EditableText } from "@/components/cms/InlineEditing";
 
 export function LocationCTA() {
   const track = useTrack();
@@ -28,13 +29,13 @@ export function LocationCTA() {
           transition={{ duration: 0.9 }}
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-cream/80">
-            {content.kicker}
+            <EditableText path="location.kicker" value={content.kicker} />
           </p>
           <h2 className="mt-3 font-display text-5xl leading-tight text-cream md:text-6xl">
-            {content.title}
+            <EditableText path="location.title" value={content.title} />
           </h2>
           <p className="mt-5 max-w-md text-lg text-cream/90">
-            {fillTemplate(content.body, global)}
+            <EditableText path="location.body" value={fillTemplate(content.body, global)} />
           </p>
 
           <div className="mt-7 space-y-1 text-cream">
