@@ -1,13 +1,15 @@
 import { Link } from "react-router-dom";
 
-import { NAV, SITE } from "@/data/site";
+import { NAV } from "@/data/site";
 import { RippleStripes } from "@/components/site/RippleStripes";
 import { Reveal } from "@/components/site/Reveal";
-import { InstagramIcon, TikTokIcon } from "@/components/site/SocialIcons";
+import { SocialIcon } from "@/components/site/SocialIcons";
 import { useTrack } from "@/lib/analytics";
+import { useGlobalContent } from "@/lib/siteContent";
 
 export function Footer() {
   const track = useTrack();
+  const global = useGlobalContent();
   return (
     <footer className="relative overflow-hidden bg-espresso text-cream">
       {/* Taller band with breathing room up top so the rippling ovals can
@@ -26,19 +28,19 @@ export function Footer() {
               decoding="async"
               className="h-12 w-12 object-contain"
             />
-            <p className="font-display text-3xl text-gold">Pre Amp</p>
+            <p className="font-display text-3xl text-gold">{global.businessName}</p>
           </div>
           <p className="mt-2 text-sm text-cream/70">
-            A coffee-and-vinyl listening bar. Brews & beats, all day.
+            {global.footerBlurb}
           </p>
           <a
-            href={SITE.orderUrl}
+            href={global.orderUrl}
             target="_blank"
             rel="noreferrer"
             onClick={() =>
               track("order_click", {
                 clickSource: "footer",
-                destination: SITE.orderUrl,
+                destination: global.orderUrl,
               })
             }
             className="mt-5 inline-block rounded-full bg-gold px-6 py-2.5 font-semibold text-espresso shadow-lg shadow-black/20 transition-all hover:-translate-y-0.5 hover:bg-amber"
@@ -46,39 +48,25 @@ export function Footer() {
             Order Online →
           </a>
           <div className="mt-5 flex items-center gap-3">
-            <a
-              href={SITE.instagram}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="Pre Amp on Instagram"
-              onClick={() =>
-                track("cta_click", { cta: "instagram", destination: SITE.instagram })
-              }
-              className="grid h-10 w-10 place-items-center rounded-full border border-cream/15 text-cream/80 transition-all hover:-translate-y-0.5 hover:border-gold hover:text-gold"
-            >
-              <InstagramIcon className="h-5 w-5" />
-            </a>
-            <a
-              href={SITE.tiktok}
-              target="_blank"
-              rel="noreferrer"
-              aria-label="RD Restaurants on TikTok"
-              onClick={() =>
-                track("cta_click", { cta: "tiktok", destination: SITE.tiktok })
-              }
-              className="grid h-10 w-10 place-items-center rounded-full border border-cream/15 text-cream/80 transition-all hover:-translate-y-0.5 hover:border-gold hover:text-gold"
-            >
-              <TikTokIcon className="h-5 w-5" />
-            </a>
+            {global.socials.map((social) => (
+              <a
+                key={`${social.platform}-${social.url}`}
+                href={social.url}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${global.businessName} on ${social.platform}`}
+                onClick={() => track("cta_click", { cta: social.platform, destination: social.url })}
+                className="grid h-10 w-10 place-items-center rounded-full border border-cream/15 text-cream/80 transition-all hover:-translate-y-0.5 hover:border-gold hover:text-gold"
+              >
+                <SocialIcon platform={social.platform} className="h-5 w-5" />
+              </a>
+            ))}
           </div>
-          <a
-            href={SITE.instagram}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-4 inline-block text-sm font-semibold text-amber transition-colors hover:text-gold"
-          >
-            @preamp.coffeestudio →
-          </a>
+          {global.socials[0] && (
+            <a href={global.socials[0].url} target="_blank" rel="noreferrer" className="mt-4 inline-block text-sm font-semibold text-amber transition-colors hover:text-gold">
+              {global.socials[0].label} →
+            </a>
+          )}
         </Reveal>
 
         {NAV.filter((i) => i.children).map((group, gi) => (
@@ -116,14 +104,15 @@ export function Footer() {
           <p className="font-groovy text-sm uppercase tracking-[0.2em] text-amber">
             Visit
           </p>
-          <p className="mt-3 text-sm text-cream/75">{SITE.address}</p>
-          <p className="text-sm text-cream/75">{SITE.neighborhood}</p>
-          <p className="mt-2 text-sm text-cream/75">{SITE.phone}</p>
+          <p className="mt-3 text-sm text-cream/75">{global.address}</p>
+          <p className="text-sm text-cream/75">{global.neighborhood}</p>
+          <p className="mt-2 text-sm text-cream/75">{global.phone}</p>
+          {global.email && <p className="mt-1 text-sm text-cream/75">{global.email}</p>}
         </Reveal>
       </div>
 
       <div className="relative border-t border-cream/10 py-5 text-center text-xs text-cream/50">
-        © {new Date().getFullYear()} Pre Amp Coffee Studio · Pittsburgh, PA
+        © {new Date().getFullYear()} {global.businessName} {global.tagline} · Pittsburgh, PA
       </div>
     </footer>
   );

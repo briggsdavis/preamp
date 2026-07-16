@@ -1,21 +1,10 @@
 import { Reveal } from "@/components/site/Reveal";
-
-const ITEMS = [
-  "Passenger Coffee",
-  "★",
-  "Vinyl All Day",
-  "★",
-  "Espresso · Pourover · Cold Brew",
-  "★",
-  "Focaccia Sandwiches",
-  "★",
-  "Squirrel Hill, PGH",
-  "★",
-];
+import { useHomeContent } from "@/lib/siteContent";
 
 /** Endless retro ticker tape that scrolls horizontally. */
 export function Marquee() {
-  const line = [...ITEMS, ...ITEMS];
+  const items = useHomeContent().marquee.items.flatMap((item) => [item, "★"]);
+  const line = [...items, ...items];
   return (
     <Reveal y={0}>
       <div className="overflow-hidden border-y-2 border-gold bg-terracotta py-3">

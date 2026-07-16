@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 
 import { SquiggleLine } from "@/components/site/SquiggleLine";
+import { imageUrl, useHomeContent } from "@/lib/siteContent";
 
 export function Intro({ showLine = true }: { showLine?: boolean }) {
+  const content = useHomeContent().intro;
   return (
     <section className="relative overflow-hidden px-6 py-24 md:py-32">
       {showLine && <SquiggleLine side="left" />}
@@ -15,33 +17,26 @@ export function Intro({ showLine = true }: { showLine?: boolean }) {
         className="relative z-20 mx-auto max-w-3xl text-center"
       >
         <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-          Welcome in
+          {content.kicker}
         </p>
         <h2 className="mt-4 font-groovy text-4xl leading-tight text-espresso md:text-5xl">
-          A little corner of Squirrel Hill that sounds as good as it tastes.
+          {content.title}
         </h2>
         <p className="mt-6 text-lg leading-relaxed text-espresso/75">
-          Pre Amp is part coffee studio, part listening bar. We obsess over the
-          cup, single-origin pourovers, signature espresso drinks, slow-dripped
-          cold brew, and we pair every one with the warm crackle of vinyl. Come
-          for the coffee, stay for the record that's spinning.
+          {content.body}
         </p>
 
         <div className="mt-12 grid gap-4 sm:grid-cols-2">
-          <img
-            src="/images/preampdecor4.webp"
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="h-[17.5rem] w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
-          />
-          <img
-            src="/images/preampdecor5.webp"
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="h-[17.5rem] w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
-          />
+          {content.images.map((item, index) => (
+            <img
+              key={index}
+              src={imageUrl(item)}
+              alt={item.alt}
+              loading="lazy"
+              decoding="async"
+              className="h-[17.5rem] w-full rounded-2xl object-cover shadow-lg shadow-maroon/15 ring-1 ring-espresso/10"
+            />
+          ))}
         </div>
       </motion.div>
     </section>

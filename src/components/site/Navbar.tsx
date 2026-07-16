@@ -4,9 +4,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 
-import { NAV, SITE, type NavItem, type NavLink as NavChild } from "@/data/site";
+import { NAV, type NavItem, type NavLink as NavChild } from "@/data/site";
 import { cn } from "@/lib/utils";
 import { useTrack } from "@/lib/analytics";
+import { useGlobalContent } from "@/lib/siteContent";
 
 /** Map a nav link to the analytics event it should fire, if any. */
 function trackNavChild(
@@ -112,6 +113,7 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
   const track = useTrack();
+  const global = useGlobalContent();
   const settings = useQuery(api.settings.getPublicSettings);
   const menuPages = useQuery(api.menu.listMenuPages);
 
@@ -203,7 +205,7 @@ export function Navbar() {
         <Link to="/" className="group flex items-center gap-3">
           <img
             src="/images/preamplogo.png"
-            alt={`${SITE.name} logo`}
+            alt={`${global.businessName} logo`}
             width={46}
             height={46}
             className={cn(
@@ -220,13 +222,13 @@ export function Navbar() {
             <DesktopItem key={item.label} item={item} />
           ))}
           <a
-            href={SITE.orderUrl}
+            href={global.orderUrl}
             target="_blank"
             rel="noreferrer"
             onClick={() =>
               track("order_click", {
                 clickSource: "navbar",
-                destination: SITE.orderUrl,
+                destination: global.orderUrl,
               })
             }
             className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold uppercase tracking-wide text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
@@ -316,13 +318,13 @@ export function Navbar() {
                 </div>
               ))}
               <a
-                href={SITE.orderUrl}
+                href={global.orderUrl}
                 target="_blank"
                 rel="noreferrer"
                 onClick={() =>
                   track("order_click", {
                     clickSource: "navbar",
-                    destination: SITE.orderUrl,
+                    destination: global.orderUrl,
                   })
                 }
                 className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold uppercase tracking-wide text-cream"

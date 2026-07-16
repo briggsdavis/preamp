@@ -66,6 +66,16 @@ export default defineSchema({
     giftCardEnabled: v.optional(v.boolean()),
   }),
 
+  // Structured page and global content edited in the CMS. Content is kept as
+  // JSON so each page can evolve independently without invalidating existing
+  // documents; the application owns the strongly typed defaults and merging.
+  cmsContent: defineTable({
+    key: v.string(), // "home" | "about" | "cold-brew" | "global"
+    content: v.any(),
+    version: v.number(),
+    updatedAt: v.number(),
+  }).index("by_key", ["key"]),
+
   // --- Menu -----------------------------------------------------------------
   menuPages: defineTable({
     slug: v.string(),

@@ -3,10 +3,10 @@ import { motion } from "framer-motion";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 
-import { SITE } from "@/data/site";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
 import { useTrack } from "@/lib/analytics";
+import { useGlobalContent, useHomeContent } from "@/lib/siteContent";
 
 interface FeaturedItem {
   _id: string;
@@ -50,9 +50,10 @@ const FALLBACK_FEATURED_ITEMS: FeaturedItem[] = [
 
 function FeaturedCard({ item }: { item: FeaturedItem }) {
   const track = useTrack();
+  const global = useGlobalContent();
   // Prefer the item's own Toast link; fall back to the site-wide ordering page
   // so the Best Sellers strip always has a working button.
-  const orderUrl = item.orderUrl || SITE.orderUrl;
+  const orderUrl = item.orderUrl || global.orderUrl;
   return (
     <motion.article
       whileHover={{ y: -10 }}
@@ -111,6 +112,9 @@ function BestSellersStrip({
   showLine?: boolean;
 }) {
   const trackEvent = useTrack();
+  const content = useHomeContent().featured;
+  const global = useGlobalContent();
+  const buttonUrl = content.button.href || global.orderUrl;
   const trackRef = useRef<HTMLDivElement>(null);
   // Render the list twice so the strip can wrap seamlessly.
   const loop = [...items, ...items];
@@ -195,10 +199,10 @@ function BestSellersStrip({
         className="relative z-20 mx-auto mb-12 max-w-6xl px-6 md:px-8"
       >
         <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-          Now Pouring
+          {content.kicker}
         </p>
         <h2 className="mt-3 font-groovy text-4xl text-espresso md:text-5xl">
-          Best Sellers
+          {content.title}
         </h2>
       </motion.div>
 
@@ -220,20 +224,20 @@ function BestSellersStrip({
       </div>
 
       <div className="relative z-20 mx-auto mt-12 max-w-6xl px-6 text-center md:px-8">
-        <p className="text-espresso/70">See something you like?</p>
+        <p className="text-espresso/70">{content.body}</p>
         <a
-          href={SITE.orderUrl}
+          href={buttonUrl}
           target="_blank"
           rel="noreferrer"
           onClick={() =>
             trackEvent("order_click", {
               clickSource: "featured",
-              destination: SITE.orderUrl,
+              destination: buttonUrl,
             })
           }
           className="mt-3 inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
         >
-          Order on Toast →
+          {content.button.label}
         </a>
       </div>
     </section>

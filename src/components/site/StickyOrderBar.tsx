@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-import { SITE } from "@/data/site";
 import { useTrack } from "@/lib/analytics";
+import { useGlobalContent } from "@/lib/siteContent";
 
 /**
  * A slim, mobile-only "Order" bar pinned to the bottom of the viewport. It
@@ -15,6 +15,7 @@ const DISMISS_KEY = "preamp_orderbar_dismissed"; // session-scoped
 
 export function StickyOrderBar() {
   const track = useTrack();
+  const global = useGlobalContent();
   const [scrolled, setScrolled] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
@@ -56,13 +57,13 @@ export function StickyOrderBar() {
               Order Pre Amp on Toast
             </p>
             <a
-              href={SITE.orderUrl}
+              href={global.orderUrl}
               target="_blank"
               rel="noreferrer"
               onClick={() =>
                 track("order_click", {
                   clickSource: "sticky-mobile",
-                  destination: SITE.orderUrl,
+                  destination: global.orderUrl,
                 })
               }
               className="rounded-full bg-terracotta px-5 py-2 text-sm font-semibold text-cream transition-colors hover:bg-brick"

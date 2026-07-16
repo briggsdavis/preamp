@@ -3,6 +3,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 
 interface ParallaxBannerProps {
   image: string;
+  imageAlt?: string;
   kicker?: string;
   heading: string;
   sub?: string;
@@ -11,6 +12,7 @@ interface ParallaxBannerProps {
 /** Full-bleed image band whose photo drifts against the scroll for depth. */
 export function ParallaxBanner({
   image,
+  imageAlt = "",
   kicker,
   heading,
   sub,
@@ -31,7 +33,7 @@ export function ParallaxBanner({
       <motion.div style={{ y }} className="absolute inset-0 -z-10 scale-125">
         <img
           src={image}
-          alt=""
+          alt={imageAlt}
           loading="lazy"
           decoding="async"
           className="h-full w-full object-cover"

@@ -14,8 +14,12 @@ import { Announcements } from "@/admin/sections/Announcements";
 import { Popups } from "@/admin/sections/Popups";
 import { Events } from "@/admin/sections/Events";
 import { Reviews } from "@/admin/sections/Reviews";
-import { AboutEditor } from "@/admin/sections/AboutEditor";
-import { PagePlaceholder } from "@/admin/sections/PagePlaceholder";
+import {
+  AboutEditor,
+  ColdBrewEditor,
+  HomeEditor,
+} from "@/admin/sections/PageEditors";
+import { GlobalEditor } from "@/admin/sections/GlobalEditor";
 import { SiteSettings } from "@/admin/sections/SiteSettings";
 import { Merchandise } from "@/admin/sections/Merchandise";
 
@@ -327,13 +331,13 @@ function Panel({
     case "popups":
       return <Popups />;
     case "page-home":
-      return <PagePlaceholder name="Home" />;
+      return <HomeEditor />;
     case "page-about":
       return <AboutEditor />;
     case "page-cold-brew":
-      return <PagePlaceholder name="Cold Brew" />;
+      return <ColdBrewEditor />;
     case "page-global":
-      return <PagePlaceholder name="Global / Footer / Contact" />;
+      return <GlobalEditor />;
     case "settings":
       return <SiteSettings />;
     default:

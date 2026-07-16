@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 
 import { RD_RESTAURANTS, type Restaurant } from "@/data/site";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
+import { useHomeContent } from "@/lib/siteContent";
 
 const HUES = [
   "var(--color-gold)",
@@ -76,6 +77,7 @@ function RestaurantTile({ r, i }: { r: Restaurant; i: number }) {
 
 /** "Proud to be part of..." sister-restaurant showcase at the foot of the site. */
 export function RestaurantGroup() {
+  const content = useHomeContent().restaurantGroup;
   return (
     <section className="relative overflow-hidden bg-cream-deep py-20">
       <SquiggleLine />
@@ -89,10 +91,10 @@ export function RestaurantGroup() {
           className="text-center"
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-            The Family
+            {content.kicker}
           </p>
           <h2 className="mx-auto mt-3 max-w-2xl font-groovy text-3xl leading-tight text-espresso md:text-4xl">
-            Proud to be part of Richard Deshantz's restaurant group.
+            {content.title}
           </h2>
         </motion.div>
 
@@ -110,12 +112,12 @@ export function RestaurantGroup() {
           className="mt-12 text-center"
         >
           <a
-            href="https://richarddeshantz.com/"
+            href={content.button.href}
             target="_blank"
             rel="noreferrer"
             className="inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
           >
-            Visit the restaurant group →
+            {content.button.label}
           </a>
         </motion.div>
       </div>

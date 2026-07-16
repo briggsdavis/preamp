@@ -9,9 +9,16 @@ import { Testimonials } from "@/components/site/sections/Testimonials";
 import { LocationCTA } from "@/components/site/sections/LocationCTA";
 import { RestaurantGroup } from "@/components/site/sections/RestaurantGroup";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
+import {
+  HomeContentProvider,
+  imageUrl,
+  useCmsContent,
+} from "@/lib/siteContent";
 
 export function Home() {
+  const content = useCmsContent("home");
   return (
+    <HomeContentProvider value={content}>
     <PageWrapper>
       <Hero />
       <Marquee />
@@ -30,10 +37,11 @@ export function Home() {
       </div>
 
       <ParallaxBanner
-        image="/images/preampdecor3.webp"
-        kicker="The Room"
-        heading="Records Spinning"
-        sub="A wall of album art, warm gold light, and a needle that never lifts. This is the listening bar."
+        image={imageUrl(content.roomBanner.image)}
+        imageAlt={content.roomBanner.image.alt}
+        kicker={content.roomBanner.kicker}
+        heading={content.roomBanner.title}
+        sub={content.roomBanner.body}
       />
 
       <CoffeeQuiz />
@@ -41,5 +49,6 @@ export function Home() {
       <LocationCTA />
       <RestaurantGroup />
     </PageWrapper>
+    </HomeContentProvider>
   );
 }

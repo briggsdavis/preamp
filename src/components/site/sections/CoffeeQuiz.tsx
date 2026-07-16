@@ -3,9 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useQuery } from "convex/react";
 import { api } from "@convex/_generated/api";
 
-import { QUIZ, SITE, predictDrink, type Drink } from "@/data/site";
+import { QUIZ, predictDrink, type Drink } from "@/data/site";
 import { SectionLines } from "@/components/site/SectionLines";
 import { useTrack } from "@/lib/analytics";
+import { useGlobalContent, useHomeContent } from "@/lib/siteContent";
 
 /** Normalize a drink/item name for loose matching (drop brand + punctuation). */
 function normName(s: string): string {
@@ -23,6 +24,7 @@ type MenuLookupItem = { name: string; orderUrl: string | null };
 function findItemOrder(
   drinkName: string,
   items: MenuLookupItem[],
+  fallbackUrl: string,
 ): { name: string; orderUrl: string } {
   const target = normName(drinkName);
   const match = items.find((it) => {
@@ -32,12 +34,14 @@ function findItemOrder(
   // Fall back to the site-wide ordering page so the button always works.
   return {
     name: match?.name ?? drinkName,
-    orderUrl: (match?.orderUrl || SITE.orderUrl) as string,
+    orderUrl: match?.orderUrl || fallbackUrl,
   };
 }
 
 export function CoffeeQuiz() {
   const track = useTrack();
+  const content = useHomeContent().quiz;
+  const global = useGlobalContent();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [result, setResult] = useState<Drink | null>(null);
@@ -87,14 +91,13 @@ export function CoffeeQuiz() {
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-amber">
-            The Pre Amp Oracle
+            {content.kicker}
           </p>
           <h2 className="mt-3 font-groovy text-4xl leading-tight md:text-5xl">
-            Let the bar read your mood.
+            {content.title}
           </h2>
           <p className="mt-5 max-w-md text-cream/70">
-            Four quick taps and we'll spin up the drink with your name on it.
-            (Then come let us actually make it.)
+            {content.body}
           </p>
         </motion.div>
 
@@ -172,7 +175,7 @@ export function CoffeeQuiz() {
                   {result.notes}
                 </p>
                 {(() => {
-                  const order = findItemOrder(result.name, items);
+                  const order = findItemOrder(result.name, items, global.orderUrl);
                   return (
                     <a
                       href={order.orderUrl}

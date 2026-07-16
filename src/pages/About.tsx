@@ -4,27 +4,12 @@ import { motion, useScroll, useTransform } from "framer-motion";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { RippleStripes } from "@/components/site/RippleStripes";
-
-const ABOUT_DECOR_IMAGES = [
-  {
-    src: "/images/aboutdecor1.jpg",
-    alt: "Interior detail at Pre Amp Coffee Studio",
-  },
-  {
-    src: "/images/aboutdecor2.jpg",
-    alt: "Pre Amp Coffee Studio decor detail",
-  },
-  {
-    src: "/images/aboutdecor3.jpg",
-    alt: "Coffee studio seating and decor",
-  },
-  {
-    src: "/images/aboutdecor4.jpg",
-    alt: "Analog decor at Pre Amp Coffee Studio",
-  },
-];
-
+import {
+  imageUrl,
+  useCmsContent,
+} from "@/lib/siteContent";
 export function About() {
+  const content = useCmsContent("about");
   const heroRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -42,8 +27,8 @@ export function About() {
       >
         <motion.div style={{ y: bgY }} className="absolute inset-0 -z-10 scale-110">
           <img
-            src="/images/artworkheadon.webp"
-            alt=""
+            src={imageUrl(content.hero.image)}
+            alt={content.hero.image.alt}
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover"
@@ -56,14 +41,13 @@ export function About() {
           className="relative mx-auto max-w-3xl px-6 text-center"
         >
           <p className="font-groovy text-sm uppercase tracking-[0.4em] text-cream/80">
-            Pre Amp Coffee Studio · Pittsburgh
+            {content.hero.kicker}
           </p>
           <h1 className="mt-4 font-display text-6xl text-cream drop-shadow-[0_4px_24px_rgba(0,0,0,0.4)] md:text-8xl">
-            Our Story
+            {content.hero.title}
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg text-cream/90">
-            Coffee, craft, records, and a kitchen that never sits still - a
-            listening bar in the heart of Squirrel Hill.
+            {content.hero.body}
           </p>
         </motion.div>
 
@@ -84,10 +68,10 @@ export function About() {
             className="text-center"
           >
             <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-              What We're About
+              {content.feature.kicker}
             </p>
             <h2 className="mt-3 font-display text-4xl text-espresso md:text-6xl">
-              Four Things, No Filler
+              {content.feature.title}
             </h2>
           </motion.div>
 
@@ -99,8 +83,8 @@ export function About() {
             className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-[1.75rem] border border-espresso/10 shadow-2xl shadow-maroon/20"
           >
             <img
-              src="/images/vinyl.png"
-              alt="Vinyl records at Pre Amp Coffee Studio"
+              src={imageUrl(content.feature.image)}
+              alt={content.feature.image.alt}
               loading="lazy"
               decoding="async"
               className="h-auto w-full object-cover"
@@ -123,63 +107,41 @@ export function About() {
             <div className="flex flex-col items-center text-center">
               <div className="relative h-[19.5rem] w-[19.5rem] overflow-hidden rounded-full border-4 border-gold/60 shadow-2xl shadow-maroon/25 md:h-[22.5rem] md:w-[22.5rem]">
                 <img
-                  src="/images/danny.jpg"
-                  alt="Danny Ryan, owner of Pre Amp Coffee Studio"
+                  src={imageUrl(content.owner.image)}
+                  alt={content.owner.image.alt}
                   loading="lazy"
                   decoding="async"
                   className="h-full w-full object-cover"
                 />
               </div>
               <h3 className="mt-6 font-display text-3xl text-espresso">
-                Danny Ryan
+                {content.owner.name}
               </h3>
               <p className="mt-1 font-groovy text-sm uppercase tracking-[0.25em] text-terracotta">
-                Restaurant Owner & Operator
+                {content.owner.role}
               </p>
             </div>
 
             {/* Right: introduction */}
             <div>
               <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-                Meet the Owner
+                {content.owner.kicker}
               </p>
               <h2 className="mt-3 font-display text-3xl leading-tight text-espresso md:text-4xl">
-                A Decade in the Making
+                {content.owner.title}
               </h2>
               <div className="mt-5 space-y-4 text-base text-espresso/80">
-                <p>
-                  After dedicating a decade to working in restaurants, cafes, and
-                  a roastery in New York City, I finally decided to pack up my
-                  family and embark on a new chapter: opening my own cafe in
-                  Pittsburgh in 2020. However, the pandemic had other plans for
-                  us, and, in a twist of fate, things worked out better than I
-                  could have ever imagined or anticipated.
-                </p>
-                <p>
-                  While seeking work during the pandemic's uncertainty, I had the
-                  fortune of meeting Tolga and Rick. They brought me on as their
-                  coffee lead at Coop De Ville, and from there, the rest is
-                  history. Their unwavering trust led to a partnership focused on
-                  creating the ultimate coffee experience in Pittsburgh, a dream I
-                  couldn't have achieved on my own. With their incredible support
-                  and belief, I've been able to build and realize my vision:
-                  establishing what I believe will be the best coffee shop in
-                  Pittsburgh.
-                </p>
-                <p>
-                  My passion for coffee ignited in 2009, sparked by a $6 cup of
-                  coffee on a Clover machine from Cafe Grumpy in NYC. I was
-                  utterly captivated and surprised by the complexity, rich
-                  flavors, and compelling stories held within each bean.
-                </p>
+                {content.owner.paragraphs.map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
               </div>
             </div>
           </motion.div>
 
           <div className="mx-auto mt-14 grid max-w-7xl grid-cols-2 gap-4 md:-mx-24 md:grid-cols-4 md:gap-5">
-            {ABOUT_DECOR_IMAGES.map((image, index) => (
+            {content.owner.decorImages.map((image, index) => (
               <motion.div
-                key={image.src}
+                key={`${imageUrl(image)}-${index}`}
                 initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-40px" }}
@@ -187,7 +149,7 @@ export function About() {
                 className="aspect-square overflow-hidden rounded-[1.5rem] border border-sand/80 bg-cream-deep shadow-lg shadow-maroon/10"
               >
                 <img
-                  src={image.src}
+                  src={imageUrl(image)}
                   alt={image.alt}
                   loading="lazy"
                   decoding="async"
@@ -212,30 +174,29 @@ export function About() {
           className="relative mx-auto max-w-2xl px-6"
         >
           <h2 className="font-display text-5xl text-cream md:text-6xl">
-            Come Hang With Us
+            {content.closing.title}
           </h2>
           <p className="mt-4 text-lg text-cream/90">
-            5840 Forbes Ave, Squirrel Hill. Pull up a stool and tell us what's
-            spinning.
+            {content.closing.body}
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
             <Link
-              to="/contact"
+              to={content.closing.primary.href}
               className="rounded-full bg-cream px-7 py-3 font-semibold text-terracotta shadow-lg transition-all hover:-translate-y-1 hover:bg-gold hover:text-espresso"
             >
-              Get In Touch
+              {content.closing.primary.label}
             </Link>
             <Link
-              to="/contact?topic=vinyl-request&form=open"
+              to={content.closing.vinyl.href}
               className="rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg transition-all hover:-translate-y-1 hover:bg-amber"
             >
-              Request Vinyl
+              {content.closing.vinyl.label}
             </Link>
             <Link
-              to="/menu/coffee"
+              to={content.closing.secondary.href}
               className="rounded-full border-2 border-cream/70 px-7 py-3 font-semibold text-cream transition-all hover:-translate-y-1 hover:border-cream hover:bg-cream/10"
             >
-              See the Menu
+              {content.closing.secondary.label}
             </Link>
           </div>
         </motion.div>

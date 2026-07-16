@@ -6,6 +6,7 @@ import { api } from "@convex/_generated/api";
 import { TESTIMONIALS } from "@/data/site";
 import { SquiggleLine } from "@/components/site/SquiggleLine";
 import { ErrorBoundary } from "@/components/site/ErrorBoundary";
+import { useHomeContent } from "@/lib/siteContent";
 
 interface Slide {
   quote: string;
@@ -45,6 +46,7 @@ function FeaturedTestimonials() {
 }
 
 function TestimonialsView({ slides }: { slides: Slide[] }) {
+  const content = useHomeContent().reviews;
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
 
@@ -72,10 +74,10 @@ function TestimonialsView({ slides }: { slides: Slide[] }) {
           className="text-center"
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-            On the record
+            {content.kicker}
           </p>
           <h2 className="mt-3 font-groovy text-4xl text-espresso md:text-5xl">
-            Reviews
+            {content.title}
           </h2>
         </motion.div>
 

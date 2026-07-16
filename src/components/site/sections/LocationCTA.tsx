@@ -1,13 +1,19 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
-import { SITE } from "@/data/site";
 import { RippleStripes } from "@/components/site/RippleStripes";
 import { MapEmbed } from "@/components/site/MapEmbed";
 import { useTrack } from "@/lib/analytics";
+import {
+  fillTemplate,
+  useGlobalContent,
+  useHomeContent,
+} from "@/lib/siteContent";
 
 export function LocationCTA() {
   const track = useTrack();
+  const content = useHomeContent().location;
+  const global = useGlobalContent();
   return (
     <section id="visit" className="relative overflow-hidden bg-terracotta">
       <div className="absolute inset-0 opacity-25">
@@ -22,19 +28,18 @@ export function LocationCTA() {
           transition={{ duration: 0.9 }}
         >
           <p className="font-groovy text-sm uppercase tracking-[0.35em] text-cream/80">
-            Come hang
+            {content.kicker}
           </p>
           <h2 className="mt-3 font-display text-5xl leading-tight text-cream md:text-6xl">
-            Find Us
+            {content.title}
           </h2>
           <p className="mt-5 max-w-md text-lg text-cream/90">
-            Tucked into {SITE.neighborhood}. Pull up, grab a stool, and tell us
-            what's spinning.
+            {fillTemplate(content.body, global)}
           </p>
 
           <div className="mt-7 space-y-1 text-cream">
-            <p className="text-lg font-semibold">{SITE.address}</p>
-            <p className="text-cream/85">{SITE.phone}</p>
+            <p className="text-lg font-semibold">{global.address}</p>
+            <p className="text-cream/85">{global.phone}</p>
           </div>
 
           <div className="mt-6 rounded-2xl bg-espresso/20 p-5 backdrop-blur-sm">
@@ -42,7 +47,7 @@ export function LocationCTA() {
               Hours
             </p>
             <ul className="mt-3 space-y-1.5">
-              {SITE.hours.map((h) => (
+              {global.hours.map((h) => (
                 <li
                   key={h.day}
                   className="flex justify-between gap-6 text-sm text-cream/90"
@@ -56,13 +61,13 @@ export function LocationCTA() {
 
           <div className="mt-7 flex flex-wrap gap-3">
             <a
-              href={SITE.orderUrl}
+              href={global.orderUrl}
               target="_blank"
               rel="noreferrer"
               onClick={() =>
                 track("order_click", {
                   clickSource: "location",
-                  destination: SITE.orderUrl,
+                  destination: global.orderUrl,
                 })
               }
               className="inline-block rounded-full bg-espresso px-7 py-3 font-semibold text-cream shadow-lg transition-all hover:-translate-y-1 hover:bg-maroon"
@@ -70,13 +75,13 @@ export function LocationCTA() {
               Order Ahead →
             </a>
             <a
-              href={SITE.mapsLink}
+              href={global.mapsLink}
               target="_blank"
               rel="noreferrer"
               onClick={() =>
                 track("cta_click", {
                   cta: "directions",
-                  destination: SITE.mapsLink,
+                  destination: global.mapsLink,
                 })
               }
               className="inline-block rounded-full bg-cream px-7 py-3 font-semibold text-terracotta shadow-lg transition-all hover:-translate-y-1 hover:bg-gold hover:text-espresso"
@@ -116,7 +121,7 @@ export function LocationCTA() {
         >
           <MapEmbed
             title="Pre Amp Coffee Studio location map"
-            src={SITE.mapsEmbed}
+            src={global.mapsEmbed}
             className="h-full min-h-[420px] w-full"
           />
         </motion.div>

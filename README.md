@@ -15,8 +15,9 @@ effects, and animated page transitions.
   featured-drinks carousel, parallax ambience banners, an interactive
   coffee-prediction quiz, an auto-advancing vertical testimonials carousel,
   and a location section with a Google Maps embed.
-- **Everything else** (menu, about, contact, retail, events, gift cards, …):
-  renders a themed "Not Brewed Yet" placeholder with a button back home.
+- **Menu, About, Contact, Retail, Cold Brew, Events, and Hiring** are fully
+  routed public pages. Menu-item detail routes open as shareable modal pages;
+  unknown routes retain the themed "Not Brewed Yet" fallback.
 
 ## Tech stack
 
@@ -93,7 +94,13 @@ admin dashboard at **`/admin`**.
   aggregates by an hourly cron (`convex/crons.ts`). To preview the Overview
   before real traffic arrives, run `analytics:seedDemo` from the Convex
   dashboard's function runner.
-- **Page Editor** (Home / About / Global) - placeholders, not yet built.
+- **Page Editor** (Home / About / Cold Brew / Global) - structured visual
+  editors for the three designed pages, with live section previews, fixed image
+  ratios, Convex file uploads, alt text, unsaved-change protection, and an
+  explicit Save Changes action that publishes immediately. The Global editor
+  manages shared business details, address, hours, maps, ordering link, footer
+  copy, and repeatable social accounts. Menu items and featured reviews stay in
+  their dedicated admin sections instead of being duplicated here.
 - **Menu** (Coffee / Food) - sections, items, item images, optional dietary tags
   (curated + custom, each with its own name/emoji/color), section moves, and a
   per-menu PDF. Edits go live on `/menu/coffee` and `/menu/food` immediately.
@@ -143,6 +150,9 @@ from the Convex dashboard, or just re-save each item).
 ## Customizing the vibe
 
 - **Colors:** `@theme` block in `src/styles/index.css`
-- **Content** (drinks, reviews, hours, nav, quiz): `src/data/site.ts`
-- **Imagery:** hero/parallax photos are Unsplash URLs in `Hero.tsx` /
-  `Home.tsx` - swap in real Pre Amp photos when ready.
+- **CMS defaults:** `src/lib/siteContent.tsx` supplies the public fallback until
+  a page is saved from `/admin`; saved records live in Convex `cmsContent`.
+- **Static supporting data** (quiz questions and restaurant-group tiles):
+  `src/data/site.ts`. Menu items and featured reviews come from Convex.
+- **Imagery:** page photography is uploaded through the visual page editors;
+  each slot shows its required aspect ratio and recommended dimensions.

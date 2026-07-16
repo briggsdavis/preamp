@@ -4,17 +4,19 @@ import { useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import { useLocation } from "react-router-dom";
 
-import { SITE } from "@/data/site";
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { RippleStripes } from "@/components/site/RippleStripes";
 import { MapEmbed } from "@/components/site/MapEmbed";
 import { CONTACT_TOPICS, type ContactTopic } from "@/lib/contactTopics";
+import { SocialIcon } from "@/components/site/SocialIcons";
+import { useGlobalContent } from "@/lib/siteContent";
 
 /** Shared field styling for the cream-on-white inputs used across the form. */
 const fieldClass =
   "w-full rounded-xl border-2 border-sand bg-white px-4 py-3 text-espresso placeholder:text-espresso/55 outline-none transition-colors focus:border-gold";
 
 export function Contact() {
+  const global = useGlobalContent();
   const location = useLocation();
   const requestedTopic = useMemo(() => {
     const params = new URLSearchParams(location.search);
@@ -82,7 +84,7 @@ export function Contact() {
 
               <p className="mt-8 max-w-md text-lg text-cream/90">
                 Pull up to the bar, send a note, or just come hang. Tucked into{" "}
-                {SITE.neighborhood}, we'd love to hear what's spinning for you.
+                {global.neighborhood}, we'd love to hear what's spinning for you.
               </p>
 
               <div className="mt-9 space-y-6">
@@ -91,7 +93,7 @@ export function Contact() {
                     Visit
                   </p>
                   <p className="mt-2 text-lg font-semibold text-cream">
-                    {SITE.address}
+                    {global.address}
                   </p>
                 </div>
 
@@ -100,10 +102,10 @@ export function Contact() {
                     Call
                   </p>
                   <a
-                    href={`tel:${SITE.phone.replace(/[^0-9+]/g, "")}`}
+                    href={`tel:${global.phone.replace(/[^0-9+]/g, "")}`}
                     className="mt-2 block text-lg font-semibold text-cream transition-colors hover:text-gold"
                   >
-                    {SITE.phone}
+                    {global.phone}
                   </a>
                 </div>
 
@@ -112,7 +114,7 @@ export function Contact() {
                     Hours
                   </p>
                   <ul className="mt-3 space-y-1.5">
-                    {SITE.hours.map((h) => (
+                    {global.hours.map((h) => (
                       <li
                         key={h.day}
                         className="flex justify-between gap-6 text-sm text-cream/90"
@@ -124,23 +126,17 @@ export function Contact() {
                   </ul>
                 </div>
 
-                <div className="flex gap-4">
-                  <a
-                    href={SITE.instagram}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full border-2 border-cream/50 px-5 py-2 text-sm font-semibold text-cream transition-all hover:-translate-y-0.5 hover:border-cream hover:bg-cream/10"
-                  >
-                    Instagram
-                  </a>
-                  <a
-                    href={SITE.tiktok}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-full border-2 border-cream/50 px-5 py-2 text-sm font-semibold text-cream transition-all hover:-translate-y-0.5 hover:border-cream hover:bg-cream/10"
-                  >
-                    TikTok
-                  </a>
+                {global.email && (
+                  <div><p className="font-groovy text-sm uppercase tracking-[0.25em] text-cream/70">Email</p><a href={`mailto:${global.email}`} className="mt-2 block text-lg font-semibold text-cream hover:text-gold">{global.email}</a></div>
+                )}
+
+                <div className="flex flex-wrap gap-3">
+                  {global.socials.map((social) => (
+                    <a key={`${social.platform}-${social.url}`} href={social.url} target="_blank" rel="noreferrer" className="flex items-center gap-2 rounded-full border-2 border-cream/50 px-4 py-2 text-sm font-semibold text-cream transition-all hover:-translate-y-0.5 hover:border-cream hover:bg-cream/10">
+                      <SocialIcon platform={social.platform} className="h-4 w-4" />
+                      {social.label}
+                    </a>
+                  ))}
                 </div>
               </div>
             </motion.div>
@@ -305,15 +301,15 @@ export function Contact() {
               Come Find Us
             </h2>
             <p className="mt-5 max-w-md text-lg text-cream/85">
-              We're right in the heart of {SITE.neighborhood}. Street parking is
+              We're right in the heart of {global.neighborhood}. Street parking is
               easy and the records are always on. Swing by, grab a stool, and
               stay a while.
             </p>
             <p className="mt-6 text-lg font-semibold text-cream">
-              {SITE.address}
+              {global.address}
             </p>
             <a
-              href={SITE.mapsLink}
+              href={global.mapsLink}
               target="_blank"
               rel="noreferrer"
               className="mt-7 inline-block rounded-full bg-cream px-7 py-3 font-semibold text-espresso shadow-lg transition-all hover:-translate-y-1 hover:bg-gold"
@@ -331,7 +327,7 @@ export function Contact() {
           >
             <MapEmbed
               title="Pre Amp Coffee Studio location map"
-              src={SITE.mapsEmbed}
+              src={global.mapsEmbed}
               className="h-full min-h-[360px] w-full"
             />
           </motion.div>

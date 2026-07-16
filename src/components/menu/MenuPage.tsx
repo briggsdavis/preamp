@@ -15,8 +15,8 @@ import type { Id } from "@convex/_generated/dataModel";
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { useTrack } from "@/lib/analytics";
 import { useSeo } from "@/lib/seo";
-import { SITE } from "@/data/site";
 import type { MenuItem, MenuSection } from "@/data/menu";
+import { useGlobalContent } from "@/lib/siteContent";
 
 /** A resolved dietary tag (label + emoji icon + color) for rendering pills. */
 export interface TagInfo {
@@ -626,6 +626,7 @@ export function MenuPage({
   /** Optional highlighted callout shown under the page header (e.g. a promo). */
   banner?: ReactNode;
 }) {
+  const global = useGlobalContent();
   const track = useTrack();
   const navigate = useNavigate();
   const tagCatalog = useQuery(api.dietaryTags.list);
@@ -697,7 +698,7 @@ export function MenuPage({
   useSeo(
     openItem && routed
       ? {
-          title: `${openItem.name} · ${title} · ${SITE.name} ${SITE.tagline}`,
+          title: `${openItem.name} · ${title} · ${global.businessName} ${global.tagline}`,
           description: openItem.description,
           canonicalPath: `${base}/${openItem.slug ?? ""}`,
           image: openItem.image,
@@ -741,13 +742,13 @@ export function MenuPage({
               <div className="mt-6 flex flex-wrap justify-center gap-3">
                 {orderEnabled && (
                   <a
-                    href={SITE.orderUrl}
+                    href={global.orderUrl}
                     target="_blank"
                     rel="noreferrer"
                     onClick={() =>
                       track("order_click", {
                         clickSource: "menu-header",
-                        destination: SITE.orderUrl,
+                        destination: global.orderUrl,
                       })
                     }
                     className="inline-block rounded-full bg-terracotta px-6 py-2.5 font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick"

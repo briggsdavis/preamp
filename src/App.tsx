@@ -39,8 +39,8 @@ function MenuUnavailable() {
 }
 
 /**
- * Route table for Pre Amp Coffee Studio. Only the home page is built out;
- * every other route renders the friendly "Not Brewed Yet" placeholder.
+ * Route table for Pre Amp Coffee Studio. Public page visibility is controlled
+ * by site settings; unknown routes use the friendly fallback page.
  * Pages render instantly on navigation; reveal motion is scroll-driven only.
  */
 export default function App() {

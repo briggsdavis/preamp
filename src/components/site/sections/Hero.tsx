@@ -1,12 +1,15 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
-import { SITE } from "@/data/site";
 import { useTrack } from "@/lib/analytics";
+import { imageUrl, useGlobalContent, useHomeContent } from "@/lib/siteContent";
 
 export function Hero() {
   const ref = useRef<HTMLDivElement>(null);
   const track = useTrack();
+  const content = useHomeContent().hero;
+  const global = useGlobalContent();
+  const orderUrl = content.orderButton.href || global.orderUrl;
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start start", "end start"],
@@ -25,8 +28,8 @@ export function Hero() {
       {/* Photographic ambience, slow parallax */}
       <motion.div style={{ y: bgY }} className="absolute inset-0 -z-20 scale-110">
         <img
-          src="/images/preampdecor.webp"
-          alt=""
+          src={imageUrl(content.background)}
+          alt={content.background.alt}
           decoding="async"
           className="h-full w-full object-cover"
         />
@@ -41,8 +44,8 @@ export function Hero() {
         {/* LCP element - render immediately, no entrance animation. Explicit
             dimensions reserve the aspect ratio so it never shifts layout. */}
         <img
-          src="/images/heroprimary.png"
-          alt={SITE.name}
+          src={imageUrl(content.logo)}
+          alt={content.logo.alt || global.businessName}
           width={1400}
           height={881}
           fetchPriority="high"
@@ -51,23 +54,23 @@ export function Hero() {
         />
 
         <h1 className="mt-6 max-w-2xl font-groovy text-lg uppercase tracking-[0.18em] text-cream/90 md:text-xl">
-          Coffee studio &amp; vinyl listening bar, Squirrel Hill, Pittsburgh
+          {content.tagline}
         </h1>
 
         <div className="mt-9 flex flex-wrap justify-center gap-4">
           <a
-            href={SITE.orderUrl}
+            href={orderUrl}
             target="_blank"
             rel="noreferrer"
             onClick={() =>
               track("order_click", {
                 clickSource: "hero",
-                destination: SITE.orderUrl,
+                destination: orderUrl,
               })
             }
             className="rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/30 transition-all hover:-translate-y-1 hover:bg-brick"
           >
-            Order Now
+            {content.orderButton.label}
           </a>
         </div>
       </motion.div>
