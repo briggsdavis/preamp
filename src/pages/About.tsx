@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 
 import { PageWrapper } from "@/components/site/PageWrapper";
 import { RippleStripes } from "@/components/site/RippleStripes";
+import { ZigzagConnectorLine } from "@/components/site/SquiggleLine";
 import {
   EditableImage,
   EditableLink,
@@ -18,6 +19,8 @@ export function About() {
   const content = useCmsContent("about");
   const editing = useInlineEditingMode();
   const heroRef = useRef<HTMLDivElement>(null);
+  const coffeeCardRef = useRef<HTMLElement>(null);
+  const drinksCardRef = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -60,38 +63,6 @@ export function About() {
         {/* waveform shimmer along the bottom of the hero */}
         <div className="absolute inset-x-0 bottom-0 h-24 opacity-30">
           <RippleStripes count={120} fade="none" variant="wave" gap={3} />
-        </div>
-      </section>
-
-      {/* About feature image */}
-      <section className="relative overflow-hidden bg-cream-deep py-24 md:py-32">
-        <div className="relative mx-auto max-w-7xl px-6 md:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="text-center"
-          >
-            <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
-              <EditableText path="feature.kicker" value={content.feature.kicker} />
-            </p>
-            <h2 className="mt-3 font-display text-4xl text-espresso md:text-6xl">
-              <EditableText path="feature.title" value={content.feature.title} />
-            </h2>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7 }}
-            className="mx-auto mt-14 max-w-5xl overflow-hidden rounded-[1.75rem] border border-espresso/10 shadow-2xl shadow-maroon/20"
-          >
-            <EditableImage path="feature.image" value={content.feature.image} ratio="16:9" className="w-full">
-              <img src={imageUrl(content.feature.image)} alt={content.feature.image.alt} loading="lazy" decoding="async" className="h-auto w-full object-cover" />
-            </EditableImage>
-          </motion.div>
         </div>
       </section>
 
@@ -138,22 +109,96 @@ export function About() {
             </div>
           </motion.div>
 
-          <div className="mx-auto mt-14 grid max-w-7xl grid-cols-2 gap-4 md:-mx-24 md:grid-cols-4 md:gap-5">
-            {content.owner.decorImages.map((image, index) => (
-              <motion.div
-                key={`${imageUrl(image)}-${index}`}
-                initial={{ opacity: 0, y: 22 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.65, delay: index * 0.08 }}
-                className="aspect-square overflow-hidden rounded-[1.5rem] border border-sand/80 bg-cream-deep shadow-lg shadow-maroon/10"
-              >
-                <EditableImage path={`owner.decorImages.${index}`} value={image} ratio="1:1" className="h-full w-full">
-                  <img src={imageUrl(image)} alt={image.alt} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                </EditableImage>
-              </motion.div>
-            ))}
+        </div>
+      </section>
+
+      {/* Four things - connected image zigzag */}
+      <section className="relative overflow-hidden bg-cream-deep py-24 md:py-32">
+        <div className="relative mx-auto max-w-7xl px-4 md:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="text-center"
+          >
+            <p className="font-groovy text-sm uppercase tracking-[0.35em] text-terracotta">
+              <EditableText path="feature.kicker" value={content.feature.kicker} />
+            </p>
+            <h2 className="mt-3 font-display text-4xl text-espresso md:text-6xl">
+              <EditableText path="feature.title" value={content.feature.title} />
+            </h2>
+          </motion.div>
+
+          <div className="relative mt-12 aspect-[5/2] w-full md:mt-16">
+            <ZigzagConnectorLine
+              startTarget={coffeeCardRef}
+              endTarget={drinksCardRef}
+            />
+            {content.feature.images.slice(0, 4).map((image, index) => {
+              const labels = ["Coffee", "Food", "Vinyl", "Drinks"];
+              const left = ["left-0", "left-[25.5%]", "left-[51%]", "left-[76.5%]"];
+              const top = index % 2 === 0 ? "top-[42%]" : "top-[2%]";
+              return (
+                <motion.figure
+                  ref={
+                    index === 0
+                      ? coffeeCardRef
+                      : index === 3
+                        ? drinksCardRef
+                        : undefined
+                  }
+                  key={`${imageUrl(image)}-${index}`}
+                  initial={{ opacity: 0, y: index % 2 === 0 ? 24 : -24 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.65, delay: index * 0.1 }}
+                  className={`absolute z-10 aspect-square w-[23.5%] overflow-hidden rounded-xl border-2 border-cream bg-espresso shadow-xl shadow-maroon/20 md:rounded-2xl ${left[index]} ${top}`}
+                >
+                  <EditableImage
+                    path={`feature.images.${index}`}
+                    value={image}
+                    ratio="1:1"
+                    className="h-full w-full"
+                  >
+                    <img
+                      src={imageUrl(image)}
+                      alt={image.alt}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                    />
+                  </EditableImage>
+                  <figcaption className="absolute inset-x-0 bottom-0 bg-espresso/80 px-1 py-1 text-center font-groovy text-[0.55rem] uppercase text-cream backdrop-blur-sm sm:text-xs md:px-3 md:py-2 md:text-sm">
+                    {labels[index]}
+                  </figcaption>
+                </motion.figure>
+              );
+            })}
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.7 }}
+            className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-[1.75rem] border border-espresso/10 shadow-2xl shadow-maroon/20 md:mt-24"
+          >
+            <EditableImage
+              path="feature.image"
+              value={content.feature.image}
+              ratio="16:9"
+              className="w-full"
+            >
+              <img
+                src={imageUrl(content.feature.image)}
+                alt={content.feature.image.alt}
+                loading="lazy"
+                decoding="async"
+                className="h-auto w-full object-cover"
+              />
+            </EditableImage>
+          </motion.div>
         </div>
       </section>
 

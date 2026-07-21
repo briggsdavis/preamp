@@ -1,7 +1,8 @@
-import { useRef, useState, type FormEvent } from "react";
+import { useRef, useState, type DragEvent, type FormEvent } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { GripVertical } from "lucide-react";
 
 import { field, label, btn, Modal } from "@/admin/ui";
 import { useDialogs } from "@/admin/dialogs";
@@ -45,12 +46,45 @@ export function Merchandise() {
   const renameSection = useMutation(api.merch.renameSection);
   const deleteSection = useMutation(api.merch.deleteSection);
   const reorderSections = useMutation(api.merch.reorderSections);
+  const reorderItems = useMutation(api.merch.reorderItems).withOptimisticUpdate(
+    (store, args) => {
+      const current = store.getQuery(api.merch.adminList, {});
+      if (!current) return;
+      const items = new Map(
+        current.flatMap((section) =>
+          section.items.map((item) => [item._id, item] as const),
+        ),
+      );
+      store.setQuery(
+        api.merch.adminList,
+        {},
+        current.map((section) => ({
+          ...section,
+          items: args.positions
+            .filter((position) => position.sectionId === section._id)
+            .sort((a, b) => a.order - b.order)
+            .flatMap((position) => {
+              const item = items.get(position.itemId);
+              return item
+                ? [{ ...item, sectionId: position.sectionId, order: position.order }]
+                : [];
+            }),
+        })),
+      );
+    },
+  );
   const deleteItem = useMutation(api.merch.deleteItem);
   const setArchived = useMutation(api.merch.setArchived);
   const [editing, setEditing] = useState<{
     item: MerchItem | null;
     sectionId: Id<"merchSections">;
   } | null>(null);
+  const draggedItem = useRef<Id<"merchItems"> | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    sectionId: Id<"merchSections">;
+    index: number;
+  } | null>(null);
+  const [reorderError, setReorderError] = useState<string | null>(null);
 
   async function addSection() {
     const title = await prompt({
@@ -67,6 +101,67 @@ export function Merchandise() {
     const ids = sections.map((section) => section._id);
     [ids[index], ids[next]] = [ids[next], ids[index]];
     await reorderSections({ sectionIds: ids });
+  }
+
+  function startItemDrag(event: DragEvent, itemId: Id<"merchItems">) {
+    draggedItem.current = itemId;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", itemId);
+  }
+
+  async function dropItem(
+    targetSectionId: Id<"merchSections">,
+    targetIndex: number,
+  ) {
+    if (!sections) return;
+    const itemId = draggedItem.current;
+    if (!itemId) return;
+
+    const next = sections.map((section) => ({
+      ...section,
+      items: [...section.items],
+    }));
+    let moved: MerchItem | undefined;
+    let sourceSectionId: Id<"merchSections"> | undefined;
+    let sourceIndex = -1;
+    for (const section of next) {
+      const index = section.items.findIndex((item) => item._id === itemId);
+      if (index === -1) continue;
+      sourceSectionId = section._id;
+      sourceIndex = index;
+      [moved] = section.items.splice(index, 1);
+      break;
+    }
+    const target = next.find((section) => section._id === targetSectionId);
+    if (!moved || !target) return;
+    if (sourceSectionId === targetSectionId && sourceIndex < targetIndex) {
+      targetIndex -= 1;
+    }
+    const insertionIndex = Math.max(0, Math.min(targetIndex, target.items.length));
+    target.items.splice(insertionIndex, 0, {
+      ...moved,
+      sectionId: targetSectionId,
+    });
+
+    setReorderError(null);
+    try {
+      await reorderItems({
+        positions: next.flatMap((section) =>
+          section.items.map((item, order) => ({
+            itemId: item._id,
+            sectionId: section._id,
+            order,
+          })),
+        ),
+      });
+    } catch (error) {
+      setReorderError(
+        error instanceof Error ? error.message : "Couldn't save the new merch order.",
+      );
+    } finally {
+      draggedItem.current = null;
+      setDropTarget(null);
+    }
   }
 
   return (
@@ -88,6 +183,12 @@ export function Merchandise() {
             No merch sections yet. Add a section like T-Shirts or Hats to start.
           </p>
         </div>
+      )}
+
+      {reorderError && (
+        <p className="mt-5 rounded-lg border border-brick/30 bg-brick/10 px-4 py-3 text-sm font-semibold text-brick">
+          {reorderError}
+        </p>
       )}
 
       <div className="mt-8 space-y-8">
@@ -153,14 +254,62 @@ export function Merchandise() {
               </div>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {section.items.map((item) => (
+            <div
+              className={`mt-4 grid min-h-24 gap-3 rounded-lg sm:grid-cols-2 lg:grid-cols-3 ${
+                dropTarget?.sectionId === section._id &&
+                dropTarget.index === section.items.length
+                  ? "bg-gold/10 outline outline-2 outline-dashed outline-gold"
+                  : ""
+              }`}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+                setDropTarget({
+                  sectionId: section._id,
+                  index: section.items.length,
+                });
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                void dropItem(section._id, section.items.length);
+              }}
+            >
+              {section.items.map((item, itemIndex) => (
                 <div
                   key={item._id}
-                  className={`flex gap-3 rounded-xl border border-sand bg-white p-3 ${
+                  draggable
+                  onDragStart={(event) => startItemDrag(event, item._id)}
+                  onDragEnd={() => {
+                    draggedItem.current = null;
+                    setDropTarget(null);
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.dataTransfer.dropEffect = "move";
+                    setDropTarget({ sectionId: section._id, index: itemIndex });
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void dropItem(section._id, itemIndex);
+                  }}
+                  className={`flex cursor-grab gap-2 rounded-xl border bg-white p-3 transition-[border-color,box-shadow,opacity] active:cursor-grabbing ${
                     item.archived ? "opacity-60" : ""
+                  } ${
+                    dropTarget?.sectionId === section._id &&
+                    dropTarget.index === itemIndex
+                      ? "border-gold shadow-[0_0_0_2px_var(--color-gold)]"
+                      : "border-sand"
                   }`}
                 >
+                  <span
+                    className="mt-5 grid h-7 w-5 shrink-0 place-items-center text-espresso/35"
+                    title={`Drag ${item.title} to reorder`}
+                    aria-label={`Drag ${item.title} to reorder`}
+                  >
+                    <GripVertical className="h-5 w-5" />
+                  </span>
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
                     {item.image && (
                       <img

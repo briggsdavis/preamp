@@ -46,7 +46,12 @@ export type HomeContent = {
 
 export type AboutContent = {
   hero: { image: CmsImage; kicker: string; title: string; body: string };
-  feature: { kicker: string; title: string; image: CmsImage };
+  feature: {
+    kicker: string;
+    title: string;
+    image: CmsImage;
+    images: CmsImage[];
+  };
   owner: {
     image: CmsImage;
     name: string;
@@ -190,6 +195,12 @@ export const DEFAULT_ABOUT_CONTENT: AboutContent = {
     kicker: "What We're About",
     title: "Four Things, No Filler",
     image: image("/images/vinyl.png", "Vinyl records at Pre Amp Coffee Studio"),
+    images: [
+      image("/images/menu-coffee.webp", "Coffee at Pre Amp Coffee Studio"),
+      image("/images/menu-sandwich.webp", "Food at Pre Amp Coffee Studio"),
+      image("/images/eventvinyls.webp", "Vinyl records at Pre Amp Coffee Studio"),
+      image("/images/menu-coffeecheers.webp", "Crafted drinks at Pre Amp Coffee Studio"),
+    ],
   },
   owner: {
     image: image("/images/danny.jpg", "Danny Ryan, owner of Pre Amp Coffee Studio"),

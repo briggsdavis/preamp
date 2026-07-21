@@ -489,6 +489,54 @@ export const moveItem = mutation({
   },
 });
 
+/** Persist a complete item order, including moves between sections. */
+export const reorderItems = mutation({
+  args: {
+    menu: menuKind,
+    positions: v.array(
+      v.object({
+        itemId: v.id("menuItems"),
+        sectionId: v.id("menuSections"),
+        order: v.number(),
+      }),
+    ),
+  },
+  handler: async (ctx, { menu, positions }) => {
+    await requireAdmin(ctx);
+
+    const itemIds = new Set(positions.map(({ itemId }) => itemId));
+    if (itemIds.size !== positions.length) {
+      throw new Error("Each menu item can only appear once in a reorder.");
+    }
+
+    const sectionIds = [...new Set(positions.map(({ sectionId }) => sectionId))];
+    const sections = await Promise.all(sectionIds.map((id) => ctx.db.get(id)));
+    if (sections.some((section) => !section || section.menu !== menu)) {
+      throw new Error("Items can only be reordered within this menu page.");
+    }
+
+    const [items, currentItems] = await Promise.all([
+      Promise.all(positions.map(({ itemId }) => ctx.db.get(itemId))),
+      ctx.db
+        .query("menuItems")
+        .withIndex("by_menu", (q) => q.eq("menu", menu))
+        .collect(),
+    ]);
+    if (
+      items.some((item) => !item || item.menu !== menu) ||
+      currentItems.length !== positions.length
+    ) {
+      throw new Error("One or more menu items could not be reordered.");
+    }
+
+    await Promise.all(
+      positions.map(({ itemId, sectionId, order }) =>
+        ctx.db.patch(itemId, { sectionId, menu, order }),
+      ),
+    );
+  },
+});
+
 export const deleteItem = mutation({
   args: { itemId: v.id("menuItems") },
   handler: async (ctx, { itemId }) => {

@@ -285,6 +285,46 @@ export const moveItem = mutation({
   },
 });
 
+/** Persist a complete merch order, including moves between sections. */
+export const reorderItems = mutation({
+  args: {
+    positions: v.array(
+      v.object({
+        itemId: v.id("merchItems"),
+        sectionId: v.id("merchSections"),
+        order: v.number(),
+      }),
+    ),
+  },
+  handler: async (ctx, { positions }) => {
+    await requireAdmin(ctx);
+
+    const itemIds = new Set(positions.map(({ itemId }) => itemId));
+    if (itemIds.size !== positions.length) {
+      throw new Error("Each merch item can only appear once in a reorder.");
+    }
+
+    const [items, sections, currentItems] = await Promise.all([
+      Promise.all(positions.map(({ itemId }) => ctx.db.get(itemId))),
+      Promise.all(positions.map(({ sectionId }) => ctx.db.get(sectionId))),
+      ctx.db.query("merchItems").collect(),
+    ]);
+    if (
+      items.some((item) => !item) ||
+      sections.some((section) => !section) ||
+      currentItems.length !== positions.length
+    ) {
+      throw new Error("One or more merch items could not be reordered.");
+    }
+
+    await Promise.all(
+      positions.map(({ itemId, sectionId, order }) =>
+        ctx.db.patch(itemId, { sectionId, order }),
+      ),
+    );
+  },
+});
+
 export const setArchived = mutation({
   args: { itemId: v.id("merchItems"), archived: v.boolean() },
   handler: async (ctx, { itemId, archived }) => {

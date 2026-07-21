@@ -1,5 +1,19 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 
 import { cn } from "@/lib/utils";
 import { useInlineEditingMode } from "@/components/cms/InlineEditing";
@@ -346,6 +360,119 @@ export function SquiggleLine({
           ))}
         </svg>
       )}
+    </div>
+  );
+}
+
+const ZIGZAG_CONNECTOR_POINTS: Pt[] = [
+  { x: 117, y: 168 }, // Coffee top-center.
+  { x: 117, y: 125 },
+  { x: 372, y: 125 }, // Runs behind Food to its bottom-center.
+  { x: 372, y: 285 },
+  { x: 627, y: 285 }, // Runs behind Vinyl to its top-center.
+  { x: 627, y: 125 },
+  { x: 782, y: 125 }, // Extends beneath the left edge of Drinks.
+];
+
+/** Five-strand connector for the four-image zigzag on the About page. */
+export function ZigzagConnectorLine({
+  className,
+  startTarget,
+  endTarget,
+}: {
+  className?: string;
+  startTarget: RefObject<HTMLElement | null>;
+  endTarget: RefObject<HTMLElement | null>;
+}) {
+  const editing = useInlineEditingMode();
+  const ref = useRef<HTMLDivElement>(null);
+  const clipId = useId().replaceAll(":", "");
+  const reduce = useReducedMotion();
+  const drawn = useMotionValue(reduce || editing ? 1 : 0);
+  const revealWidth = useTransform(drawn, [0, 1], [0, 1000]);
+  const mid = (RIBBON.length - 1) / 2;
+  const paths = RIBBON.map((_, index) =>
+    strandPath(ZIGZAG_CONNECTOR_POINTS, 34, (index - mid) * 8),
+  );
+
+  useEffect(() => {
+    if (reduce || editing) {
+      drawn.set(1);
+      return;
+    }
+
+    let frame = 0;
+    const update = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const coffee = startTarget.current;
+        const drinks = endTarget.current;
+        if (!coffee || !drinks) return;
+
+        const viewportHeight = window.innerHeight;
+        const scrollTop = window.scrollY;
+        const coffeeRect = coffee.getBoundingClientRect();
+        const drinksRect = drinks.getBoundingClientRect();
+        const startScroll = scrollTop + coffeeRect.top - viewportHeight;
+        const endScroll =
+          scrollTop + drinksRect.top + drinksRect.height / 2 - viewportHeight / 2;
+        const distance = Math.max(endScroll - startScroll, 1);
+        const progress = (scrollTop - startScroll) / distance;
+        drawn.set(Math.min(1, Math.max(0, progress)));
+      });
+    };
+
+    const observer = new ResizeObserver(update);
+    if (startTarget.current) observer.observe(startTarget.current);
+    if (endTarget.current) observer.observe(endTarget.current);
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    update();
+
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [drawn, editing, endTarget, reduce, startTarget]);
+
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      className={cn("pointer-events-none absolute inset-0 z-0", className)}
+    >
+      <svg
+        className="h-full w-full overflow-visible"
+        viewBox="0 0 1000 400"
+        preserveAspectRatio="none"
+        fill="none"
+      >
+        <defs>
+          <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
+            <motion.rect
+              x={0}
+              y={0}
+              width={reduce || editing ? 1000 : revealWidth}
+              height={400}
+            />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${clipId})`}>
+          {paths.map((d, index) => (
+            <path
+              key={index}
+              d={d}
+              stroke={RIBBON[index]}
+              strokeWidth={3}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </g>
+      </svg>
     </div>
   );
 }

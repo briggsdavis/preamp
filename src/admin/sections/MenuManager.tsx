@@ -4,11 +4,13 @@ import {
   useEffect,
   useRef,
   useState,
+  type DragEvent,
   type FormEvent,
 } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@convex/_generated/api";
 import type { Id } from "@convex/_generated/dataModel";
+import { GripVertical } from "lucide-react";
 
 import { field, label, btn, Modal } from "@/admin/ui";
 import { useDialogs } from "@/admin/dialogs";
@@ -60,6 +62,7 @@ type ItemData = {
   images: ItemImage[];
   featured: boolean;
   likes: number;
+  order: number;
 };
 
 /** Best-effort check that a URL points at Toast's ordering domain. */
@@ -81,6 +84,32 @@ export function MenuManager({ menu }: { menu: Menu }) {
   const renameSection = useMutation(api.menu.renameSection);
   const deleteSection = useMutation(api.menu.deleteSection);
   const reorderSections = useMutation(api.menu.reorderSections);
+  const reorderItems = useMutation(api.menu.reorderItems).withOptimisticUpdate(
+    (store, args) => {
+      const current = store.getQuery(api.menu.getMenu, { menu });
+      if (!current) return;
+      const items = new Map(
+        current.sections.flatMap((section) =>
+          section.items.map((item) => [item._id, item] as const),
+        ),
+      );
+      store.setQuery(api.menu.getMenu, { menu }, {
+        ...current,
+        sections: current.sections.map((section) => ({
+          ...section,
+          items: args.positions
+            .filter((position) => position.sectionId === section._id)
+            .sort((a, b) => a.order - b.order)
+            .flatMap((position) => {
+              const item = items.get(position.itemId);
+              return item
+                ? [{ ...item, sectionId: position.sectionId, order: position.order }]
+                : [];
+            }),
+        })),
+      });
+    },
+  );
   const deleteItem = useMutation(api.menu.deleteItem);
   const setItemFeatured = useMutation(api.menu.setItemFeatured);
   const seed = useMutation(api.menu.seed);
@@ -98,6 +127,12 @@ export function MenuManager({ menu }: { menu: Menu }) {
     sectionId: Id<"menuSections">;
   } | null>(null);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const draggedItem = useRef<Id<"menuItems"> | null>(null);
+  const [dropTarget, setDropTarget] = useState<{
+    sectionId: Id<"menuSections">;
+    index: number;
+  } | null>(null);
+  const [reorderError, setReorderError] = useState<string | null>(null);
 
   if (data === undefined) {
     return <Loading menu={menu} />;
@@ -122,6 +157,67 @@ export function MenuManager({ menu }: { menu: Menu }) {
     const ids = sections.map((s) => s._id);
     [ids[index], ids[next]] = [ids[next], ids[index]];
     await reorderSections({ sectionIds: ids });
+  }
+
+  function startItemDrag(event: DragEvent, itemId: Id<"menuItems">) {
+    draggedItem.current = itemId;
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", itemId);
+  }
+
+  async function dropItem(
+    targetSectionId: Id<"menuSections">,
+    targetIndex: number,
+  ) {
+    const itemId = draggedItem.current;
+    if (!itemId) return;
+
+    const next = sections.map((section) => ({
+      ...section,
+      items: [...section.items],
+    }));
+    let moved: ItemData | undefined;
+    let sourceSectionId: Id<"menuSections"> | undefined;
+    let sourceIndex = -1;
+    for (const section of next) {
+      const index = section.items.findIndex((item) => item._id === itemId);
+      if (index === -1) continue;
+      sourceSectionId = section._id;
+      sourceIndex = index;
+      [moved] = section.items.splice(index, 1);
+      break;
+    }
+    const target = next.find((section) => section._id === targetSectionId);
+    if (!moved || !target) return;
+    if (sourceSectionId === targetSectionId && sourceIndex < targetIndex) {
+      targetIndex -= 1;
+    }
+    const insertionIndex = Math.max(0, Math.min(targetIndex, target.items.length));
+    target.items.splice(insertionIndex, 0, {
+      ...moved,
+      sectionId: targetSectionId,
+    });
+
+    setReorderError(null);
+    try {
+      await reorderItems({
+        menu,
+        positions: next.flatMap((section) =>
+          section.items.map((item, order) => ({
+            itemId: item._id,
+            sectionId: section._id,
+            order,
+          })),
+        ),
+      });
+    } catch (error) {
+      setReorderError(
+        error instanceof Error ? error.message : "Couldn't save the new item order.",
+      );
+    } finally {
+      draggedItem.current = null;
+      setDropTarget(null);
+    }
   }
 
   return (
@@ -176,6 +272,12 @@ export function MenuManager({ menu }: { menu: Menu }) {
           </Suspense>
         )}
       </div>}
+
+      {reorderError && (
+        <p className="mt-5 rounded-lg border border-brick/30 bg-brick/10 px-4 py-3 text-sm font-semibold text-brick">
+          {reorderError}
+        </p>
+      )}
 
       <div className="mt-8 space-y-8">
         {sections.length === 0 && (
@@ -263,12 +365,60 @@ export function MenuManager({ menu }: { menu: Menu }) {
               </div>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {section.items.map((item) => (
+            <div
+              className={`mt-4 grid min-h-24 gap-3 rounded-lg sm:grid-cols-2 lg:grid-cols-3 ${
+                dropTarget?.sectionId === section._id &&
+                dropTarget.index === section.items.length
+                  ? "bg-gold/10 outline outline-2 outline-dashed outline-gold"
+                  : ""
+              }`}
+              onDragOver={(event) => {
+                event.preventDefault();
+                event.dataTransfer.dropEffect = "move";
+                setDropTarget({
+                  sectionId: section._id,
+                  index: section.items.length,
+                });
+              }}
+              onDrop={(event) => {
+                event.preventDefault();
+                void dropItem(section._id, section.items.length);
+              }}
+            >
+              {section.items.map((item, itemIndex) => (
                 <div
                   key={item._id}
-                  className="flex gap-3 rounded-xl border border-sand bg-white p-3"
+                  draggable
+                  onDragStart={(event) => startItemDrag(event, item._id)}
+                  onDragEnd={() => {
+                    draggedItem.current = null;
+                    setDropTarget(null);
+                  }}
+                  onDragOver={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.dataTransfer.dropEffect = "move";
+                    setDropTarget({ sectionId: section._id, index: itemIndex });
+                  }}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    void dropItem(section._id, itemIndex);
+                  }}
+                  className={`flex cursor-grab gap-2 rounded-xl border bg-white p-3 transition-[border-color,box-shadow,opacity] active:cursor-grabbing ${
+                    dropTarget?.sectionId === section._id &&
+                    dropTarget.index === itemIndex
+                      ? "border-gold shadow-[0_0_0_2px_var(--color-gold)]"
+                      : "border-sand"
+                  }`}
                 >
+                  <span
+                    className="mt-5 grid h-7 w-5 shrink-0 place-items-center text-espresso/35"
+                    title={`Drag ${item.name} to reorder`}
+                    aria-label={`Drag ${item.name} to reorder`}
+                  >
+                    <GripVertical className="h-5 w-5" />
+                  </span>
                   <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-cream-deep">
                     {item.images[0]?.url && (
                       <img
