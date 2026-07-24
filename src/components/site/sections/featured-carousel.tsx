@@ -71,12 +71,11 @@ function FeaturedCard({ item }: { item: FeaturedItem }) {
           />
         )}
       </div>
-      <div className="flex flex-1 flex-col p-6">
+      <div className="flex flex-1 flex-col px-6 pt-5 pb-3">
         <div className="flex items-baseline justify-between gap-3">
           <h3 className="font-groovy text-2xl leading-tight text-espresso">{item.name}</h3>
           <span className="shrink-0 font-semibold text-brick">{item.price}</span>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-espresso/70">{item.description}</p>
         <a
           href={orderUrl}
           target="_blank"
@@ -88,7 +87,7 @@ function FeaturedCard({ item }: { item: FeaturedItem }) {
               destination: orderUrl,
             })
           }
-          className="mt-5 block rounded-full bg-terracotta px-5 py-2.5 text-center text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
+          className="mt-4 block rounded-full bg-terracotta px-5 py-2.5 text-center text-sm font-semibold text-cream shadow-sm transition-all hover:-translate-y-0.5 hover:bg-brick hover:shadow-md"
         >
           Order
         </a>
@@ -127,11 +126,15 @@ function BestSellersStrip({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
     const measure = () => {
-      const gap = parseFloat(getComputedStyle(track).columnGap || "0") || 0
-      setWidth.current = (track.scrollWidth + gap) / 2
+      const cards = track.children
+      const first = cards.item(0) as HTMLElement | null
+      const repeatedFirst = cards.item(items.length) as HTMLElement | null
+      setWidth.current = first && repeatedFirst ? repeatedFirst.offsetLeft - first.offsetLeft : 0
     }
     measure()
     window.addEventListener("resize", measure)
+    const resizeObserver = new ResizeObserver(measure)
+    resizeObserver.observe(track)
 
     const MAX_BOOST = 45
     let lastScrollY = window.scrollY
@@ -176,8 +179,9 @@ function BestSellersStrip({
       cancelAnimationFrame(raf)
       window.removeEventListener("resize", measure)
       window.removeEventListener("scroll", onScroll)
+      resizeObserver.disconnect()
     }
-  }, [editing])
+  }, [editing, items.length])
 
   return (
     <section className="relative overflow-hidden bg-cream-deep py-24">

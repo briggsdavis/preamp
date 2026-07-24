@@ -9,14 +9,11 @@ import {
 } from "@/components/cms/inline-editing"
 import { PageWrapper } from "@/components/site/page-wrapper"
 import { RippleStripes } from "@/components/site/ripple-stripes"
-import { ZigzagConnectorLine } from "@/components/site/squiggle-line"
 import { imageUrl, useCmsContent } from "@/lib/site-content"
 export function About() {
   const content = useCmsContent("about")
   const editing = useInlineEditingMode()
   const heroRef = useRef<HTMLDivElement>(null)
-  const coffeeCardRef = useRef<HTMLElement>(null)
-  const drinksCardRef = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
@@ -126,10 +123,33 @@ export function About() {
               </div>
             </div>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.8 }}
+            className="mt-14 aspect-[3/2] overflow-hidden rounded-lg shadow-2xl shadow-maroon/20 md:mt-18 md:aspect-[5/2]"
+          >
+            <EditableImage
+              path="owner.teamImage"
+              value={content.owner.teamImage}
+              ratio="3:2"
+              className="h-full w-full"
+            >
+              <img
+                src={imageUrl(content.owner.teamImage)}
+                alt={content.owner.teamImage.alt}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover"
+              />
+            </EditableImage>
+          </motion.div>
         </div>
       </section>
 
-      {/* Four things - connected image zigzag */}
+      {/* Four things - masonry image grid */}
       <section className="relative overflow-hidden bg-cream-deep py-24 md:py-32">
         <div className="relative mx-auto max-w-7xl px-4 md:px-8">
           <motion.div
@@ -147,26 +167,31 @@ export function About() {
             </h2>
           </motion.div>
 
-          <div className="relative mt-12 aspect-[5/2] w-full md:mt-16">
-            <ZigzagConnectorLine startTarget={coffeeCardRef} endTarget={drinksCardRef} />
+          <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-5 md:mt-16 md:grid-cols-12 md:grid-rows-[18rem_18rem]">
             {content.feature.images.slice(0, 4).map((image, index) => {
-              const labels = ["Coffee", "Food", "Vinyl", "Drinks"]
-              const left = ["left-0", "left-[25.5%]", "left-[51%]", "left-[76.5%]"]
-              const top = index % 2 === 0 ? "top-[42%]" : "top-[2%]"
+              const layout = [
+                "col-span-2 h-72 md:col-span-7 md:row-span-1 md:h-full",
+                "col-span-1 h-64 md:col-span-5 md:row-span-1 md:h-full",
+                "col-span-1 h-64 md:col-span-5 md:row-span-1 md:h-full",
+                "col-span-2 h-72 md:col-span-7 md:row-span-1 md:h-full",
+              ]
               return (
                 <motion.figure
-                  ref={index === 0 ? coffeeCardRef : index === 3 ? drinksCardRef : undefined}
                   key={`${imageUrl(image)}-${index}`}
-                  initial={{ opacity: 0, y: index % 2 === 0 ? 24 : -24 }}
+                  initial={{ opacity: 0, y: 28 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-40px" }}
-                  transition={{ duration: 0.65, delay: index * 0.1 }}
-                  className={`absolute z-10 aspect-square w-[23.5%] overflow-hidden rounded-xl border-2 border-cream bg-espresso shadow-xl shadow-maroon/20 md:rounded-2xl ${left[index]} ${top}`}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{
+                    duration: 0.75,
+                    delay: index * 0.1,
+                    ease: [0.22, 1, 0.36, 1],
+                  }}
+                  className={`group relative overflow-hidden rounded-lg bg-espresso shadow-xl shadow-maroon/20 ${layout[index]}`}
                 >
                   <EditableImage
                     path={`feature.images.${index}`}
                     value={image}
-                    ratio="1:1"
+                    ratio={index === 0 || index === 3 ? "16:9" : "4:5"}
                     className="h-full w-full"
                   >
                     <img
@@ -174,39 +199,19 @@ export function About() {
                       alt={image.alt}
                       loading="lazy"
                       decoding="async"
-                      className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   </EditableImage>
-                  <figcaption className="absolute inset-x-0 bottom-0 bg-espresso/80 px-1 py-1 text-center font-groovy text-[0.55rem] text-cream uppercase backdrop-blur-sm sm:text-xs md:px-3 md:py-2 md:text-sm">
-                    {labels[index]}
+                  <figcaption className="absolute inset-x-0 bottom-0 bg-espresso/82 px-3 py-3 text-center font-groovy text-xs text-cream uppercase backdrop-blur-sm sm:text-sm md:px-4 md:py-4">
+                    <EditableText
+                      path={`feature.labels.${index}`}
+                      value={content.feature.labels[index]}
+                    />
                   </figcaption>
                 </motion.figure>
               )
             })}
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-60px" }}
-            transition={{ duration: 0.7 }}
-            className="mx-auto mt-16 max-w-5xl overflow-hidden rounded-[1.75rem] border border-espresso/10 shadow-2xl shadow-maroon/20 md:mt-24"
-          >
-            <EditableImage
-              path="feature.image"
-              value={content.feature.image}
-              ratio="16:9"
-              className="w-full"
-            >
-              <img
-                src={imageUrl(content.feature.image)}
-                alt={content.feature.image.alt}
-                loading="lazy"
-                decoding="async"
-                className="h-auto w-full object-cover"
-              />
-            </EditableImage>
-          </motion.div>
         </div>
       </section>
 

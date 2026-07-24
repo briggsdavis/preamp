@@ -8,11 +8,17 @@ import type { MenuSection } from "@/data/menu"
 /** Prominent in-store perk shown at the top of the merch page. */
 function MerchPerkBanner() {
   return (
-    <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl border-2 border-brick/30 bg-gradient-to-r from-gold/25 via-amber/20 to-terracotta/20 px-6 py-6 text-center shadow-lg shadow-maroon/10 md:px-10 md:py-7">
-      <p className="font-groovy text-sm tracking-[0.3em] text-brick uppercase">Wear It, Save It</p>
-      <p className="mt-2 font-display text-2xl leading-snug text-espresso md:text-3xl">
-        Order in-store while wearing any Pre Amp merch and get{" "}
-        <span className="text-brick">10% off</span> your order!
+    <div className="mx-auto max-w-5xl border-y-2 border-gold/70 px-3 py-7 md:flex md:items-center md:justify-between md:gap-10 md:px-5 md:py-8">
+      <div className="flex items-center gap-4">
+        <span className="font-display text-5xl leading-none text-brick md:text-6xl">10%</span>
+        <p className="font-groovy text-sm tracking-[0.3em] text-brick uppercase">
+          Wear It,
+          <br />
+          Save It
+        </p>
+      </div>
+      <p className="mt-5 max-w-2xl border-l-2 border-terracotta/35 pl-5 font-display text-2xl leading-snug text-espresso md:mt-0 md:text-3xl">
+        Wear any Pre Amp merch in-store and take 10% off your order.
       </p>
     </div>
   )

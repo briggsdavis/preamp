@@ -50,9 +50,11 @@ export type AboutContent = {
     title: string
     image: CmsImage
     images: CmsImage[]
+    labels: string[]
   }
   owner: {
     image: CmsImage
+    teamImage: CmsImage
     name: string
     role: string
     kicker: string
@@ -195,9 +197,11 @@ export const DEFAULT_ABOUT_CONTENT: AboutContent = {
       image("/images/eventvinyls.webp", "Vinyl records at Pre Amp Coffee Studio"),
       image("/images/menu-coffeecheers.webp", "Crafted drinks at Pre Amp Coffee Studio"),
     ],
+    labels: ["Coffee", "Food", "Vinyl", "Drinks"],
   },
   owner: {
     image: image("/images/danny.jpg", "Danny Ryan, owner of Pre Amp Coffee Studio"),
+    teamImage: image("/images/preampteam.jpg", "The Pre Amp Coffee Studio team"),
     name: "Danny Ryan",
     role: "Restaurant Owner & Operator",
     kicker: "Meet the Owner",

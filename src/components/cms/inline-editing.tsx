@@ -5,6 +5,7 @@ import {
   isValidElement,
   useContext,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ChangeEvent,
@@ -48,7 +49,7 @@ export function EditableText({ path, value }: { path: string; value: string }) {
   const editing = useContext(InlineEditingContext)
   const ref = useRef<HTMLSpanElement>(null)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!editing || document.activeElement === ref.current) return
     if (ref.current && ref.current.textContent !== value) {
       ref.current.textContent = value
@@ -83,9 +84,7 @@ export function EditableText({ path, value }: { path: string; value: string }) {
           event.clipboardData.getData("text/plain").replace(/\s*\n+\s*/g, " "),
         )
       }}
-    >
-      {value}
-    </span>
+    />
   )
 }
 

@@ -362,6 +362,65 @@ export const reorderSections = mutation({
   },
 })
 
+/** Move a section and all of its items to another menu page. */
+export const moveSectionToMenu = mutation({
+  args: {
+    sectionId: v.id("menuSections"),
+    targetMenu: v.string(),
+  },
+  handler: async (ctx, { sectionId, targetMenu }) => {
+    await requireAdmin(ctx)
+    await ensureDefaultMenuPages(ctx)
+
+    const [section, targetPage] = await Promise.all([
+      ctx.db.get(sectionId),
+      ctx.db
+        .query("menuPages")
+        .withIndex("by_slug", (q) => q.eq("slug", targetMenu))
+        .unique(),
+    ])
+    if (!section) throw new Error("Section not found.")
+    if (!targetPage || targetMenu === "merch") {
+      throw new Error("Target menu page not found.")
+    }
+    if (section.menu === targetMenu) {
+      throw new Error("Choose a different menu page.")
+    }
+
+    const [items, targetSections, targetItems] = await Promise.all([
+      ctx.db
+        .query("menuItems")
+        .withIndex("by_section", (q) => q.eq("sectionId", sectionId))
+        .collect(),
+      ctx.db
+        .query("menuSections")
+        .withIndex("by_menu", (q) => q.eq("menu", targetMenu))
+        .collect(),
+      ctx.db
+        .query("menuItems")
+        .withIndex("by_menu", (q) => q.eq("menu", targetMenu))
+        .collect(),
+    ])
+
+    const sectionOrder =
+      targetSections.reduce((max, candidate) => Math.max(max, candidate.order), -1) + 1
+    const takenSlugs = new Set(targetItems.flatMap((item) => (item.slug ? [item.slug] : [])))
+    const itemUpdates = items.map((item) => {
+      const base = item.slug ?? slugify(item.name)
+      let slug = base
+      let suffix = 2
+      while (takenSlugs.has(slug)) slug = `${base}-${suffix++}`
+      takenSlugs.add(slug)
+      return { item, slug }
+    })
+
+    await ctx.db.patch(sectionId, { menu: targetMenu, order: sectionOrder })
+    await Promise.all(
+      itemUpdates.map(({ item, slug }) => ctx.db.patch(item._id, { menu: targetMenu, slug })),
+    )
+  },
+})
+
 // --- Items ------------------------------------------------------------------
 
 const itemFields = {

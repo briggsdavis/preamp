@@ -69,11 +69,13 @@ function isToastUrl(url: string): boolean {
 export function MenuManager({ menu }: { menu: Menu }) {
   const { confirmThen, prompt } = useDialogs()
   const data = useQuery(api.menu.getMenu, { menu })
+  const menuPages = useQuery(api.menu.listMenuPages)
 
   const updateMenuPage = useMutation(api.menu.updateMenuPage)
   const createSection = useMutation(api.menu.createSection)
   const renameSection = useMutation(api.menu.renameSection)
   const deleteSection = useMutation(api.menu.deleteSection)
+  const moveSectionToMenu = useMutation(api.menu.moveSectionToMenu)
   const reorderSections = useMutation(api.menu.reorderSections)
   const reorderItems = useMutation(api.menu.reorderItems).withOptimisticUpdate((store, args) => {
     const current = store.getQuery(api.menu.getMenu, { menu })
@@ -116,6 +118,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
     sectionId: Id<"menuSections">
   } | null>(null)
   const [showAnalytics, setShowAnalytics] = useState(false)
+  const [sectionToMove, setSectionToMove] = useState<SectionData | null>(null)
   const draggedItem = useRef<Id<"menuItems"> | null>(null)
   const [dropTarget, setDropTarget] = useState<{
     sectionId: Id<"menuSections">
@@ -319,6 +322,14 @@ export function MenuManager({ menu }: { menu: Menu }) {
                 <button
                   type="button"
                   className={btn.small}
+                  disabled={menuPages === undefined}
+                  onClick={() => setSectionToMove(section)}
+                >
+                  Move
+                </button>
+                <button
+                  type="button"
+                  className={btn.small}
                   onClick={async () => {
                     const title = await prompt({
                       title: "Rename section",
@@ -467,6 +478,22 @@ export function MenuManager({ menu }: { menu: Menu }) {
         ))}
       </div>
 
+      {sectionToMove && (
+        <MoveSectionModal
+          key={sectionToMove._id}
+          section={sectionToMove}
+          pages={(menuPages ?? []).filter((candidate) => candidate.slug !== menu)}
+          onClose={() => setSectionToMove(null)}
+          onMove={async (targetMenu) => {
+            await moveSectionToMenu({
+              sectionId: sectionToMove._id,
+              targetMenu,
+            })
+            setSectionToMove(null)
+          }}
+        />
+      )}
+
       {editing && (
         <ItemEditor
           menu={menu}
@@ -484,6 +511,81 @@ export function MenuManager({ menu }: { menu: Menu }) {
         />
       )}
     </div>
+  )
+}
+
+function MoveSectionModal({
+  section,
+  pages,
+  onClose,
+  onMove,
+}: {
+  section: SectionData
+  pages: MenuPageMeta[]
+  onClose: () => void
+  onMove: (targetMenu: string) => Promise<void>
+}) {
+  const [targetMenu, setTargetMenu] = useState(pages[0]?.slug ?? "")
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    if (!targetMenu) return
+    setSaving(true)
+    setError(null)
+    try {
+      await onMove(targetMenu)
+    } catch (moveError) {
+      setError(moveError instanceof Error ? moveError.message : "Couldn't move this section.")
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Modal title={`Move "${section.title}"`} onClose={onClose}>
+      {pages.length > 0 ? (
+        <form onSubmit={(event) => void submit(event)}>
+          <p className="mb-4 text-sm text-espresso/70">
+            The section and all {section.items.length} of its items will move together.
+          </p>
+          <label className={label} htmlFor="move-section-page">
+            Destination menu page
+          </label>
+          <select
+            id="move-section-page"
+            autoFocus
+            className={field}
+            value={targetMenu}
+            onChange={(event) => setTargetMenu(event.target.value)}
+          >
+            {pages.map((candidate) => (
+              <option key={candidate.slug} value={candidate.slug}>
+                {candidate.title}
+              </option>
+            ))}
+          </select>
+          {error && <p className="mt-3 text-sm font-semibold text-brick">{error}</p>}
+          <div className="mt-6 flex justify-end gap-3">
+            <button type="button" className={btn.secondary} onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className={btn.primary} disabled={saving || !targetMenu}>
+              {saving ? "Moving..." : "Confirm move"}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <div>
+          <p className="text-espresso/75">Create another menu page before moving this section.</p>
+          <div className="mt-6 flex justify-end">
+            <button type="button" className={btn.secondary} onClick={onClose}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </Modal>
   )
 }
 
