@@ -346,10 +346,8 @@ export const deleteSection = mutation({
       .query("menuItems")
       .withIndex("by_section", (q) => q.eq("sectionId", sectionId))
       .collect()
-    if (items.length > 0) {
-      throw new Error("Move or delete this section's items before deleting the section.")
-    }
-    await ctx.db.delete(sectionId)
+    await Promise.all(items.map((item) => ctx.db.delete("menuItems", item._id)))
+    await ctx.db.delete("menuSections", sectionId)
   },
 })
 
@@ -582,7 +580,7 @@ export const deleteItem = mutation({
   args: { itemId: v.id("menuItems") },
   handler: async (ctx, { itemId }) => {
     await requireAdmin(ctx)
-    await ctx.db.delete(itemId)
+    await ctx.db.delete("menuItems", itemId)
   },
 })
 

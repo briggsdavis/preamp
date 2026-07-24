@@ -39,11 +39,19 @@ type MerchSection = {
 }
 
 export function Merchandise() {
-  const { confirmThen, prompt } = useDialogs()
+  const { confirm, prompt } = useDialogs()
   const sections = useQuery(api.merch.adminList) as MerchSection[] | undefined
   const createSection = useMutation(api.merch.createSection)
   const renameSection = useMutation(api.merch.renameSection)
-  const deleteSection = useMutation(api.merch.deleteSection)
+  const deleteSection = useMutation(api.merch.deleteSection).withOptimisticUpdate((store, args) => {
+    const current = store.getQuery(api.merch.adminList, {})
+    if (!current) return
+    store.setQuery(
+      api.merch.adminList,
+      {},
+      current.filter((section) => section._id !== args.sectionId),
+    )
+  })
   const reorderSections = useMutation(api.merch.reorderSections)
   const reorderItems = useMutation(api.merch.reorderItems).withOptimisticUpdate((store, args) => {
     const current = store.getQuery(api.merch.adminList, {})
@@ -66,7 +74,18 @@ export function Merchandise() {
       })),
     )
   })
-  const deleteItem = useMutation(api.merch.deleteItem)
+  const deleteItem = useMutation(api.merch.deleteItem).withOptimisticUpdate((store, args) => {
+    const current = store.getQuery(api.merch.adminList, {})
+    if (!current) return
+    store.setQuery(
+      api.merch.adminList,
+      {},
+      current.map((section) => ({
+        ...section,
+        items: section.items.filter((item) => item._id !== args.itemId),
+      })),
+    )
+  })
   const setArchived = useMutation(api.merch.setArchived)
   const [editing, setEditing] = useState<{
     item: MerchItem | null
@@ -78,6 +97,7 @@ export function Merchandise() {
     index: number
   } | null>(null)
   const [reorderError, setReorderError] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   async function addSection() {
     const title = await prompt({
@@ -94,6 +114,42 @@ export function Merchandise() {
     const ids = sections.map((section) => section._id)
     ;[ids[index], ids[next]] = [ids[next], ids[index]]
     await reorderSections({ sectionIds: ids })
+  }
+
+  async function removeSection(section: MerchSection) {
+    const itemCount = section.items.length
+    const confirmed = await confirm({
+      title: "Delete merch section",
+      message:
+        itemCount === 0
+          ? `Permanently delete the "${section.title}" section?`
+          : `Permanently delete the "${section.title}" section and all ${itemCount} product${
+              itemCount === 1 ? "" : "s"
+            } inside it?`,
+      confirmLabel: "Delete",
+    })
+    if (!confirmed) return
+    setDeleteError(null)
+    try {
+      await deleteSection({ sectionId: section._id })
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Couldn't delete this merch section.")
+    }
+  }
+
+  async function removeItem(item: MerchItem) {
+    const confirmed = await confirm({
+      title: "Delete merch item",
+      message: `Permanently delete "${item.title}"?`,
+      confirmLabel: "Delete",
+    })
+    if (!confirmed) return
+    setDeleteError(null)
+    try {
+      await deleteItem({ itemId: item._id })
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Couldn't delete this merch item.")
+    }
   }
 
   function startItemDrag(event: DragEvent, itemId: Id<"merchItems">) {
@@ -176,6 +232,11 @@ export function Merchandise() {
           {reorderError}
         </p>
       )}
+      {deleteError && (
+        <p className="mt-5 rounded-lg border border-brick/30 bg-brick/10 px-4 py-3 text-sm font-semibold text-brick">
+          {deleteError}
+        </p>
+      )}
 
       <div className="mt-8 space-y-8">
         {sections?.map((section, index) => (
@@ -225,12 +286,7 @@ export function Merchandise() {
                 <button
                   type="button"
                   className={btn.danger}
-                  onClick={() =>
-                    confirmThen(
-                      `Delete the "${section.title}" section? It must be empty.`,
-                      () => void deleteSection({ sectionId: section._id }),
-                    )
-                  }
+                  onClick={() => void removeSection(section)}
                 >
                   Delete
                 </button>
@@ -334,12 +390,7 @@ export function Merchandise() {
                       <button
                         type="button"
                         className="text-xs font-semibold text-espresso/50 hover:underline"
-                        onClick={() =>
-                          confirmThen(
-                            `Delete "${item.title}"?`,
-                            () => void deleteItem({ itemId: item._id }),
-                          )
-                        }
+                        onClick={() => void removeItem(item)}
                       >
                         Delete
                       </button>

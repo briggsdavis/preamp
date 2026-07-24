@@ -67,14 +67,25 @@ function isToastUrl(url: string): boolean {
 }
 
 export function MenuManager({ menu }: { menu: Menu }) {
-  const { confirmThen, prompt } = useDialogs()
+  const { confirm, confirmThen, prompt } = useDialogs()
   const data = useQuery(api.menu.getMenu, { menu })
   const menuPages = useQuery(api.menu.listMenuPages)
 
   const updateMenuPage = useMutation(api.menu.updateMenuPage)
   const createSection = useMutation(api.menu.createSection)
   const renameSection = useMutation(api.menu.renameSection)
-  const deleteSection = useMutation(api.menu.deleteSection)
+  const deleteSection = useMutation(api.menu.deleteSection).withOptimisticUpdate((store, args) => {
+    const current = store.getQuery(api.menu.getMenu, { menu })
+    if (!current) return
+    store.setQuery(
+      api.menu.getMenu,
+      { menu },
+      {
+        ...current,
+        sections: current.sections.filter((section) => section._id !== args.sectionId),
+      },
+    )
+  })
   const moveSectionToMenu = useMutation(api.menu.moveSectionToMenu)
   const reorderSections = useMutation(api.menu.reorderSections)
   const reorderItems = useMutation(api.menu.reorderItems).withOptimisticUpdate((store, args) => {
@@ -101,7 +112,21 @@ export function MenuManager({ menu }: { menu: Menu }) {
       },
     )
   })
-  const deleteItem = useMutation(api.menu.deleteItem)
+  const deleteItem = useMutation(api.menu.deleteItem).withOptimisticUpdate((store, args) => {
+    const current = store.getQuery(api.menu.getMenu, { menu })
+    if (!current) return
+    store.setQuery(
+      api.menu.getMenu,
+      { menu },
+      {
+        ...current,
+        sections: current.sections.map((section) => ({
+          ...section,
+          items: section.items.filter((item) => item._id !== args.itemId),
+        })),
+      },
+    )
+  })
   const setItemFeatured = useMutation(api.menu.setItemFeatured)
   const seed = useMutation(api.menu.seed)
   const seedMerch = useMutation(api.menu.seedMerch)
@@ -125,6 +150,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
     index: number
   } | null>(null)
   const [reorderError, setReorderError] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   if (data === undefined) {
     return <Loading menu={menu} />
@@ -149,6 +175,42 @@ export function MenuManager({ menu }: { menu: Menu }) {
     const ids = sections.map((s) => s._id)
     ;[ids[index], ids[next]] = [ids[next], ids[index]]
     await reorderSections({ sectionIds: ids })
+  }
+
+  async function removeSection(section: SectionData) {
+    const itemCount = section.items.length
+    const confirmed = await confirm({
+      title: "Delete section",
+      message:
+        itemCount === 0
+          ? `Permanently delete the "${section.title}" section?`
+          : `Permanently delete the "${section.title}" section and all ${itemCount} item${
+              itemCount === 1 ? "" : "s"
+            } inside it?`,
+      confirmLabel: "Delete",
+    })
+    if (!confirmed) return
+    setDeleteError(null)
+    try {
+      await deleteSection({ sectionId: section._id })
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Couldn't delete this section.")
+    }
+  }
+
+  async function removeItem(item: ItemData) {
+    const confirmed = await confirm({
+      title: "Delete menu item",
+      message: `Permanently delete "${item.name}"?`,
+      confirmLabel: "Delete",
+    })
+    if (!confirmed) return
+    setDeleteError(null)
+    try {
+      await deleteItem({ itemId: item._id })
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Couldn't delete this menu item.")
+    }
   }
 
   function startItemDrag(event: DragEvent, itemId: Id<"menuItems">) {
@@ -267,6 +329,11 @@ export function MenuManager({ menu }: { menu: Menu }) {
           {reorderError}
         </p>
       )}
+      {deleteError && (
+        <p className="mt-5 rounded-lg border border-brick/30 bg-brick/10 px-4 py-3 text-sm font-semibold text-brick">
+          {deleteError}
+        </p>
+      )}
 
       <div className="mt-8 space-y-8">
         {sections.length === 0 && (
@@ -347,12 +414,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
                 <button
                   type="button"
                   className={btn.danger}
-                  onClick={() =>
-                    confirmThen(
-                      `Delete the "${section.title}" section? It must be empty.`,
-                      () => void deleteSection({ sectionId: section._id }),
-                    )
-                  }
+                  onClick={() => void removeSection(section)}
                 >
                   Delete
                 </button>
@@ -452,12 +514,7 @@ export function MenuManager({ menu }: { menu: Menu }) {
                       <button
                         type="button"
                         className="text-xs font-semibold text-espresso/50 hover:underline"
-                        onClick={() =>
-                          confirmThen(
-                            `Delete "${item.name}"?`,
-                            () => void deleteItem({ itemId: item._id }),
-                          )
-                        }
+                        onClick={() => void removeItem(item)}
                       >
                         Delete
                       </button>
