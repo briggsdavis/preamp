@@ -1,6 +1,6 @@
-import { convexAuth } from "@convex-dev/auth/server";
-import { Password } from "@convex-dev/auth/providers/Password";
-import { ConvexError } from "convex/values";
+import { Password } from "@convex-dev/auth/providers/Password"
+import { convexAuth } from "@convex-dev/auth/server"
+import { ConvexError } from "convex/values"
 
 /**
  * Convex Auth configuration.
@@ -23,9 +23,9 @@ import { ConvexError } from "convex/values";
  */
 function readEnv(name: string): string {
   const g = globalThis as {
-    process?: { env?: Record<string, string | undefined> };
-  };
-  return g.process?.env?.[name] ?? "";
+    process?: { env?: Record<string, string | undefined> }
+  }
+  return g.process?.env?.[name] ?? ""
 }
 
 /** Parse the comma-separated `ADMIN_EMAILS` allowlist into a normalized set. */
@@ -35,7 +35,7 @@ function allowedAdminEmails(): Set<string> {
       .split(",")
       .map((email: string) => email.trim().toLowerCase())
       .filter(Boolean),
-  );
+  )
 }
 
 export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
@@ -44,22 +44,22 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       profile(params) {
         const email = String(params.email ?? "")
           .trim()
-          .toLowerCase();
+          .toLowerCase()
 
         // Only enforce the allowlist when creating a brand-new account.
         if (params.flow === "signUp") {
           if (!email) {
-            throw new ConvexError("An email address is required.");
+            throw new ConvexError("An email address is required.")
           }
           if (!allowedAdminEmails().has(email)) {
             throw new ConvexError(
               "This email isn't on the admin allowlist, so an account can't be created. Ask an existing admin to add it to ADMIN_EMAILS.",
-            );
+            )
           }
         }
 
-        return { email };
+        return { email }
       },
     }),
   ],
-});
+})

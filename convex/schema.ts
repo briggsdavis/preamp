@@ -1,6 +1,6 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
+import { authTables } from "@convex-dev/auth/server"
+import { defineSchema, defineTable } from "convex/server"
+import { v } from "convex/values"
 
 /**
  * Database schema for the Pre Amp backend.
@@ -13,24 +13,24 @@ import { authTables } from "@convex-dev/auth/server";
  */
 
 /** Which public menu/catalog a section/item belongs to. */
-export const menuKind = v.string();
+export const menuKind = v.string()
 
 /** Visitor-selected reason on the public contact form. */
 export const contactTopic = v.union(
   v.literal("menu-inquiry"),
   v.literal("vinyl-request"),
   v.literal("general"),
-);
+)
 
 /** A single seeded review embedded on a menu item. */
 const review = v.object({
   name: v.string(),
   rating: v.number(),
   text: v.string(),
-});
+})
 
 /** A {key, count} pair used for analytics breakdown maps. */
-const countEntry = v.object({ key: v.string(), count: v.number() });
+const countEntry = v.object({ key: v.string(), count: v.number() })
 
 /** Where a pop-up is anchored on screen. Also used to enforce "one per spot". */
 export const popupPosition = v.union(
@@ -43,7 +43,7 @@ export const popupPosition = v.union(
   v.literal("bottom-edge"),
   v.literal("left-edge"),
   v.literal("right-edge"),
-);
+)
 
 export default defineSchema({
   ...authTables,
@@ -253,11 +253,7 @@ export default defineSchema({
       }),
     ),
     position: popupPosition,
-    frequency: v.union(
-      v.literal("every-visit"),
-      v.literal("session"),
-      v.literal("daily"),
-    ),
+    frequency: v.union(v.literal("every-visit"), v.literal("session"), v.literal("daily")),
     buttonLabel: v.optional(v.string()),
     buttonLink: v.optional(v.string()),
     trigger: v.object({
@@ -302,11 +298,7 @@ export default defineSchema({
     text: v.string(),
     // pending = awaiting moderation, approved = shown on the site,
     // archived = hidden but kept.
-    status: v.union(
-      v.literal("pending"),
-      v.literal("approved"),
-      v.literal("archived"),
-    ),
+    status: v.union(v.literal("pending"), v.literal("approved"), v.literal("archived")),
     featured: v.boolean(), // surfaced on the home page (subset of approved)
   })
     .index("by_status", ["status"])
@@ -382,4 +374,4 @@ export default defineSchema({
   analyticsState: defineTable({
     rolledThrough: v.optional(v.string()), // "YYYY-MM-DD" (exclusive of today)
   }),
-});
+})

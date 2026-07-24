@@ -1,6 +1,6 @@
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
-import { requireAdmin } from "./admin";
+import { v } from "convex/values"
+import { mutation, query } from "./_generated/server"
+import { requireAdmin } from "./admin"
 
 /**
  * File storage helpers used by the admin for menu images, menu PDFs, and
@@ -14,15 +14,15 @@ import { requireAdmin } from "./admin";
 export const generateUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    await requireAdmin(ctx);
-    return await ctx.storage.generateUploadUrl();
+    await requireAdmin(ctx)
+    return await ctx.storage.generateUploadUrl()
   },
-});
+})
 
 /** Public: resolve a storageId to a served URL (used to render uploaded media). */
 export const getUrl = query({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, { storageId }) => {
-    return await ctx.storage.getUrl(storageId);
+    return await ctx.storage.getUrl(storageId)
   },
-});
+})

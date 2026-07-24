@@ -31,7 +31,7 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
       rel="stylesheet"
       media="print"
-      onload="this.media='all'"
+      onload="this.media = 'all'"
     />
     <noscript>
       <link
@@ -43,17 +43,13 @@
          downloads in parallel with the JS bundle instead of waiting for React
          to mount. The photographic backdrop is preloaded too, but at normal
          priority so it can't out-compete the LCP. -->
-    <link
-      rel="preload"
-      as="image"
-      href="/images/heroprimary.png"
-      fetchpriority="high"
-    />
+    <link rel="preload" as="image" href="/images/heroprimary.png" fetchpriority="high" />
     <link rel="preload" as="image" href="/images/preampdecor.webp" />
     <title>Pre Amp Coffee Studio · Brews &amp; Beats in Pittsburgh</title>
   </head>
+
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script src="src/main.tsx" type="module"></script>
   </body>
 </html>

@@ -24,6 +24,7 @@ import type * as merch from "../merch.js";
 import type * as reviews from "../reviews.js";
 import type * as seedData from "../seedData.js";
 import type * as settings from "../settings.js";
+import type * as submissionEmails from "../submissionEmails.js";
 
 import type {
   ApiFromModules,
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   reviews: typeof reviews;
   seedData: typeof seedData;
   settings: typeof settings;
+  submissionEmails: typeof submissionEmails;
 }>;
 
 /**
@@ -76,4 +78,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+};

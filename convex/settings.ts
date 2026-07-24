@@ -1,7 +1,7 @@
-import { mutation, query } from "./_generated/server";
-import type { MutationCtx, QueryCtx } from "./_generated/server";
-import { v } from "convex/values";
-import { requireAdmin } from "./admin";
+import { v } from "convex/values"
+import { mutation, query } from "./_generated/server"
+import type { MutationCtx, QueryCtx } from "./_generated/server"
+import { requireAdmin } from "./admin"
 
 /**
  * Global site settings: a single row of on/off switches the admin controls.
@@ -21,11 +21,11 @@ const PAGE = v.union(
   v.literal("coldBrew"),
   v.literal("hiring"),
   v.literal("giftCard"),
-);
+)
 
 /** Fetch the singleton settings row, if it exists. */
 async function getRow(ctx: QueryCtx | MutationCtx) {
-  return await ctx.db.query("siteSettings").first();
+  return await ctx.db.query("siteSettings").first()
 }
 
 /**
@@ -42,37 +42,37 @@ function withDefaults(row: Awaited<ReturnType<typeof getRow>>) {
     coldBrewEnabled: row?.coldBrewEnabled !== false,
     hiringEnabled: row?.hiringEnabled !== false,
     giftCardEnabled: row?.giftCardEnabled !== false,
-  };
+  }
 }
 
 /** Public: the page-visibility settings the public site needs. */
 export const getPublicSettings = query({
   args: {},
   handler: async (ctx) => {
-    return withDefaults(await getRow(ctx));
+    return withDefaults(await getRow(ctx))
   },
-});
+})
 
 /** Admin: the full settings row (with defaults) for the settings editor. */
 export const getSettings = query({
   args: {},
   handler: async (ctx) => {
-    await requireAdmin(ctx);
-    return withDefaults(await getRow(ctx));
+    await requireAdmin(ctx)
+    return withDefaults(await getRow(ctx))
   },
-});
+})
 
 /** Admin: toggle a single page on/off, creating the row on first use. */
 export const setPageEnabled = mutation({
   args: { page: PAGE, enabled: v.boolean() },
   handler: async (ctx, { page, enabled }) => {
-    await requireAdmin(ctx);
-    const patch = { [`${page}Enabled`]: enabled };
-    const row = await getRow(ctx);
+    await requireAdmin(ctx)
+    const patch = { [`${page}Enabled`]: enabled }
+    const row = await getRow(ctx)
     if (row) {
-      await ctx.db.patch(row._id, patch);
+      await ctx.db.patch(row._id, patch)
     } else {
-      await ctx.db.insert("siteSettings", patch);
+      await ctx.db.insert("siteSettings", patch)
     }
   },
-});
+})

@@ -1,8 +1,8 @@
-import { mutation, query } from "./_generated/server";
-import type { MutationCtx } from "./_generated/server";
-import { v } from "convex/values";
-import { ConvexError } from "convex/values";
-import { requireAdmin } from "./admin";
+import { v } from "convex/values"
+import { ConvexError } from "convex/values"
+import { mutation, query } from "./_generated/server"
+import type { MutationCtx } from "./_generated/server"
+import { requireAdmin } from "./admin"
 
 /**
  * Dietary tag catalog. A curated set of built-in tags is seeded on first use;
@@ -11,22 +11,21 @@ import { requireAdmin } from "./admin";
  */
 
 /** The curated built-ins, seeded once. Keys are stable and never change. */
-const BUILTINS: { key: string; label: string; icon: string; color: string }[] =
-  [
-    { key: "vegan", label: "Vegan", icon: "sprout", color: "#3f7d44" },
-    { key: "vegetarian", label: "Vegetarian", icon: "leaf", color: "#4f8f3a" },
-    { key: "gluten-free", label: "Gluten-Free", icon: "wheat-off", color: "#a47724" },
-    { key: "dairy-free", label: "Dairy-Free", icon: "milk-off", color: "#4f7f9e" },
-    { key: "nut-free", label: "Nut-Free", icon: "nut-off", color: "#9a603c" },
-    { key: "decaf", label: "Decaf", icon: "moon", color: "#586579" },
-    {
-      key: "contains-caffeine",
-      label: "Contains Caffeine",
-      icon: "coffee",
-      color: "#6b4a2f",
-    },
-    { key: "spicy", label: "Spicy", icon: "flame", color: "#b5432f" },
-  ];
+const BUILTINS: { key: string; label: string; icon: string; color: string }[] = [
+  { key: "vegan", label: "Vegan", icon: "sprout", color: "#3f7d44" },
+  { key: "vegetarian", label: "Vegetarian", icon: "leaf", color: "#4f8f3a" },
+  { key: "gluten-free", label: "Gluten-Free", icon: "wheat-off", color: "#a47724" },
+  { key: "dairy-free", label: "Dairy-Free", icon: "milk-off", color: "#4f7f9e" },
+  { key: "nut-free", label: "Nut-Free", icon: "nut-off", color: "#9a603c" },
+  { key: "decaf", label: "Decaf", icon: "moon", color: "#586579" },
+  {
+    key: "contains-caffeine",
+    label: "Contains Caffeine",
+    icon: "coffee",
+    color: "#6b4a2f",
+  },
+  { key: "spicy", label: "Spicy", icon: "flame", color: "#b5432f" },
+]
 
 function slugifyKey(s: string): string {
   return (
@@ -36,19 +35,19 @@ function slugifyKey(s: string): string {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
       .slice(0, 40) || "tag"
-  );
+  )
 }
 
 /** Ensure the built-in tags exist. Idempotent; safe to call repeatedly. */
 async function ensureSeeded(ctx: MutationCtx) {
   for (let i = 0; i < BUILTINS.length; i++) {
-    const b = BUILTINS[i];
+    const b = BUILTINS[i]
     const existing = await ctx.db
       .query("dietaryTags")
       .withIndex("by_key", (q) => q.eq("key", b.key))
-      .unique();
+      .unique()
     if (!existing) {
-      await ctx.db.insert("dietaryTags", { ...b, builtin: true, order: i });
+      await ctx.db.insert("dietaryTags", { ...b, builtin: true, order: i })
     } else if (
       existing.icon !== b.icon ||
       existing.color !== b.color ||
@@ -60,7 +59,7 @@ async function ensureSeeded(ctx: MutationCtx) {
         color: b.color,
         builtin: true,
         order: i,
-      });
+      })
     }
   }
 }
@@ -69,11 +68,11 @@ async function ensureSeeded(ctx: MutationCtx) {
 export const list = query({
   args: {},
   handler: async (ctx) => {
-    const rows = await ctx.db.query("dietaryTags").collect();
-    rows.sort((a, b) => a.order - b.order);
-    return rows;
+    const rows = await ctx.db.query("dietaryTags").collect()
+    rows.sort((a, b) => a.order - b.order)
+    return rows
   },
-});
+})
 
 /**
  * Admin: seed the built-in tags if the catalog is empty. Idempotent - no-ops
@@ -82,11 +81,11 @@ export const list = query({
 export const seedBuiltins = mutation({
   args: {},
   handler: async (ctx) => {
-    await requireAdmin(ctx);
-    await ensureSeeded(ctx);
-    return { ok: true };
+    await requireAdmin(ctx)
+    await ensureSeeded(ctx)
+    return { ok: true }
   },
-});
+})
 
 export const create = mutation({
   args: {
@@ -95,19 +94,19 @@ export const create = mutation({
     color: v.string(),
   },
   handler: async (ctx, { label, icon, color }) => {
-    await requireAdmin(ctx);
-    const clean = label.trim();
-    if (!clean) throw new ConvexError("Tag label is required.");
-    const key = slugifyKey(clean);
+    await requireAdmin(ctx)
+    const clean = label.trim()
+    if (!clean) throw new ConvexError("Tag label is required.")
+    const key = slugifyKey(clean)
     const existing = await ctx.db
       .query("dietaryTags")
       .withIndex("by_key", (q) => q.eq("key", key))
-      .unique();
+      .unique()
     if (existing) {
-      throw new ConvexError(`A tag like "${clean}" already exists.`);
+      throw new ConvexError(`A tag like "${clean}" already exists.`)
     }
-    const all = await ctx.db.query("dietaryTags").collect();
-    const order = all.reduce((max, t) => Math.max(max, t.order), -1) + 1;
+    const all = await ctx.db.query("dietaryTags").collect()
+    const order = all.reduce((max, t) => Math.max(max, t.order), -1) + 1
     return await ctx.db.insert("dietaryTags", {
       key,
       label: clean,
@@ -115,9 +114,9 @@ export const create = mutation({
       color: color.trim() || "#6b4a2f",
       builtin: false,
       order,
-    });
+    })
   },
-});
+})
 
 export const update = mutation({
   args: {
@@ -127,33 +126,33 @@ export const update = mutation({
     color: v.string(),
   },
   handler: async (ctx, { id, label, icon, color }) => {
-    await requireAdmin(ctx);
-    const clean = label.trim();
-    if (!clean) throw new ConvexError("Tag label is required.");
+    await requireAdmin(ctx)
+    const clean = label.trim()
+    if (!clean) throw new ConvexError("Tag label is required.")
     // Key stays stable so items keep their references; only display fields change.
     await ctx.db.patch(id, {
       label: clean,
       icon: icon.trim().slice(0, 32) || "tag",
       color: color.trim() || "#6b4a2f",
-    });
+    })
   },
-});
+})
 
 export const remove = mutation({
   args: { id: v.id("dietaryTags") },
   handler: async (ctx, { id }) => {
-    await requireAdmin(ctx);
-    const tag = await ctx.db.get(id);
-    if (!tag) return;
+    await requireAdmin(ctx)
+    const tag = await ctx.db.get(id)
+    if (!tag) return
     // Drop the tag from any items that reference it, then delete it.
-    const items = await ctx.db.query("menuItems").collect();
+    const items = await ctx.db.query("menuItems").collect()
     for (const item of items) {
       if (item.dietaryTags?.includes(tag.key)) {
         await ctx.db.patch(item._id, {
           dietaryTags: item.dietaryTags.filter((k) => k !== tag.key),
-        });
+        })
       }
     }
-    await ctx.db.delete(id);
+    await ctx.db.delete(id)
   },
-});
+})

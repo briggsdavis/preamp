@@ -1,11 +1,12 @@
-import { mutation, query } from "./_generated/server";
-import { v, ConvexError } from "convex/values";
-import { requireAdmin } from "./admin";
-import { contactTopic } from "./schema";
+import { v, ConvexError } from "convex/values"
+import { mutation, query } from "./_generated/server"
+import { requireAdmin } from "./admin"
+import { contactTopic } from "./schema"
+import { sendContactNotification, sendHiringNotification } from "./submissionEmails"
 
 /** Minimal, forgiving email shape check (server-side guard). */
 function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
 /**
@@ -24,22 +25,21 @@ function isValidEmail(email: string): boolean {
 export const counts = query({
   args: {},
   handler: async (ctx) => {
-    await requireAdmin(ctx);
+    await requireAdmin(ctx)
     const [contact, hiring, captures] = await Promise.all([
       ctx.db.query("contactSubmissions").collect(),
       ctx.db.query("hiringSubmissions").collect(),
       ctx.db.query("emailCaptures").collect(),
-    ]);
-    const unread = (rows: { read?: boolean }[]) =>
-      rows.reduce((n, r) => n + (r.read ? 0 : 1), 0);
+    ])
+    const unread = (rows: { read?: boolean }[]) => rows.reduce((n, r) => n + (r.read ? 0 : 1), 0)
     return {
       contact: { total: contact.length, unread: unread(contact) },
       hiring: { total: hiring.length, unread: unread(hiring) },
       captures: { total: captures.length },
       totalUnread: unread(contact) + unread(hiring),
-    };
+    }
   },
-});
+})
 
 // --- Contact form -----------------------------------------------------------
 
@@ -55,42 +55,45 @@ export const submitContact = mutation({
   handler: async (ctx, args) => {
     // Email is required and must be a valid address (also enforced client-side).
     if (!isValidEmail(args.email)) {
-      throw new ConvexError("A valid email address is required.");
+      throw new ConvexError("A valid email address is required.")
     }
-    return await ctx.db.insert("contactSubmissions", {
+    const submission = {
       ...args,
       email: args.email.trim(),
-    });
+    }
+    const id = await ctx.db.insert("contactSubmissions", submission)
+    await sendContactNotification(ctx, submission)
+    return id
   },
-});
+})
 
 export const listContact = query({
   args: { topics: v.optional(v.array(contactTopic)) },
   handler: async (ctx, { topics }) => {
-    await requireAdmin(ctx);
-    const rows = await ctx.db.query("contactSubmissions").order("desc").collect();
-    if (!topics || topics.length === 0) return rows;
-    const wanted = new Set(topics);
-    return rows.filter((row) => wanted.has(row.topic ?? "general"));
+    await requireAdmin(ctx)
+    const rows = await ctx.db.query("contactSubmissions").order("desc").collect()
+    if (!topics || topics.length === 0) return rows
+    const wanted = new Set(topics)
+    return rows.filter((row) => wanted.has(row.topic ?? "general"))
   },
-});
+})
 
 export const deleteContact = mutation({
   args: { id: v.id("contactSubmissions") },
   handler: async (ctx, { id }) => {
-    await requireAdmin(ctx);
-    await ctx.db.delete(id);
+    await requireAdmin(ctx)
+    await ctx.db.delete(id)
   },
-});
+})
 
 /** Mark a contact submission as read / unread. */
 export const setContactRead = mutation({
   args: { id: v.id("contactSubmissions"), read: v.boolean() },
   handler: async (ctx, { id, read }) => {
-    await requireAdmin(ctx);
-    await ctx.db.patch(id, { read });
+    await requireAdmin(ctx)
+    await ctx.db.patch(id, { read })
   },
-});
+})
 
 // --- Hiring applications -----------------------------------------------------
 
@@ -98,9 +101,9 @@ export const setContactRead = mutation({
 export const generateResumeUploadUrl = mutation({
   args: {},
   handler: async (ctx) => {
-    return await ctx.storage.generateUploadUrl();
+    return await ctx.storage.generateUploadUrl()
   },
-});
+})
 
 export const submitHiring = mutation({
   args: {
@@ -116,47 +119,57 @@ export const submitHiring = mutation({
   },
   handler: async (ctx, args) => {
     if (!isValidEmail(args.email)) {
-      throw new ConvexError("A valid email address is required.");
+      throw new ConvexError("A valid email address is required.")
     }
-    return await ctx.db.insert("hiringSubmissions", {
+    if ((args.resumeStorageId === undefined) !== (args.resumeName === undefined)) {
+      throw new ConvexError("A resume upload must include both a file and file name.")
+    }
+    const submission = {
       ...args,
       email: args.email.trim(),
-    });
+    }
+    const resumeUrl = submission.resumeStorageId
+      ? await ctx.storage.getUrl(submission.resumeStorageId)
+      : null
+    if (submission.resumeStorageId && !resumeUrl) {
+      throw new ConvexError("The uploaded resume could not be found.")
+    }
+    const id = await ctx.db.insert("hiringSubmissions", submission)
+    await sendHiringNotification(ctx, submission, resumeUrl)
+    return id
   },
-});
+})
 
 export const listHiring = query({
   args: {},
   handler: async (ctx) => {
-    await requireAdmin(ctx);
-    const rows = await ctx.db.query("hiringSubmissions").order("desc").collect();
+    await requireAdmin(ctx)
+    const rows = await ctx.db.query("hiringSubmissions").order("desc").collect()
     return await Promise.all(
       rows.map(async (row) => ({
         ...row,
-        resumeUrl: row.resumeStorageId
-          ? await ctx.storage.getUrl(row.resumeStorageId)
-          : null,
+        resumeUrl: row.resumeStorageId ? await ctx.storage.getUrl(row.resumeStorageId) : null,
       })),
-    );
+    )
   },
-});
+})
 
 export const deleteHiring = mutation({
   args: { id: v.id("hiringSubmissions") },
   handler: async (ctx, { id }) => {
-    await requireAdmin(ctx);
-    await ctx.db.delete(id);
+    await requireAdmin(ctx)
+    await ctx.db.delete(id)
   },
-});
+})
 
 /** Mark a hiring application as read / unread. */
 export const setHiringRead = mutation({
   args: { id: v.id("hiringSubmissions"), read: v.boolean() },
   handler: async (ctx, { id, read }) => {
-    await requireAdmin(ctx);
-    await ctx.db.patch(id, { read });
+    await requireAdmin(ctx)
+    await ctx.db.patch(id, { read })
   },
-});
+})
 
 // --- Email captures (from pop-ups) ------------------------------------------
 
@@ -167,22 +180,22 @@ export const captureEmail = mutation({
     popupId: v.optional(v.id("popups")),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("emailCaptures", args);
+    return await ctx.db.insert("emailCaptures", args)
   },
-});
+})
 
 export const listEmailCaptures = query({
   args: {},
   handler: async (ctx) => {
-    await requireAdmin(ctx);
-    return await ctx.db.query("emailCaptures").order("desc").collect();
+    await requireAdmin(ctx)
+    return await ctx.db.query("emailCaptures").order("desc").collect()
   },
-});
+})
 
 export const deleteEmailCapture = mutation({
   args: { id: v.id("emailCaptures") },
   handler: async (ctx, { id }) => {
-    await requireAdmin(ctx);
-    await ctx.db.delete(id);
+    await requireAdmin(ctx)
+    await ctx.db.delete(id)
   },
-});
+})

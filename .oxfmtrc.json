@@ -1,0 +1,6 @@
+{
+  "semi": false,
+  "sortImports": { "newlinesBetween": false },
+  "sortTailwindcss": { "stylesheet": "src/styles/index.css" },
+  "ignorePatterns": ["convex/_generated"]
+}

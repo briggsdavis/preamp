@@ -7,4 +7,4 @@
  * UI-only or cross-cutting types that don't live in the database.
  */
 
-export type Theme = "light" | "dark" | "system";
+export type Theme = "light" | "dark" | "system"

@@ -1,11 +1,11 @@
-import { useEffect, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, type ReactNode } from "react"
+import { createPortal } from "react-dom"
 
 /** Shared field styling for admin forms. */
 export const field =
-  "w-full rounded-xl border-2 border-sand bg-white px-3 py-2 text-espresso placeholder:text-espresso/50 outline-none transition-colors focus:border-gold";
+  "w-full rounded-xl border-2 border-sand bg-white px-3 py-2 text-espresso placeholder:text-espresso/50 outline-none transition-colors focus:border-gold"
 
-export const label = "mb-1 block text-sm font-semibold text-espresso/80";
+export const label = "mb-1 block text-sm font-semibold text-espresso/80"
 
 /** Primary / secondary / danger button class helpers. */
 export const btn = {
@@ -17,7 +17,7 @@ export const btn = {
     "rounded-full border-2 border-brick/40 px-4 py-2 text-sm font-semibold text-brick transition-all hover:bg-brick/10 active:scale-95",
   small:
     "rounded-full bg-espresso/10 px-3 py-1.5 text-sm font-semibold text-espresso transition-all hover:bg-espresso/20 active:scale-95",
-};
+}
 
 /** A centered modal dialog portaled to <body>, closing on Escape / backdrop. */
 export function Modal({
@@ -26,20 +26,20 @@ export function Modal({
   children,
   wide,
 }: {
-  title: string;
-  onClose: () => void;
-  children: ReactNode;
-  wide?: boolean;
+  title: string
+  onClose: () => void
+  children: ReactNode
+  wide?: boolean
 }) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose()
+    window.addEventListener("keydown", onKey)
+    document.body.style.overflow = "hidden"
     return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [onClose]);
+      window.removeEventListener("keydown", onKey)
+      document.body.style.overflow = ""
+    }
+  }, [onClose])
 
   return createPortal(
     <div
@@ -48,9 +48,7 @@ export function Modal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`w-full rounded-3xl bg-cream shadow-2xl ${
-          wide ? "max-w-3xl" : "max-w-xl"
-        }`}
+        className={`w-full rounded-3xl bg-cream shadow-2xl ${wide ? "max-w-3xl" : "max-w-xl"}`}
       >
         <div className="flex items-center justify-between border-b-2 border-sand px-6 py-4">
           <h2 className="font-display text-2xl text-espresso">{title}</h2>
@@ -67,6 +65,5 @@ export function Modal({
       </div>
     </div>,
     document.body,
-  );
+  )
 }
-

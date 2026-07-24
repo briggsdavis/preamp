@@ -16,24 +16,23 @@ export const SITE = {
   ],
   instagram: "https://www.instagram.com/preamp.coffeestudio/",
   tiktok: "https://www.tiktok.com/@rd_restaurants",
-  mapsEmbed:
-    "https://www.google.com/maps?q=5840+Forbes+Ave,+Pittsburgh,+PA+15217&output=embed",
+  mapsEmbed: "https://www.google.com/maps?q=5840+Forbes+Ave,+Pittsburgh,+PA+15217&output=embed",
   mapsLink: "https://www.google.com/maps/search/?api=1&query=5840+Forbes+Ave+Pittsburgh+PA+15217",
   // TODO: confirm the real online-ordering URL - placeholder based on the Toast
   // ordering domain used for the gift cards. Swap freely.
   orderUrl: "https://order.toasttab.com/online/pre-amp-new-5840-forbes-avenue",
-} as const;
+} as const
 
 export interface NavLink {
-  label: string;
-  to: string;
+  label: string
+  to: string
   /** When true, `to` is an external URL that opens in a new tab. */
-  external?: boolean;
+  external?: boolean
 }
 export interface NavItem {
-  label: string;
-  to?: string;
-  children?: NavLink[];
+  label: string
+  to?: string
+  children?: NavLink[]
 }
 
 export const NAV: NavItem[] = [
@@ -60,14 +59,14 @@ export const NAV: NavItem[] = [
       },
     ],
   },
-];
+]
 
 export interface Drink {
-  name: string;
-  blurb: string;
-  notes: string;
-  badge: string;
-  hue: string; // base color for the card art
+  name: string
+  blurb: string
+  notes: string
+  badge: string
+  hue: string // base color for the card art
 }
 
 export const FEATURED: Drink[] = [
@@ -106,12 +105,12 @@ export const FEATURED: Drink[] = [
     badge: "Drip",
     hue: "var(--color-brick)",
   },
-];
+]
 
 export interface Testimonial {
-  quote: string;
-  name: string;
-  source: string;
+  quote: string
+  name: string
+  source: string
 }
 
 export const TESTIMONIALS: Testimonial[] = [
@@ -140,18 +139,17 @@ export const TESTIMONIALS: Testimonial[] = [
     source: "Google Reviews",
   },
   {
-    quote:
-      "Passenger beans pulled perfectly. I came for coffee and stayed for the playlist.",
+    quote: "Passenger beans pulled perfectly. I came for coffee and stayed for the playlist.",
     name: "Marcus T.",
     source: "Yelp",
   },
-];
+]
 
 export interface Restaurant {
-  name: string;
+  name: string
   /** Square photo (e.g. the restaurant's Facebook profile image). */
-  image?: string;
-  href?: string;
+  image?: string
+  href?: string
 }
 
 /**
@@ -160,8 +158,16 @@ export interface Restaurant {
  * page links as `image` / `href` to replace the on-brand placeholders.
  */
 export const RD_RESTAURANTS: Restaurant[] = [
-  { name: "Meat & Potatoes", image: "/images/meatpotatoes.webp", href: "https://meatandpotatoespgh.com/" },
-  { name: "Butcher and the Rye", image: "/images/butcherandtherye.webp", href: "https://butcherandtherye.com/" },
+  {
+    name: "Meat & Potatoes",
+    image: "/images/meatpotatoes.webp",
+    href: "https://meatandpotatoespgh.com/",
+  },
+  {
+    name: "Butcher and the Rye",
+    image: "/images/butcherandtherye.webp",
+    href: "https://butcherandtherye.com/",
+  },
   { name: "täkō", image: "/images/tako.webp", href: "https://takopgh.com/" },
   { name: "Tako Torta", image: "/images/takotorta.webp", href: "https://takotorta.com/" },
   { name: "Poulet Bleu", image: "/images/pouletbleu.webp", href: "https://www.pouletbleupgh.com/" },
@@ -169,17 +175,21 @@ export const RD_RESTAURANTS: Restaurant[] = [
   { name: "Coup De Ville", image: "/images/coupdeville.webp", href: "https://coopdevillepgh.com/" },
   { name: "Sally Ann's", image: "/images/sallyannys.webp", href: "https://sallyannspgh.com/" },
   { name: "Golden Gai", image: "/images/goldengai.webp", href: "https://goldengaipgh.com/" },
-  { name: "Vieux Carré", image: "/images/vieuxcarre.webp", href: "https://www.seamonkeypgh.com/vieux-carre" },
+  {
+    name: "Vieux Carré",
+    image: "/images/vieuxcarre.webp",
+    href: "https://www.seamonkeypgh.com/vieux-carre",
+  },
   { name: "Gi-Jin", image: "/images/handroll.webp", href: "https://gi-jin.com/" },
   { name: "Sea Monkey", image: "/images/seamonkey.webp", href: "https://www.seamonkeypgh.com/" },
   { name: "Rib Room", image: "/images/ribroom.webp", href: "https://ribroompgh.com/" },
   { name: "Pre Amp", image: "/images/preamplogo.png", href: "/" },
-];
+]
 
 export interface QuizQuestion {
-  id: string;
-  prompt: string;
-  options: { label: string; value: string }[];
+  id: string
+  prompt: string
+  options: { label: string; value: string }[]
 }
 
 export const QUIZ: QuizQuestion[] = [
@@ -219,19 +229,19 @@ export const QUIZ: QuizQuestion[] = [
       { label: "Fizzy & bright", value: "fizz" },
     ],
   },
-];
+]
 
 /** Maps a set of answers to one of the featured drinks. */
 export function predictDrink(answers: Record<string, string>): Drink {
-  const { temp, sweet, milk } = answers;
+  const { temp, sweet, milk } = answers
   if (milk === "fizz" || temp === "iced") {
-    return FEATURED[1]; // Yuzu Espresso Tonic
+    return FEATURED[1] // Yuzu Espresso Tonic
   }
   if (milk === "black" && sweet === "none") {
-    return temp === "iced" ? FEATURED[3] : FEATURED[4]; // Cold brew / Pourover
+    return temp === "iced" ? FEATURED[3] : FEATURED[4] // Cold brew / Pourover
   }
   if (sweet === "lots") {
-    return FEATURED[2]; // Dulce de Leche
+    return FEATURED[2] // Dulce de Leche
   }
-  return FEATURED[0]; // Smokey Robinson
+  return FEATURED[0] // Smokey Robinson
 }

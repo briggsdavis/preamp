@@ -1,6 +1,6 @@
-import { getAuthUserId } from "@convex-dev/auth/server";
-import { ConvexError } from "convex/values";
-import type { QueryCtx, MutationCtx } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server"
+import { ConvexError } from "convex/values"
+import type { QueryCtx, MutationCtx } from "./_generated/server"
 
 /**
  * Guard for admin-only queries and mutations.
@@ -10,9 +10,9 @@ import type { QueryCtx, MutationCtx } from "./_generated/server";
  * submissions, reading the live menu) deliberately do NOT call this.
  */
 export async function requireAdmin(ctx: QueryCtx | MutationCtx) {
-  const userId = await getAuthUserId(ctx);
+  const userId = await getAuthUserId(ctx)
   if (userId === null) {
-    throw new ConvexError("Not signed in.");
+    throw new ConvexError("Not signed in.")
   }
-  return userId;
+  return userId
 }

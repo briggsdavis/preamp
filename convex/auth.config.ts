@@ -10,9 +10,9 @@
  */
 const convexSiteUrl = (
   globalThis as {
-    process?: { env?: Record<string, string | undefined> };
+    process?: { env?: Record<string, string | undefined> }
   }
-).process?.env?.CONVEX_SITE_URL;
+).process?.env?.CONVEX_SITE_URL
 
 export default {
   providers: [
@@ -21,4 +21,4 @@ export default {
       applicationID: "convex",
     },
   ],
-};
+}

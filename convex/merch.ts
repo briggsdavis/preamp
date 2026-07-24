@@ -1,13 +1,13 @@
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
-import { requireAdmin } from "./admin";
-import type { Doc, Id } from "./_generated/dataModel";
-import type { MutationCtx, QueryCtx } from "./_generated/server";
+import { v } from "convex/values"
+import type { Doc, Id } from "./_generated/dataModel"
+import { mutation, query } from "./_generated/server"
+import type { MutationCtx, QueryCtx } from "./_generated/server"
+import { requireAdmin } from "./admin"
 
 type MerchImage = {
-  storageId?: Id<"_storage">;
-  path?: string;
-};
+  storageId?: Id<"_storage">
+  path?: string
+}
 
 function slugify(title: string): string {
   return (
@@ -17,7 +17,7 @@ function slugify(title: string): string {
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
       .slice(0, 60) || "item"
-  );
+  )
 }
 
 async function uniqueSlug(
@@ -25,46 +25,36 @@ async function uniqueSlug(
   title: string,
   excludeId?: Id<"merchItems">,
 ): Promise<string> {
-  const base = slugify(title);
-  const items = await ctx.db.query("merchItems").collect();
+  const base = slugify(title)
+  const items = await ctx.db.query("merchItems").collect()
   const taken = new Set(
-    items
-      .filter((item) => item._id !== excludeId && item.slug)
-      .map((item) => item.slug as string),
-  );
-  if (!taken.has(base)) return base;
-  let n = 2;
-  while (taken.has(`${base}-${n}`)) n++;
-  return `${base}-${n}`;
+    items.filter((item) => item._id !== excludeId && item.slug).map((item) => item.slug as string),
+  )
+  if (!taken.has(base)) return base
+  let n = 2
+  while (taken.has(`${base}-${n}`)) n++
+  return `${base}-${n}`
 }
 
-async function imageUrl(
-  ctx: QueryCtx,
-  image?: MerchImage,
-): Promise<string | null> {
-  if (!image) return null;
-  if (image.storageId) return await ctx.storage.getUrl(image.storageId);
-  return image.path ?? null;
+async function imageUrl(ctx: QueryCtx, image?: MerchImage): Promise<string | null> {
+  if (!image) return null
+  if (image.storageId) return await ctx.storage.getUrl(image.storageId)
+  return image.path ?? null
 }
 
 async function imageUrls(ctx: QueryCtx, item: Doc<"merchItems">) {
-  const refs =
-    item.images && item.images.length > 0
-      ? item.images
-      : item.image
-        ? [item.image]
-        : [];
+  const refs = item.images && item.images.length > 0 ? item.images : item.image ? [item.image] : []
   return await Promise.all(
     refs.map(async (ref) => ({
       url: await imageUrl(ctx, ref),
       storageId: ref.storageId,
       path: ref.path,
     })),
-  );
+  )
 }
 
 async function publicItem(ctx: QueryCtx, item: Doc<"merchItems">) {
-  const images = await imageUrls(ctx, item);
+  const images = await imageUrls(ctx, item)
   return {
     _id: item._id,
     sectionId: item.sectionId,
@@ -78,24 +68,24 @@ async function publicItem(ctx: QueryCtx, item: Doc<"merchItems">) {
     imageRef: item.image,
     archived: item.archived ?? false,
     order: item.order,
-  };
+  }
 }
 
 export const listPublic = query({
   args: {},
   handler: async (ctx) => {
-    const sections = await ctx.db.query("merchSections").collect();
-    sections.sort((a, b) => a.order - b.order);
+    const sections = await ctx.db.query("merchSections").collect()
+    sections.sort((a, b) => a.order - b.order)
 
     const items = (await ctx.db.query("merchItems").collect())
       .filter((item) => !item.archived)
-      .sort((a, b) => a.order - b.order);
+      .sort((a, b) => a.order - b.order)
 
-    const itemsBySection = new Map<string, typeof items>();
+    const itemsBySection = new Map<string, typeof items>()
     for (const item of items) {
-      const list = itemsBySection.get(item.sectionId) ?? [];
-      list.push(item);
-      itemsBySection.set(item.sectionId, list);
+      const list = itemsBySection.get(item.sectionId) ?? []
+      list.push(item)
+      itemsBySection.set(item.sectionId, list)
     }
 
     const out = await Promise.all(
@@ -104,48 +94,43 @@ export const listPublic = query({
         title: section.title,
         order: section.order,
         items: await Promise.all(
-          (itemsBySection.get(section._id) ?? []).map((item) =>
-            publicItem(ctx, item),
-          ),
+          (itemsBySection.get(section._id) ?? []).map((item) => publicItem(ctx, item)),
         ),
       })),
-    );
+    )
 
-    return out.filter((section) => section.items.length > 0);
+    return out.filter((section) => section.items.length > 0)
   },
-});
+})
 
 export const getBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, { slug }) => {
-    const items = await ctx.db.query("merchItems").collect();
+    const items = await ctx.db.query("merchItems").collect()
     const item =
-      items.find((row) => row.slug === slug) ??
-      items.find((row) => slugify(row.title) === slug);
-    if (!item || item.archived) return null;
-    const section = await ctx.db.get(item.sectionId);
+      items.find((row) => row.slug === slug) ?? items.find((row) => slugify(row.title) === slug)
+    if (!item || item.archived) return null
+    const section = await ctx.db.get(item.sectionId)
     return {
       ...(await publicItem(ctx, item)),
       sectionTitle: section?.title ?? null,
-    };
+    }
   },
-});
+})
 
 export const adminList = query({
   args: {},
   handler: async (ctx) => {
-    await requireAdmin(ctx);
-    const sections = await ctx.db.query("merchSections").collect();
-    sections.sort((a, b) => a.order - b.order);
-    const items = (await ctx.db.query("merchItems").collect()).sort(
-      (a, b) => a.order - b.order,
-    );
+    await requireAdmin(ctx)
+    const sections = await ctx.db.query("merchSections").collect()
+    sections.sort((a, b) => a.order - b.order)
+    const items = (await ctx.db.query("merchItems").collect()).sort((a, b) => a.order - b.order)
 
-    const itemsBySection = new Map<string, typeof items>();
+    const itemsBySection = new Map<string, typeof items>()
     for (const item of items) {
-      const list = itemsBySection.get(item.sectionId) ?? [];
-      list.push(item);
-      itemsBySection.set(item.sectionId, list);
+      const list = itemsBySection.get(item.sectionId) ?? []
+      list.push(item)
+      itemsBySection.set(item.sectionId, list)
     }
 
     return await Promise.all(
@@ -154,59 +139,53 @@ export const adminList = query({
         title: section.title,
         order: section.order,
         items: await Promise.all(
-          (itemsBySection.get(section._id) ?? []).map((item) =>
-            publicItem(ctx, item),
-          ),
+          (itemsBySection.get(section._id) ?? []).map((item) => publicItem(ctx, item)),
         ),
       })),
-    );
+    )
   },
-});
+})
 
 export const createSection = mutation({
   args: { title: v.string() },
   handler: async (ctx, { title }) => {
-    await requireAdmin(ctx);
-    const sections = await ctx.db.query("merchSections").collect();
-    const order = sections.reduce((max, s) => Math.max(max, s.order), -1) + 1;
-    return await ctx.db.insert("merchSections", { title, order });
+    await requireAdmin(ctx)
+    const sections = await ctx.db.query("merchSections").collect()
+    const order = sections.reduce((max, s) => Math.max(max, s.order), -1) + 1
+    return await ctx.db.insert("merchSections", { title, order })
   },
-});
+})
 
 export const renameSection = mutation({
   args: { sectionId: v.id("merchSections"), title: v.string() },
   handler: async (ctx, { sectionId, title }) => {
-    await requireAdmin(ctx);
-    await ctx.db.patch(sectionId, { title });
+    await requireAdmin(ctx)
+    await ctx.db.patch(sectionId, { title })
   },
-});
+})
 
 export const deleteSection = mutation({
   args: { sectionId: v.id("merchSections") },
   handler: async (ctx, { sectionId }) => {
-    await requireAdmin(ctx);
+    await requireAdmin(ctx)
     const items = await ctx.db
       .query("merchItems")
       .withIndex("by_section", (q) => q.eq("sectionId", sectionId))
-      .collect();
+      .collect()
     if (items.length > 0) {
-      throw new Error(
-        "Move or delete this section's merch before deleting the section.",
-      );
+      throw new Error("Move or delete this section's merch before deleting the section.")
     }
-    await ctx.db.delete(sectionId);
+    await ctx.db.delete(sectionId)
   },
-});
+})
 
 export const reorderSections = mutation({
   args: { sectionIds: v.array(v.id("merchSections")) },
   handler: async (ctx, { sectionIds }) => {
-    await requireAdmin(ctx);
-    await Promise.all(
-      sectionIds.map((id, index) => ctx.db.patch(id, { order: index })),
-    );
+    await requireAdmin(ctx)
+    await Promise.all(sectionIds.map((id, index) => ctx.db.patch(id, { order: index })))
   },
-});
+})
 
 const itemFields = {
   title: v.string(),
@@ -227,63 +206,58 @@ const itemFields = {
       }),
     ),
   ),
-};
+}
 
 export const createItem = mutation({
   args: { sectionId: v.id("merchSections"), ...itemFields },
   handler: async (ctx, args) => {
-    await requireAdmin(ctx);
-    const section = await ctx.db.get(args.sectionId);
-    if (!section) throw new Error("Section not found.");
+    await requireAdmin(ctx)
+    const section = await ctx.db.get(args.sectionId)
+    if (!section) throw new Error("Section not found.")
     const siblings = await ctx.db
       .query("merchItems")
       .withIndex("by_section", (q) => q.eq("sectionId", args.sectionId))
-      .collect();
-    const order = siblings.reduce((max, item) => Math.max(max, item.order), -1) + 1;
+      .collect()
+    const order = siblings.reduce((max, item) => Math.max(max, item.order), -1) + 1
     return await ctx.db.insert("merchItems", {
       ...args,
-      image:
-        args.images && args.images.length > 0 ? args.images[0] : args.image,
+      image: args.images && args.images.length > 0 ? args.images[0] : args.image,
       slug: await uniqueSlug(ctx, args.title),
       archived: false,
       order,
-    });
+    })
   },
-});
+})
 
 export const updateItem = mutation({
   args: { itemId: v.id("merchItems"), ...itemFields },
   handler: async (ctx, { itemId, ...fields }) => {
-    await requireAdmin(ctx);
-    const existing = await ctx.db.get(itemId);
+    await requireAdmin(ctx)
+    const existing = await ctx.db.get(itemId)
     const slug =
-      existing?.slug ??
-      (existing ? await uniqueSlug(ctx, fields.title, itemId) : undefined);
+      existing?.slug ?? (existing ? await uniqueSlug(ctx, fields.title, itemId) : undefined)
     await ctx.db.patch(itemId, {
       ...fields,
       ...(slug ? { slug } : {}),
-      image:
-        fields.images && fields.images.length > 0
-          ? fields.images[0]
-          : fields.image,
-    });
+      image: fields.images && fields.images.length > 0 ? fields.images[0] : fields.image,
+    })
   },
-});
+})
 
 export const moveItem = mutation({
   args: { itemId: v.id("merchItems"), sectionId: v.id("merchSections") },
   handler: async (ctx, { itemId, sectionId }) => {
-    await requireAdmin(ctx);
-    const section = await ctx.db.get(sectionId);
-    if (!section) throw new Error("Target section not found.");
+    await requireAdmin(ctx)
+    const section = await ctx.db.get(sectionId)
+    if (!section) throw new Error("Target section not found.")
     const siblings = await ctx.db
       .query("merchItems")
       .withIndex("by_section", (q) => q.eq("sectionId", sectionId))
-      .collect();
-    const order = siblings.reduce((max, item) => Math.max(max, item.order), -1) + 1;
-    await ctx.db.patch(itemId, { sectionId, order });
+      .collect()
+    const order = siblings.reduce((max, item) => Math.max(max, item.order), -1) + 1
+    await ctx.db.patch(itemId, { sectionId, order })
   },
-});
+})
 
 /** Persist a complete merch order, including moves between sections. */
 export const reorderItems = mutation({
@@ -297,46 +271,44 @@ export const reorderItems = mutation({
     ),
   },
   handler: async (ctx, { positions }) => {
-    await requireAdmin(ctx);
+    await requireAdmin(ctx)
 
-    const itemIds = new Set(positions.map(({ itemId }) => itemId));
+    const itemIds = new Set(positions.map(({ itemId }) => itemId))
     if (itemIds.size !== positions.length) {
-      throw new Error("Each merch item can only appear once in a reorder.");
+      throw new Error("Each merch item can only appear once in a reorder.")
     }
 
     const [items, sections, currentItems] = await Promise.all([
       Promise.all(positions.map(({ itemId }) => ctx.db.get(itemId))),
       Promise.all(positions.map(({ sectionId }) => ctx.db.get(sectionId))),
       ctx.db.query("merchItems").collect(),
-    ]);
+    ])
     if (
       items.some((item) => !item) ||
       sections.some((section) => !section) ||
       currentItems.length !== positions.length
     ) {
-      throw new Error("One or more merch items could not be reordered.");
+      throw new Error("One or more merch items could not be reordered.")
     }
 
     await Promise.all(
-      positions.map(({ itemId, sectionId, order }) =>
-        ctx.db.patch(itemId, { sectionId, order }),
-      ),
-    );
+      positions.map(({ itemId, sectionId, order }) => ctx.db.patch(itemId, { sectionId, order })),
+    )
   },
-});
+})
 
 export const setArchived = mutation({
   args: { itemId: v.id("merchItems"), archived: v.boolean() },
   handler: async (ctx, { itemId, archived }) => {
-    await requireAdmin(ctx);
-    await ctx.db.patch(itemId, { archived });
+    await requireAdmin(ctx)
+    await ctx.db.patch(itemId, { archived })
   },
-});
+})
 
 export const deleteItem = mutation({
   args: { itemId: v.id("merchItems") },
   handler: async (ctx, { itemId }) => {
-    await requireAdmin(ctx);
-    await ctx.db.delete(itemId);
+    await requireAdmin(ctx)
+    await ctx.db.delete(itemId)
   },
-});
+})
