@@ -14,6 +14,12 @@ import { useGlobalContent } from "@/lib/site-content"
 const fieldClass =
   "w-full rounded-xl border-2 border-sand bg-white px-4 py-3 text-espresso placeholder:text-espresso/55 outline-none transition-colors focus:border-gold"
 
+const TOPIC_DESCRIPTIONS: Record<ContactTopic, string> = {
+  general: "Questions, feedback, collaborations, or anything else on your mind.",
+  "menu-inquiry": "Ask about ingredients, dietary needs, availability, or our current menu.",
+  "vinyl-request": "Tell us what record or artist you'd love to hear at the listening bar.",
+}
+
 export function Contact() {
   const global = useGlobalContent()
   const location = useLocation()
@@ -155,7 +161,7 @@ export function Contact() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.9 }}
-              className="relative min-h-[480px] overflow-hidden rounded-3xl shadow-2xl md:min-h-0"
+              className="relative min-h-[680px] overflow-hidden rounded-3xl shadow-2xl md:min-h-0"
             >
               <img
                 src="/images/contactdecor.webp"
@@ -192,7 +198,7 @@ export function Contact() {
                     animate={{ y: 0 }}
                     exit={{ y: "100%" }}
                     transition={{ type: "spring", damping: 28, stiffness: 240 }}
-                    className="absolute inset-0 flex flex-col bg-cream-deep/97 p-7 backdrop-blur-md"
+                    className="absolute inset-0 flex flex-col bg-cream-deep/97 p-5 backdrop-blur-md md:p-7"
                   >
                     <div className="flex items-start justify-between">
                       <h2 className="font-display text-3xl text-espresso">Send a Note</h2>
@@ -246,25 +252,37 @@ export function Contact() {
                           placeholder="Phone Number"
                           className={fieldClass}
                         />
-                        <select
-                          required
-                          name="topic"
-                          value={topic}
-                          onChange={(e) => setTopic(e.target.value as ContactTopic)}
-                          className={fieldClass}
-                        >
-                          {CONTACT_TOPICS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
+                        <div>
+                          <label
+                            htmlFor="contact-topic"
+                            className="mb-1.5 block text-sm font-semibold text-espresso md:hidden"
+                          >
+                            What can we help with?
+                          </label>
+                          <select
+                            id="contact-topic"
+                            required
+                            name="topic"
+                            value={topic}
+                            onChange={(e) => setTopic(e.target.value as ContactTopic)}
+                            className={fieldClass}
+                          >
+                            {CONTACT_TOPICS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                          <p className="mt-1.5 text-sm leading-snug text-espresso/65 md:hidden">
+                            {TOPIC_DESCRIPTIONS[topic]}
+                          </p>
+                        </div>
                         <textarea
                           required
                           name="message"
                           placeholder="Message"
                           rows={4}
-                          className={`${fieldClass} flex-1 resize-none`}
+                          className={`${fieldClass} min-h-40 flex-none resize-none md:min-h-0 md:flex-1`}
                         />
                         {error && <p className="text-sm font-semibold text-maroon">{error}</p>}
                         <button

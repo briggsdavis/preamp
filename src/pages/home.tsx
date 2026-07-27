@@ -21,10 +21,17 @@ export function Home() {
         <Marquee />
         <div className="relative overflow-hidden">
           <div className="pointer-events-none absolute inset-0 z-10">
-            <SquiggleLine side="left" rows={4} marginY={28} marginX={28} leadInY={520} />
+            <SquiggleLine
+              side="left"
+              rows={4}
+              marginY={28}
+              marginX={28}
+              leadInY={520}
+              className="hidden md:block"
+            />
           </div>
           <Intro showLine={false} />
-          <FeaturedCarousel showLine={false} />
+          <FeaturedCarousel showLine={false} mobileLine />
         </div>
 
         <ParallaxBanner

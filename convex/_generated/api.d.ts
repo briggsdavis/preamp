@@ -20,6 +20,7 @@ import type * as http from "../http.js";
 import type * as inquiries from "../inquiries.js";
 import type * as marketing from "../marketing.js";
 import type * as menu from "../menu.js";
+import type * as menuQuiz from "../menuQuiz.js";
 import type * as merch from "../merch.js";
 import type * as reviews from "../reviews.js";
 import type * as seedData from "../seedData.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   inquiries: typeof inquiries;
   marketing: typeof marketing;
   menu: typeof menu;
+  menuQuiz: typeof menuQuiz;
   merch: typeof merch;
   reviews: typeof reviews;
   seedData: typeof seedData;

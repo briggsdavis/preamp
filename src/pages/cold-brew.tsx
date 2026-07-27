@@ -165,7 +165,7 @@ export function ColdBrew() {
               path="method.image"
               value={content.method.image}
               ratio="4:5"
-              className="h-[300px] w-full md:h-[460px]"
+              className="h-60 w-full md:h-[460px]"
             >
               <img
                 src={imageUrl(content.method.image)}

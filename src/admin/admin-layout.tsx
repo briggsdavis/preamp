@@ -11,6 +11,7 @@ import { GlobalEditor } from "@/admin/sections/global-editor"
 import { Home } from "@/admin/sections/home"
 import { Inquiries } from "@/admin/sections/inquiries"
 import { MenuManager } from "@/admin/sections/menu-manager"
+import { MenuQuiz } from "@/admin/sections/menu-quiz"
 import { Merchandise } from "@/admin/sections/merchandise"
 import { AboutEditor, ColdBrewEditor, HomeEditor } from "@/admin/sections/page-editors"
 import { Popups } from "@/admin/sections/popups"
@@ -57,6 +58,10 @@ const NAV: NavGroup[] = [
   {
     label: "Menu",
     items: [],
+  },
+  {
+    label: "Menu Quiz",
+    items: [{ id: "menuQuiz", label: "Menu Quiz" }],
   },
   {
     label: "Merch",
@@ -403,6 +408,8 @@ function Panel({
       )
     case "merch":
       return <Merchandise />
+    case "menuQuiz":
+      return <MenuQuiz />
     case "inquiries":
       return <Inquiries />
     case "events":

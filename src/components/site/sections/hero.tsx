@@ -29,7 +29,7 @@ export function Hero() {
   return (
     <section
       ref={ref}
-      className="relative isolate flex min-h-[100svh] items-center overflow-hidden"
+      className="relative isolate flex min-h-[82svh] items-center overflow-hidden md:min-h-[100svh]"
     >
       {/* Photographic ambience, slow parallax */}
       <motion.div

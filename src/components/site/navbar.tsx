@@ -196,7 +196,7 @@ export function Navbar() {
           "mx-auto flex max-w-7xl items-center justify-between px-5 transition-all duration-300 md:px-8",
           // Mobile stays compact at all times. On desktop the bar expands a
           // touch at the very top, then tucks back in once the page scrolls.
-          "py-4",
+          "py-3 md:py-4",
           !scrolled && "md:py-5",
         )}
       >
@@ -209,7 +209,7 @@ export function Navbar() {
             className={cn(
               "object-contain transition-all duration-300 group-hover:-rotate-6",
               // Compact on mobile; ~15% larger on desktop at the very top.
-              "h-10 w-10",
+              "h-9 w-9 md:h-10 md:w-10",
               !scrolled && "md:h-[2.875rem] md:w-[2.875rem]",
             )}
           />
@@ -236,7 +236,7 @@ export function Navbar() {
         </div>
 
         <button
-          className="flex h-10 w-10 flex-col items-center justify-center gap-1.5 md:hidden"
+          className="flex h-9 w-9 flex-col items-center justify-center gap-1.5 md:hidden"
           onClick={() => setMobileOpen((v) => !v)}
           aria-label="Toggle menu"
           aria-expanded={mobileOpen}

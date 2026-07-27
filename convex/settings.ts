@@ -42,6 +42,7 @@ function withDefaults(row: Awaited<ReturnType<typeof getRow>>) {
     coldBrewEnabled: row?.coldBrewEnabled !== false,
     hiringEnabled: row?.hiringEnabled !== false,
     giftCardEnabled: row?.giftCardEnabled !== false,
+    menuQuizEnabled: row?.menuQuizEnabled === true,
   }
 }
 

@@ -100,15 +100,18 @@ function FeaturedCard({ item }: { item: FeaturedItem }) {
 function BestSellersStrip({
   items,
   showLine = true,
+  mobileLine = false,
 }: {
   items: FeaturedItem[]
   showLine?: boolean
+  mobileLine?: boolean
 }) {
   const trackEvent = useTrack()
   const content = useHomeContent().featured
   const global = useGlobalContent()
   const editing = useInlineEditingMode()
   const buttonUrl = content.button.href || global.orderUrl
+  const viewportRef = useRef<HTMLDivElement>(null)
   const trackRef = useRef<HTMLDivElement>(null)
   // Render the list twice so the strip can wrap seamlessly.
   const loop = [...items, ...items]
@@ -118,12 +121,16 @@ function BestSellersStrip({
   const boostTarget = useRef(0)
   const boost = useRef(0)
   const paused = useRef(false)
+  const resumeAt = useRef(0)
 
   useEffect(() => {
+    const viewport = viewportRef.current
     const track = trackRef.current
-    if (!track) return
+    if (!viewport || !track) return
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    const mobileQuery = window.matchMedia("(max-width: 767px)")
+    let mobile = mobileQuery.matches
 
     const measure = () => {
       const cards = track.children
@@ -131,8 +138,16 @@ function BestSellersStrip({
       const repeatedFirst = cards.item(items.length) as HTMLElement | null
       setWidth.current = first && repeatedFirst ? repeatedFirst.offsetLeft - first.offsetLeft : 0
     }
+    const onBreakpointChange = (event: MediaQueryListEvent) => {
+      mobile = event.matches
+      track.style.transform = ""
+      viewport.scrollLeft = 0
+      x.current = 0
+      measure()
+    }
     measure()
     window.addEventListener("resize", measure)
+    mobileQuery.addEventListener("change", onBreakpointChange)
     const resizeObserver = new ResizeObserver(measure)
     resizeObserver.observe(track)
 
@@ -161,16 +176,23 @@ function BestSellersStrip({
       if (boostTarget.current < 0.1) boostTarget.current = 0
       boost.current += (boostTarget.current - boost.current) * Math.min(dt * 2.5, 1)
 
-      if (!paused.current) {
-        x.current -= (base + boost.current) * dt
-      }
-
       const w = setWidth.current
-      if (w > 0) {
-        if (x.current <= -w) x.current += w
-        if (x.current > 0) x.current -= w
+      if (mobile) {
+        track.style.transform = ""
+        if (!paused.current && now >= resumeAt.current) {
+          viewport.scrollLeft += base * dt
+        }
+        if (w > 0 && viewport.scrollLeft >= w) viewport.scrollLeft -= w
+      } else {
+        if (!paused.current) {
+          x.current -= (base + boost.current) * dt
+        }
+        if (w > 0) {
+          if (x.current <= -w) x.current += w
+          if (x.current > 0) x.current -= w
+        }
+        track.style.transform = `translate3d(${x.current}px, 0, 0)`
       }
-      track.style.transform = `translate3d(${x.current}px, 0, 0)`
       raf = requestAnimationFrame(frame)
     }
     raf = requestAnimationFrame(frame)
@@ -179,13 +201,28 @@ function BestSellersStrip({
       cancelAnimationFrame(raf)
       window.removeEventListener("resize", measure)
       window.removeEventListener("scroll", onScroll)
+      mobileQuery.removeEventListener("change", onBreakpointChange)
       resizeObserver.disconnect()
     }
   }, [editing, items.length])
 
+  const pauseMobileAutoplay = () => {
+    resumeAt.current = performance.now() + 10_000
+  }
+
   return (
     <section className="relative overflow-hidden bg-cream-deep py-24">
       {showLine && <SquiggleLine />}
+      {mobileLine && (
+        <SquiggleLine
+          side="left"
+          rows={2}
+          marginY={28}
+          marginX={28}
+          leadInY={285}
+          className="md:hidden"
+        />
+      )}
 
       <motion.div
         initial={{ opacity: 0, y: 24 }}
@@ -203,9 +240,14 @@ function BestSellersStrip({
       </motion.div>
 
       <div
-        className="relative z-20"
+        ref={viewportRef}
+        className="relative z-20 overflow-x-auto touch-pan-x md:overflow-visible [&::-webkit-scrollbar]:hidden"
+        style={{ scrollbarWidth: "none" }}
         onMouseEnter={() => (paused.current = true)}
         onMouseLeave={() => (paused.current = false)}
+        onPointerDown={pauseMobileAutoplay}
+        onTouchStart={pauseMobileAutoplay}
+        onWheel={pauseMobileAutoplay}
       >
         <div ref={trackRef} className="flex w-max gap-6 px-6 will-change-transform">
           {loop.map((item, i) => (
@@ -242,18 +284,36 @@ function BestSellersStrip({
 }
 
 /** Reads featured menu items; falls back locally when the backend is absent. */
-function FeaturedCarouselInner({ showLine }: { showLine?: boolean }) {
+function FeaturedCarouselInner({
+  showLine,
+  mobileLine,
+}: {
+  showLine?: boolean
+  mobileLine?: boolean
+}) {
   const items = useQuery(api.menu.listFeatured) as FeaturedItem[] | undefined
   const shownItems = items && items.length > 0 ? items : FALLBACK_FEATURED_ITEMS
-  return <BestSellersStrip items={shownItems} showLine={showLine} />
+  return <BestSellersStrip items={shownItems} showLine={showLine} mobileLine={mobileLine} />
 }
 
-export function FeaturedCarousel({ showLine = true }: { showLine?: boolean }) {
+export function FeaturedCarousel({
+  showLine = true,
+  mobileLine = false,
+}: {
+  showLine?: boolean
+  mobileLine?: boolean
+}) {
   return (
     <ErrorBoundary
-      fallback={<BestSellersStrip items={FALLBACK_FEATURED_ITEMS} showLine={showLine} />}
+      fallback={
+        <BestSellersStrip
+          items={FALLBACK_FEATURED_ITEMS}
+          showLine={showLine}
+          mobileLine={mobileLine}
+        />
+      }
     >
-      <FeaturedCarouselInner showLine={showLine} />
+      <FeaturedCarouselInner showLine={showLine} mobileLine={mobileLine} />
     </ErrorBoundary>
   )
 }

@@ -66,6 +66,7 @@ export function Merch() {
       loading={sections === undefined}
       orderEnabled
       orderLabel="Buy Now"
+      emptyMessage="The merch is being updated. Check back soon!"
     />
   )
 }

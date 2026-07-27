@@ -52,6 +52,10 @@ type ItemData = {
   orderUrl: string | null
   images: ItemImage[]
   featured: boolean
+  quizAnswers: {
+    questionId: Id<"menuQuizQuestions">
+    optionId: Id<"menuQuizOptions">
+  }[]
   likes: number
   order: number
 }
@@ -778,12 +782,18 @@ function ItemEditor({
   const createItem = useMutation(api.menu.createItem)
   const updateItem = useMutation(api.menu.updateItem)
   const moveItem = useMutation(api.menu.moveItem)
+  const quizConfig = useQuery(api.menuQuiz.getAdminConfig)
 
   const [name, setName] = useState(item?.name ?? "")
   const [price, setPrice] = useState(item?.price ?? "")
   const [description, setDescription] = useState(item?.description ?? "")
   const [orderUrl, setOrderUrl] = useState(item?.orderUrl ?? "")
   const [dietaryTags, setDietaryTags] = useState<string[]>(item?.dietaryTags ?? [])
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      (item?.quizAnswers ?? []).map((answer) => [answer.questionId, answer.optionId]),
+    ),
+  )
   const [targetSection, setTargetSection] = useState<Id<"menuSections">>(sectionId)
   const [images, setImages] = useState<ItemImage[]>(item?.images ?? [])
   const [uploading, setUploading] = useState(false)
@@ -840,6 +850,20 @@ function ItemEditor({
       }))
 
       const trimmedOrderUrl = orderUrl.trim() || undefined
+      const quizAnswerPayload =
+        menu === "coffee" && quizConfig
+          ? quizConfig.questions.flatMap((question) => {
+              const optionId = quizAnswers[question._id]
+              return optionId
+                ? [
+                    {
+                      questionId: question._id,
+                      optionId: optionId as Id<"menuQuizOptions">,
+                    },
+                  ]
+                : []
+            })
+          : (item?.quizAnswers ?? [])
 
       if (item === null) {
         await createItem({
@@ -849,6 +873,7 @@ function ItemEditor({
           description: description.trim(),
           orderUrl: trimmedOrderUrl,
           dietaryTags,
+          quizAnswers: quizAnswerPayload,
           images: imagePayload,
         })
       } else {
@@ -859,6 +884,7 @@ function ItemEditor({
           description: description.trim(),
           orderUrl: trimmedOrderUrl,
           dietaryTags,
+          quizAnswers: quizAnswerPayload,
           images: imagePayload,
         })
         if (targetSection !== item.sectionId) {
@@ -937,6 +963,59 @@ function ItemEditor({
           </select>
         </div>
         <DietaryTagPicker value={dietaryTags} onChange={setDietaryTags} />
+        {menu === "coffee" && quizConfig && quizConfig.questions.length > 0 && (
+          <div className="rounded-2xl border-2 border-sand bg-cream-deep/50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className={label}>Quiz matching (optional)</p>
+                <p className="mt-1 text-xs text-espresso/55">
+                  This item is eligible only when every question has an answer.
+                </p>
+              </div>
+              <span
+                className={`rounded-full px-2.5 py-1 text-xs font-bold uppercase ${
+                  quizConfig.questions.every((question) =>
+                    question.options.some((option) => option._id === quizAnswers[question._id]),
+                  )
+                    ? "bg-[#4a7c4e]/15 text-[#4a7c4e]"
+                    : "bg-espresso/10 text-espresso/55"
+                }`}
+              >
+                {quizConfig.questions.every((question) =>
+                  question.options.some((option) => option._id === quizAnswers[question._id]),
+                )
+                  ? "Eligible"
+                  : "Not eligible"}
+              </span>
+            </div>
+            <div className="mt-4 space-y-3">
+              {quizConfig.questions.map((question) => (
+                <label key={question._id} className="block">
+                  <span className="mb-1 block text-sm font-semibold text-espresso">
+                    {question.prompt}
+                  </span>
+                  <select
+                    className={field}
+                    value={quizAnswers[question._id] ?? ""}
+                    onChange={(event) =>
+                      setQuizAnswers((previous) => ({
+                        ...previous,
+                        [question._id]: event.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">Not set</option>
+                    {question.options.map((option) => (
+                      <option key={option._id} value={option._id}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
         <div>
           <label className={label}>
             Images - drag to reorder; the first is the primary one shown

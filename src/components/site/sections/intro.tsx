@@ -33,7 +33,7 @@ export function Intro({ showLine = true }: { showLine?: boolean }) {
               path={`intro.images.${index}`}
               value={item}
               ratio="4:3"
-              className="h-[17.5rem] w-full"
+              className="h-56 w-full sm:h-[17.5rem]"
             >
               <img
                 src={imageUrl(item)}

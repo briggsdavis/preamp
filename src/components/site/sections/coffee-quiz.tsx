@@ -1,76 +1,98 @@
 import { api } from "@convex/_generated/api"
+import type { Id } from "@convex/_generated/dataModel"
 import { useQuery } from "convex/react"
 import { AnimatePresence, motion } from "motion/react"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { EditableText } from "@/components/cms/inline-editing"
 import { SectionLines } from "@/components/site/section-lines"
-import { QUIZ, predictDrink, type Drink } from "@/data/site"
 import { useTrack } from "@/lib/analytics"
 import { useGlobalContent, useHomeContent } from "@/lib/site-content"
 
-/** Normalize a drink/item name for loose matching (drop brand + punctuation). */
-function normName(s: string): string {
-  return s
-    .toLowerCase()
-    .replace(/pre amp('s)?/g, "")
-    .replace(/[^a-z0-9 ]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
+type QuizQuestion = {
+  _id: Id<"menuQuizQuestions">
+  prompt: string
+  options: {
+    _id: Id<"menuQuizOptions">
+    label: string
+  }[]
 }
 
-type MenuLookupItem = { name: string; orderUrl: string | null }
+type QuizItem = {
+  _id: Id<"menuItems">
+  name: string
+  description: string
+  price: string
+  orderUrl: string | null
+  image: string | null
+  quizAnswers: {
+    questionId: Id<"menuQuizQuestions">
+    optionId: Id<"menuQuizOptions">
+  }[]
+}
 
-/** Find the Toast link for the menu item that best matches a quiz drink. */
-function findItemOrder(
-  drinkName: string,
-  items: MenuLookupItem[],
-  fallbackUrl: string,
-): { name: string; orderUrl: string } {
-  const target = normName(drinkName)
-  const match = items.find((it) => {
-    const n = normName(it.name)
-    return n === target || n.includes(target) || target.includes(n)
-  })
-  // Fall back to the site-wide ordering page so the button always works.
-  return {
-    name: match?.name ?? drinkName,
-    orderUrl: match?.orderUrl || fallbackUrl,
-  }
+const EMPTY_QUESTIONS: QuizQuestion[] = []
+const EMPTY_ITEMS: QuizItem[] = []
+
+/** Pick a highest-scoring item, breaking equal scores randomly. */
+function recommend(items: QuizItem[], answers: Record<string, string>): QuizItem {
+  const scored = items.map((item) => ({
+    item,
+    score: item.quizAnswers.reduce(
+      (total, answer) => total + (answers[answer.questionId] === answer.optionId ? 1 : 0),
+      0,
+    ),
+  }))
+  const highest = Math.max(...scored.map(({ score }) => score))
+  const tied = scored.filter(({ score }) => score === highest)
+  return tied[Math.floor(Math.random() * tied.length)].item
 }
 
 export function CoffeeQuiz() {
   const track = useTrack()
   const content = useHomeContent().quiz
   const global = useGlobalContent()
+  const quiz = useQuery(api.menuQuiz.getPublicQuiz)
   const [step, setStep] = useState(0)
   const [answers, setAnswers] = useState<Record<string, string>>({})
-  const [result, setResult] = useState<Drink | null>(null)
+  const [result, setResult] = useState<QuizItem | null>(null)
 
-  // Pull menu items (both menus) so a result can link to its own Toast page.
-  const coffee = useQuery(api.menu.getMenu, { menu: "coffee" })
-  const food = useQuery(api.menu.getMenu, { menu: "food" })
-  const items = useMemo<MenuLookupItem[]>(() => {
-    const out: MenuLookupItem[] = []
-    for (const data of [coffee, food]) {
-      for (const section of data?.sections ?? []) {
-        for (const it of section.items) {
-          out.push({ name: it.name, orderUrl: it.orderUrl ?? null })
-        }
-      }
-    }
-    return out
-  }, [coffee, food])
+  const questions = (quiz?.questions ?? EMPTY_QUESTIONS) as QuizQuestion[]
+  const items = (quiz?.items ?? EMPTY_ITEMS) as QuizItem[]
+  const configurationKey = useMemo(
+    () =>
+      questions
+        .map(
+          (question) => `${question._id}:${question.options.map((option) => option._id).join(",")}`,
+        )
+        .join("|"),
+    [questions],
+  )
 
-  const total = QUIZ.length
-  const current = QUIZ[step]
+  useEffect(() => {
+    setStep(0)
+    setAnswers({})
+    setResult(null)
+  }, [configurationKey])
 
-  function choose(value: string) {
-    const next = { ...answers, [current.id]: value }
+  const ready =
+    quiz?.enabled === true &&
+    questions.length > 0 &&
+    questions.every((question) => question.options.length > 0) &&
+    items.length > 0
+
+  // The admin can keep the section off while configuring it. It also fails
+  // closed if there are no complete questions or eligible Coffee items.
+  if (!ready) return null
+
+  const current = questions[step]
+
+  function choose(optionId: string) {
+    const next = { ...answers, [current._id]: optionId }
     setAnswers(next)
-    if (step + 1 < total) {
+    if (step + 1 < questions.length) {
       setStep(step + 1)
     } else {
-      setResult(predictDrink(next))
+      setResult(recommend(items, next))
     }
   }
 
@@ -79,6 +101,8 @@ export function CoffeeQuiz() {
     setAnswers({})
     setResult(null)
   }
+
+  const orderUrl = result?.orderUrl || global.orderUrl
 
   return (
     <section className="relative overflow-hidden bg-espresso py-24 text-cream">
@@ -111,35 +135,36 @@ export function CoffeeQuiz() {
           <AnimatePresence mode="wait">
             {!result ? (
               <motion.div
-                key={current.id}
+                key={current._id}
                 initial={{ opacity: 0, x: 40 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -40 }}
                 transition={{ duration: 0.35 }}
               >
                 <div className="mb-6 flex items-center gap-2">
-                  {QUIZ.map((_, i) => (
+                  {questions.map((question, index) => (
                     <span
-                      key={i}
+                      key={question._id}
                       className={`h-1.5 flex-1 rounded-full transition-colors ${
-                        i <= step ? "bg-gold" : "bg-cream/20"
+                        index <= step ? "bg-gold" : "bg-cream/20"
                       }`}
                     />
                   ))}
                 </div>
                 <p className="text-xs tracking-[0.3em] text-amber uppercase">
-                  Question {step + 1} / {total}
+                  Question {step + 1} / {questions.length}
                 </p>
                 <h3 className="mt-2 font-groovy text-2xl">{current.prompt}</h3>
                 <div className="mt-6 space-y-3">
-                  {current.options.map((opt) => (
+                  {current.options.map((option) => (
                     <motion.button
-                      key={opt.value}
+                      key={option._id}
+                      type="button"
                       whileHover={{ x: 6 }}
-                      onClick={() => choose(opt.value)}
+                      onClick={() => choose(option._id)}
                       className="flex w-full items-center justify-between rounded-2xl border border-cream/15 bg-cream/5 px-5 py-3.5 text-left font-medium transition-colors hover:border-gold hover:bg-gold/10"
                     >
-                      {opt.label}
+                      {option.label}
                       <span className="text-gold">→</span>
                     </motion.button>
                   ))}
@@ -148,55 +173,52 @@ export function CoffeeQuiz() {
             ) : (
               <motion.div
                 key="result"
-                initial={{ opacity: 0, scale: 0.92 }}
+                initial={{ opacity: 0, scale: 0.94 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.45, ease: "easeOut" }}
-                className="text-center"
+                transition={{ duration: 0.4, ease: "easeOut" }}
               >
                 <p className="text-xs tracking-[0.3em] text-amber uppercase">Your match</p>
-                <motion.div
-                  initial={{ rotate: -20, scale: 0.8 }}
-                  animate={{ rotate: 0, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 180, damping: 12 }}
-                  className="mx-auto mt-4 grid h-28 w-28 place-items-center rounded-full"
-                  style={{
-                    background: `radial-gradient(circle, var(--color-espresso) 0 18%, ${result.hue} 18% 100%)`,
-                  }}
-                >
-                  <span className="h-3 w-3 rounded-full bg-cream" />
-                </motion.div>
-                <h3 className="mt-5 font-groovy text-3xl text-gold">{result.name}</h3>
-                <p className="mt-2 text-cream/80">{result.blurb}</p>
-                <p className="mt-2 text-xs tracking-wide text-cream/50 uppercase">{result.notes}</p>
-                {(() => {
-                  const order = findItemOrder(result.name, items, global.orderUrl)
-                  return (
+                <div className="mt-4 overflow-hidden rounded-2xl border border-cream/15 bg-cream text-espresso shadow-xl shadow-black/20">
+                  {result.image && (
+                    <img
+                      src={result.image}
+                      alt={result.name}
+                      className="h-44 w-full object-cover"
+                    />
+                  )}
+                  <div className="p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <h3 className="font-groovy text-2xl leading-tight">{result.name}</h3>
+                      <span className="shrink-0 font-semibold text-brick">{result.price}</span>
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-espresso/70">
+                      {result.description}
+                    </p>
                     <a
-                      href={order.orderUrl}
+                      href={orderUrl}
                       target="_blank"
                       rel="noreferrer"
                       onClick={() =>
                         track("order_click", {
                           clickSource: "quiz",
-                          menuItemName: order.name,
-                          destination: order.orderUrl,
+                          menuItemName: result.name,
+                          destination: orderUrl,
                         })
                       }
-                      className="mt-6 inline-block rounded-full bg-gold px-7 py-3 font-semibold text-espresso shadow-lg shadow-black/25 transition-all hover:-translate-y-0.5 hover:bg-amber"
+                      className="mt-4 block rounded-full bg-terracotta px-6 py-3 text-center font-semibold text-cream transition-colors hover:bg-brick"
                     >
                       Order {result.name} →
                     </a>
-                  )
-                })()}
-                <div>
-                  <button
-                    onClick={reset}
-                    className="mt-3 rounded-full border border-cream/30 px-6 py-2.5 text-sm font-semibold transition-colors hover:border-gold hover:text-gold"
-                  >
-                    Try again
-                  </button>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={reset}
+                  className="mt-4 rounded-full border border-cream/30 px-6 py-2.5 text-sm font-semibold transition-colors hover:border-gold hover:text-gold"
+                >
+                  Try again
+                </button>
               </motion.div>
             )}
           </AnimatePresence>

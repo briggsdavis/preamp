@@ -15,6 +15,12 @@ import { v } from "convex/values"
 /** Which public menu/catalog a section/item belongs to. */
 export const menuKind = v.string()
 
+/** One menu item's selected option for one recommendation-quiz question. */
+export const menuQuizAnswer = v.object({
+  questionId: v.id("menuQuizQuestions"),
+  optionId: v.id("menuQuizOptions"),
+})
+
 /** Visitor-selected reason on the public contact form. */
 export const contactTopic = v.union(
   v.literal("menu-inquiry"),
@@ -64,6 +70,8 @@ export default defineSchema({
     hiringEnabled: v.optional(v.boolean()), // /hiring
     // Gift Card is an external link, so this only controls its nav visibility.
     giftCardEnabled: v.optional(v.boolean()),
+    // Homepage coffee recommendation quiz. Defaults off until configured.
+    menuQuizEnabled: v.optional(v.boolean()),
   }),
 
   // Structured page and global content edited in the CMS. Content is kept as
@@ -136,10 +144,27 @@ export default defineSchema({
     // Surfaced in the home-page "Best Sellers" carousel (does not change the
     // item's position within its menu section).
     featured: v.optional(v.boolean()),
+    // One selected quiz option per configured question. Missing/incomplete
+    // answers keep the item out of the public recommendation pool.
+    quizAnswers: v.optional(v.array(menuQuizAnswer)),
   })
     .index("by_section", ["sectionId"])
     .index("by_menu", ["menu"])
     .index("by_menu_slug", ["menu", "slug"]),
+
+  // --- Menu quiz ------------------------------------------------------------
+  // Questions and options are separate ordered rows so admins can add, remove,
+  // and reorder either without rewriting a growing configuration document.
+  menuQuizQuestions: defineTable({
+    prompt: v.string(),
+    order: v.number(),
+  }),
+
+  menuQuizOptions: defineTable({
+    questionId: v.id("menuQuizQuestions"),
+    label: v.string(),
+    order: v.number(),
+  }).index("by_questionId", ["questionId"]),
 
   // PDF + meta for each menu (one row per menu kind).
   menuMeta: defineTable({

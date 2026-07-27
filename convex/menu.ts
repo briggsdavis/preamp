@@ -3,7 +3,7 @@ import type { Doc, Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { requireAdmin } from "./admin"
-import { menuKind } from "./schema"
+import { menuKind, menuQuizAnswer } from "./schema"
 import { COFFEE_SEED, FOOD_SEED, MERCH_SEED, type SeedSection } from "./seedData"
 
 /**
@@ -51,6 +51,26 @@ async function uniqueItemSlug(
   let n = 2
   while (taken.has(`${base}-${n}`)) n++
   return `${base}-${n}`
+}
+
+type QuizAnswer = NonNullable<Doc<"menuItems">["quizAnswers"]>[number]
+
+/** Keep persisted quiz assignments internally consistent even if a client is stale. */
+async function validateQuizAnswers(ctx: MutationCtx, answers: QuizAnswer[] | undefined) {
+  const seen = new Set<string>()
+  for (const answer of answers ?? []) {
+    if (seen.has(answer.questionId)) {
+      throw new Error("Choose only one quiz answer per question.")
+    }
+    seen.add(answer.questionId)
+    const [question, option] = await Promise.all([
+      ctx.db.get(answer.questionId),
+      ctx.db.get(answer.optionId),
+    ])
+    if (!question || !option || option.questionId !== answer.questionId) {
+      throw new Error("A quiz answer is no longer available. Refresh and choose again.")
+    }
+  }
 }
 
 function pageSlugify(title: string): string {
@@ -175,6 +195,7 @@ export const getMenu = query({
             orderUrl: item.orderUrl ?? null,
             images: await itemImages(ctx, item),
             featured: item.featured ?? false,
+            quizAnswers: item.quizAnswers ?? [],
             likes: item.likes,
             reviews: item.reviews,
             order: item.order,
@@ -427,6 +448,7 @@ const itemFields = {
   description: v.string(),
   orderUrl: v.optional(v.string()),
   dietaryTags: v.optional(v.array(v.string())),
+  quizAnswers: v.optional(v.array(menuQuizAnswer)),
   images: v.array(
     v.object({
       storageId: v.optional(v.id("_storage")),
@@ -439,6 +461,7 @@ export const createItem = mutation({
   args: { sectionId: v.id("menuSections"), ...itemFields },
   handler: async (ctx, args) => {
     await requireAdmin(ctx)
+    await validateQuizAnswers(ctx, args.quizAnswers)
     const section = await ctx.db.get(args.sectionId)
     if (!section) throw new Error("Section not found.")
     const siblings = await ctx.db
@@ -455,6 +478,7 @@ export const createItem = mutation({
       price: args.price,
       description: args.description,
       dietaryTags: args.dietaryTags ?? [],
+      quizAnswers: args.quizAnswers ?? [],
       orderUrl: args.orderUrl,
       images: args.images,
       likes: 0,
@@ -468,6 +492,7 @@ export const updateItem = mutation({
   args: { itemId: v.id("menuItems"), ...itemFields },
   handler: async (ctx, { itemId, ...fields }) => {
     await requireAdmin(ctx)
+    await validateQuizAnswers(ctx, fields.quizAnswers)
     const existing = await ctx.db.get(itemId)
     // Keep an existing slug stable (it's a public URL); assign one if missing.
     const slug =
@@ -477,6 +502,7 @@ export const updateItem = mutation({
     await ctx.db.patch(itemId, {
       ...fields,
       dietaryTags: fields.dietaryTags ?? [],
+      quizAnswers: fields.quizAnswers ?? [],
       ...(slug ? { slug } : {}),
       image: undefined,
       imageStorageId: undefined,

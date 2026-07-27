@@ -567,6 +567,7 @@ export function MenuPage({
   orderEnabled = false,
   orderLabel = "Order",
   banner,
+  emptyMessage = "The menu is being updated. Check back soon!",
 }: {
   kicker: string
   title: string
@@ -591,6 +592,8 @@ export function MenuPage({
   orderLabel?: string
   /** Optional highlighted callout shown under the page header (e.g. a promo). */
   banner?: ReactNode
+  /** Page-specific copy shown when no public sections are available. */
+  emptyMessage?: string
 }) {
   const global = useGlobalContent()
   const track = useTrack()
@@ -735,9 +738,7 @@ export function MenuPage({
             <p className="text-center text-espresso/60">Loading the menu…</p>
           )}
           {!loading && sections.length === 0 && (
-            <p className="text-center text-espresso/60">
-              The menu is being updated. Check back soon!
-            </p>
+            <p className="text-center text-espresso/60">{emptyMessage}</p>
           )}
 
           <div className="space-y-16">
