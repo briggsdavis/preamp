@@ -51,7 +51,7 @@ export function MapEmbed({ src, title, className }: MapEmbedProps) {
       />
       <span className="relative flex flex-col items-center gap-3 px-6 text-center">
         <span className="text-4xl">📍</span>
-        <span className="rounded-full bg-gold px-6 py-2.5 font-semibold text-espresso shadow-lg transition-transform group-hover:-translate-y-0.5">
+        <span className="rounded-full bg-logo-orange px-6 py-2.5 font-semibold text-cream shadow-lg transition-transform group-hover:-translate-y-0.5">
           View map
         </span>
       </span>

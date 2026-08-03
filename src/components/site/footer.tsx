@@ -13,11 +13,11 @@ export function Footer() {
     <footer className="relative overflow-hidden bg-espresso text-cream">
       {/* Taller band with breathing room up top so the rippling ovals can
           pulse upward without being clipped at the footer edge. */}
-      <div className="absolute inset-x-0 top-0 h-36 pt-5 opacity-40">
+      <div className="absolute inset-x-0 top-0 hidden h-36 pt-5 opacity-40 md:block">
         <RippleStripes count={110} fade="none" variant="wave" gap={3} />
       </div>
 
-      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pt-56 pb-12 md:grid-cols-4 md:px-8">
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pt-12 pb-12 md:grid-cols-4 md:px-8 md:pt-56">
         <Reveal className="md:col-span-1">
           <div className="flex items-center gap-3">
             <img
@@ -73,8 +73,39 @@ export function Footer() {
           )}
         </Reveal>
 
+        <nav className="space-y-4 md:hidden" aria-label="Footer navigation">
+          {NAV.filter((item) => item.children).map((group) => (
+            <div key={group.label} className="grid grid-cols-3 items-center gap-3">
+              <p className="font-groovy text-sm tracking-[0.12em] text-amber uppercase">
+                {group.label}
+              </p>
+              {group.children!.map((child) =>
+                child.external ? (
+                  <a
+                    key={child.to}
+                    href={child.to}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-sm text-cream/75 transition-colors hover:text-gold"
+                  >
+                    {child.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={child.to}
+                    to={child.to}
+                    className="text-sm text-cream/75 transition-colors hover:text-gold"
+                  >
+                    {child.label}
+                  </Link>
+                ),
+              )}
+            </div>
+          ))}
+        </nav>
+
         {NAV.filter((i) => i.children).map((group, gi) => (
-          <Reveal key={group.label} delay={0.08 * (gi + 1)}>
+          <Reveal key={group.label} delay={0.08 * (gi + 1)} className="hidden md:block">
             <p className="font-groovy text-sm tracking-[0.2em] text-amber uppercase">
               {group.label}
             </p>
@@ -114,7 +145,20 @@ export function Footer() {
       </div>
 
       <div className="relative border-t border-cream/10 py-5 text-center text-xs text-cream/50">
-        © {new Date().getFullYear()} {global.businessName} {global.tagline} · Pittsburgh, PA
+        <p>
+          © {new Date().getFullYear()} {global.businessName} {global.tagline} · Pittsburgh, PA
+        </p>
+        <p className="mt-2 md:hidden">
+          Made by{" "}
+          <a
+            href="https://socialsatisfaction.agency/"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-amber transition-colors hover:text-gold"
+          >
+            SocialSatisfaction
+          </a>
+        </p>
       </div>
     </footer>
   )

@@ -23,7 +23,7 @@ export function LocationCTA() {
           viewport={{ once: true }}
           transition={{ duration: 0.9 }}
         >
-          <p className="font-groovy text-sm tracking-[0.35em] text-cream/80 uppercase">
+          <p className="font-groovy text-sm tracking-[0.35em] text-espresso uppercase md:text-cream/80">
             <EditableText path="location.kicker" value={content.kicker} />
           </p>
           <h2 className="mt-3 font-display text-5xl leading-tight text-cream md:text-6xl">

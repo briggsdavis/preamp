@@ -170,6 +170,17 @@ export function Navbar() {
     })
   }, [settings, menuPages])
 
+  // Mobile uses one clear tap target per row. Dropdown headings are omitted
+  // because they are labels rather than destinations.
+  const mobileNavRows = useMemo<NavChild[]>(
+    () =>
+      navItems.flatMap(
+        (item) =>
+          item.children ?? (item.to ? [{ label: item.label, to: item.to, external: false }] : []),
+      ),
+    [navItems],
+  )
+
   useEffect(() => {
     // Only tracks whether we've scrolled past the top - the bar is always
     // visible and never hides on scroll direction.
@@ -235,26 +246,44 @@ export function Navbar() {
           </a>
         </div>
 
-        <button
-          className="flex h-9 w-9 flex-col items-center justify-center gap-1.5 md:hidden"
-          onClick={() => setMobileOpen((v) => !v)}
-          aria-label="Toggle menu"
-          aria-expanded={mobileOpen}
-        >
-          <span
-            className={cn(
-              "h-0.5 w-6 bg-espresso transition-all",
-              mobileOpen && "translate-y-2 rotate-45",
-            )}
-          />
-          <span className={cn("h-0.5 w-6 bg-espresso transition-all", mobileOpen && "opacity-0")} />
-          <span
-            className={cn(
-              "h-0.5 w-6 bg-espresso transition-all",
-              mobileOpen && "-translate-y-2 -rotate-45",
-            )}
-          />
-        </button>
+        <div className="ml-auto flex items-center gap-1.5 md:hidden">
+          <button
+            className="flex h-9 w-9 flex-col items-center justify-center gap-1.5"
+            onClick={() => setMobileOpen((v) => !v)}
+            aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+          >
+            <span
+              className={cn(
+                "h-0.5 w-6 bg-espresso transition-all",
+                mobileOpen && "translate-y-2 rotate-45",
+              )}
+            />
+            <span
+              className={cn("h-0.5 w-6 bg-espresso transition-all", mobileOpen && "opacity-0")}
+            />
+            <span
+              className={cn(
+                "h-0.5 w-6 bg-espresso transition-all",
+                mobileOpen && "-translate-y-2 -rotate-45",
+              )}
+            />
+          </button>
+          <a
+            href={global.orderUrl}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() =>
+              track("order_click", {
+                clickSource: "navbar-mobile",
+                destination: global.orderUrl,
+              })
+            }
+            className="rounded-full bg-terracotta px-4 py-2 text-xs font-semibold tracking-wide text-cream uppercase shadow-sm"
+          >
+            Order now
+          </a>
+        </div>
       </nav>
 
       <AnimatePresence>
@@ -266,62 +295,34 @@ export function Navbar() {
             transition={{ duration: 0.25 }}
             className="overflow-hidden border-t border-espresso/10 bg-cream md:hidden"
           >
-            <div className="space-y-4 px-6 py-6">
-              {navItems.map((item) => (
-                <div key={item.label}>
-                  {item.to ? (
-                    <Link
-                      to={item.to}
-                      className="block font-groovy text-lg text-espresso lowercase"
-                    >
-                      {item.label}
-                    </Link>
-                  ) : (
-                    <>
-                      <p className="font-groovy text-lg text-espresso lowercase">{item.label}</p>
-                      <div className="mt-1 flex flex-col gap-1 pl-3">
-                        {item.children!.map((child) =>
-                          child.external ? (
-                            <a
-                              key={child.to}
-                              href={child.to}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="py-1 text-sm text-espresso/70"
-                              onClick={() => trackNavChild(track, child)}
-                            >
-                              {child.label}
-                            </a>
-                          ) : (
-                            <Link
-                              key={child.to}
-                              to={child.to}
-                              className="py-1 text-sm text-espresso/70"
-                              onClick={() => trackNavChild(track, child)}
-                            >
-                              {child.label}
-                            </Link>
-                          ),
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-              ))}
-              <a
-                href={global.orderUrl}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() =>
-                  track("order_click", {
-                    clickSource: "navbar",
-                    destination: global.orderUrl,
-                  })
-                }
-                className="mt-2 block rounded-full bg-terracotta px-5 py-3 text-center font-semibold tracking-wide text-cream uppercase"
-              >
-                Order now
-              </a>
+            <div>
+              {mobileNavRows.map((row, index) => {
+                const className = cn(
+                  "block px-6 py-4 font-groovy text-base text-espresso uppercase transition-colors active:bg-logo-orange active:text-cream",
+                  index % 2 === 0 ? "bg-cream" : "bg-cream-deep",
+                )
+                return row.external ? (
+                  <a
+                    key={row.to}
+                    href={row.to}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={className}
+                    onClick={() => trackNavChild(track, row)}
+                  >
+                    {row.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={row.to}
+                    to={row.to!}
+                    className={className}
+                    onClick={() => trackNavChild(track, row)}
+                  >
+                    {row.label}
+                  </Link>
+                )
+              })}
             </div>
           </motion.div>
         )}

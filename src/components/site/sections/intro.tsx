@@ -19,7 +19,7 @@ export function Intro({ showLine = true }: { showLine?: boolean }) {
         <p className="font-groovy text-sm tracking-[0.35em] text-terracotta uppercase">
           <EditableText path="intro.kicker" value={content.kicker} />
         </p>
-        <h2 className="mt-4 font-groovy text-4xl leading-tight text-espresso md:text-5xl">
+        <h2 className="mt-[0.8rem] font-groovy text-4xl leading-tight text-espresso md:text-5xl">
           <EditableText path="intro.title" value={content.title} />
         </h2>
         <p className="mt-6 text-lg leading-relaxed text-espresso/75">

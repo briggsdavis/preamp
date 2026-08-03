@@ -229,19 +229,19 @@ function BestSellersStrip({
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "0px 0px -18% 0px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-20 mx-auto mb-12 max-w-6xl px-6 md:px-8"
+        className="relative z-20 mx-auto mb-6 max-w-6xl px-6 md:mb-12 md:px-8"
       >
         <p className="font-groovy text-sm tracking-[0.35em] text-terracotta uppercase">
           <EditableText path="featured.kicker" value={content.kicker} />
         </p>
-        <h2 className="mt-3 font-groovy text-4xl text-espresso md:text-5xl">
+        <h2 className="mt-[0.6rem] font-groovy text-4xl text-espresso md:text-5xl">
           <EditableText path="featured.title" value={content.title} />
         </h2>
       </motion.div>
 
       <div
         ref={viewportRef}
-        className="relative z-20 overflow-x-auto touch-pan-x md:overflow-visible [&::-webkit-scrollbar]:hidden"
+        className="relative z-20 touch-pan-x overflow-x-auto md:overflow-visible [&::-webkit-scrollbar]:hidden"
         style={{ scrollbarWidth: "none" }}
         onMouseEnter={() => (paused.current = true)}
         onMouseLeave={() => (paused.current = false)}

@@ -83,7 +83,7 @@ function TestimonialsView({ slides }: { slides: Slide[] }) {
         </motion.div>
 
         <div
-          className="relative mx-auto mt-12 flex h-56 max-w-3xl items-center justify-center overflow-hidden"
+          className="relative mx-auto mt-3 flex h-56 max-w-3xl items-center justify-center overflow-hidden md:mt-6"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
@@ -96,8 +96,8 @@ function TestimonialsView({ slides }: { slides: Slide[] }) {
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
               className="absolute px-4 text-center"
             >
-              <span className="font-display text-5xl text-gold/60">“</span>
-              <p className="font-groovy text-2xl leading-snug text-espresso md:text-3xl">
+              <span className="block font-display text-5xl leading-none text-gold/60">“</span>
+              <p className="-mt-1 font-groovy text-2xl leading-snug text-espresso md:text-3xl">
                 {t.quote}
               </p>
               {t.rating !== undefined && (

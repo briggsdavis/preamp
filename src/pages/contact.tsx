@@ -161,7 +161,7 @@ export function Contact() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.9 }}
-              className="relative min-h-[680px] overflow-hidden rounded-3xl shadow-2xl md:min-h-0"
+              className="relative min-h-[720px] overflow-hidden rounded-3xl shadow-2xl sm:min-h-[680px] md:min-h-0"
             >
               <img
                 src="/images/contactdecor.webp"
@@ -198,7 +198,7 @@ export function Contact() {
                     animate={{ y: 0 }}
                     exit={{ y: "100%" }}
                     transition={{ type: "spring", damping: 28, stiffness: 240 }}
-                    className="absolute inset-0 flex flex-col bg-cream-deep/97 p-5 backdrop-blur-md md:p-7"
+                    className="absolute inset-0 flex flex-col overflow-y-auto bg-cream-deep/97 p-5 backdrop-blur-md md:p-7"
                   >
                     <div className="flex items-start justify-between">
                       <h2 className="font-display text-3xl text-espresso">Send a Note</h2>
@@ -222,7 +222,7 @@ export function Contact() {
                     ) : (
                       <form
                         onSubmit={handleSubmit}
-                        className="mt-5 flex flex-1 flex-col gap-3 overflow-y-auto"
+                        className="mt-5 flex flex-1 flex-col gap-3 overflow-y-auto pb-2"
                       >
                         <div className="grid gap-3 sm:grid-cols-2">
                           <input
@@ -288,7 +288,7 @@ export function Contact() {
                         <button
                           type="submit"
                           disabled={sending}
-                          className="mt-1 rounded-full bg-brick px-7 py-3 font-semibold text-cream shadow-lg transition-all hover:-translate-y-1 hover:bg-maroon disabled:opacity-60"
+                          className="mt-1 shrink-0 rounded-full bg-brick px-7 py-3 font-semibold text-cream shadow-lg transition-all hover:-translate-y-1 hover:bg-maroon disabled:opacity-60"
                         >
                           {sending ? "Sending…" : "Send Message →"}
                         </button>

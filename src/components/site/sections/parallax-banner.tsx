@@ -24,6 +24,14 @@ export function ParallaxBanner({
   cmsPaths,
 }: ParallaxBannerProps) {
   const editing = useInlineEditingMode()
+  const listeningBarLines =
+    sub ===
+    "A wall of album art, warm gold light, and a needle that never lifts. This is the listening bar."
+      ? [
+          "A wall of album art, warm gold light,",
+          "and a needle that never lifts. This is the listening bar.",
+        ]
+      : null
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -81,12 +89,22 @@ export function ParallaxBanner({
             {cmsPaths ? <EditableText path={cmsPaths.kicker} value={kicker} /> : kicker}
           </p>
         )}
-        <h2 className="mt-4 font-display text-5xl leading-tight text-cream md:text-7xl">
+        <h2 className="mt-4 font-display text-4xl leading-tight whitespace-nowrap text-cream md:text-7xl">
           {cmsPaths ? <EditableText path={cmsPaths.heading} value={heading} /> : heading}
         </h2>
         {sub && (
-          <p className="mx-auto mt-5 max-w-2xl text-lg text-cream/85">
-            {cmsPaths ? <EditableText path={cmsPaths.sub} value={sub} /> : sub}
+          <p className="mx-auto mt-5 max-w-2xl text-base text-cream/85 md:text-lg">
+            {editing && cmsPaths ? (
+              <EditableText path={cmsPaths.sub} value={sub} />
+            ) : listeningBarLines ? (
+              listeningBarLines.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
+              ))
+            ) : (
+              sub
+            )}
           </p>
         )}
       </motion.div>

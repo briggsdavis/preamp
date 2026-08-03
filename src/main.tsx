@@ -28,13 +28,10 @@ const appCrashFallback = (
   </div>
 )
 
-const convexUrl = import.meta.env.VITE_CONVEX_URL
-if (!convexUrl) {
-  throw new Error(
-    "VITE_CONVEX_URL is not set. Run `npx convex dev` (writes it to .env.local) " +
-      "and set it in your Vercel environment variables.",
-  )
-}
+// Keep the public site renderable with its built-in content during a local
+// design preview, even before a Convex deployment has been connected. A real
+// deployment URL still takes precedence everywhere it is configured.
+const convexUrl = import.meta.env.VITE_CONVEX_URL || "http://127.0.0.1:3210"
 
 // Single Convex client for the whole app. `ConvexAuthProvider` layers Convex
 // Auth (sign-in/out, session tokens) on top of it so any component can read

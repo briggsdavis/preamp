@@ -25,6 +25,7 @@
   --color-gold: #d9883b;
   --color-amber: #e0a042;
   --color-orange: #ce6b38;
+  --color-logo-orange: #e7692c;
   --color-terracotta: #b55335;
   --color-brick: #9e4a3c;
   --color-maroon: #6b2f26;
@@ -85,6 +86,38 @@ body {
 .font-groovy {
   font-family: var(--font-groovy);
   letter-spacing: 0.01em;
+}
+
+/* Public-site primary actions use the orange sampled from the Pre Amp logo.
+   Keep secondary/utility controls in their contextual colors. */
+.grain :is(a, button):not([data-cms-control])[class~="bg-terracotta"],
+.grain :is(a, button):not([data-cms-control])[class~="bg-brick"],
+.grain :is(a, button):not([data-cms-control])[class~="bg-gold"],
+.grain :is(a, button):not([data-cms-control])[class~="bg-orange"] {
+  background-color: var(--color-logo-orange);
+  color: var(--color-cream);
+}
+
+.grain :is(a, button):not([data-cms-control])[class~="bg-terracotta"]:hover,
+.grain :is(a, button):not([data-cms-control])[class~="bg-brick"]:hover,
+.grain :is(a, button):not([data-cms-control])[class~="bg-gold"]:hover,
+.grain :is(a, button):not([data-cms-control])[class~="bg-orange"]:hover {
+  background-color: color-mix(in srgb, var(--color-logo-orange) 84%, var(--color-espresso));
+  color: var(--color-cream);
+}
+
+@media (max-width: 767px) {
+  /* CTA labels are intentionally uniform on the mobile site. */
+  .grain button,
+  .grain a[class*="rounded-full"] {
+    text-transform: uppercase;
+  }
+
+  /* Tighten the large Churchward headlines without affecting spaced eyebrow copy. */
+  .grain :is(h1, h2, h3).font-groovy,
+  .grain :is(h1, h2, h3).font-display {
+    letter-spacing: -0.02em;
+  }
 }
 
 /* The lined / "grooved" retro headline effect inspired by the original site.

@@ -215,6 +215,7 @@ function RestaurantTile({
 export function RestaurantGroup() {
   const content = useHomeContent().restaurantGroup
   const editor = useInlineEditor()
+  const title = content.title.replace(/\brestaurant group\b/g, "Restaurant Group")
 
   function replaceRestaurants(restaurants: CmsRestaurant[]) {
     editor?.replaceValue("restaurantGroup.restaurants", restaurants)
@@ -259,7 +260,7 @@ export function RestaurantGroup() {
             <EditableText path="restaurantGroup.kicker" value={content.kicker} />
           </p>
           <h2 className="mx-auto mt-3 max-w-2xl font-groovy text-3xl leading-tight text-espresso md:text-4xl">
-            <EditableText path="restaurantGroup.title" value={content.title} />
+            <EditableText path="restaurantGroup.title" value={title} />
           </h2>
         </motion.div>
 

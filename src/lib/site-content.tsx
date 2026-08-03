@@ -170,7 +170,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
   },
   restaurantGroup: {
     kicker: "The Family",
-    title: "Proud to be part of Richard Deshantz's restaurant group.",
+    title: "Proud to be part of Richard Deshantz's Restaurant Group.",
     button: { label: "Visit the restaurant group →", href: "https://richarddeshantz.com/" },
     restaurants: RD_RESTAURANTS.map((restaurant) => ({
       name: restaurant.name,
