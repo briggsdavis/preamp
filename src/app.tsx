@@ -62,10 +62,16 @@ export default function App() {
     (location.pathname.startsWith("/menu/coffee") && !coffeeEnabled) ||
     (location.pathname.startsWith("/menu/food") && !foodEnabled)
 
-  // Jump to the top of the page on real route changes (not item open/close).
+  // Jump to a requested section or the top on real route changes (not item open/close).
   useEffect(() => {
+    if (location.hash) {
+      const target = document.getElementById(location.hash.slice(1))
+      if (!target) throw new Error(`Missing hash target: ${location.hash}`)
+      target.scrollIntoView()
+      return
+    }
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior })
-  }, [routeKey])
+  }, [location.hash, routeKey])
 
   // Record a page view on every route change (no-ops on /admin & /menu-pdf).
   useEffect(() => {

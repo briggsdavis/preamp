@@ -264,7 +264,7 @@ export function RestaurantGroup() {
           </h2>
         </motion.div>
 
-        <div className="mt-12 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 md:gap-4 lg:grid-cols-7">
+        <div className="mt-12 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 md:gap-4">
           {content.restaurants.map((restaurant, index) => (
             <RestaurantTile
               key={index}

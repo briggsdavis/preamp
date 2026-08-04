@@ -6,7 +6,7 @@
   },
   "rules": {
     "react/react-in-jsx-scope": "off",
-    "no-underscore-dangle": "off"
+    "eslint/no-underscore-dangle": "off"
   },
   "plugins": [
     "eslint",

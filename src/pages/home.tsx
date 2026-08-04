@@ -1,5 +1,6 @@
 import { PageWrapper } from "@/components/site/page-wrapper"
 import { CoffeeQuiz } from "@/components/site/sections/coffee-quiz"
+import { FaqPreview } from "@/components/site/sections/faq-preview"
 import { FeaturedCarousel } from "@/components/site/sections/featured-carousel"
 import { Hero } from "@/components/site/sections/hero"
 import { Intro } from "@/components/site/sections/intro"
@@ -51,6 +52,7 @@ export function Home() {
 
         <CoffeeQuiz />
         <Testimonials />
+        <FaqPreview />
         <LocationCTA />
         <RestaurantGroup />
       </PageWrapper>

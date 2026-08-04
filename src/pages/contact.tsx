@@ -3,10 +3,12 @@ import { useMutation } from "convex/react"
 import { motion, AnimatePresence } from "motion/react"
 import { useMemo, useState, type FormEvent } from "react"
 import { useLocation } from "react-router"
+import { FaqList } from "@/components/site/faq-list"
 import { MapEmbed } from "@/components/site/map-embed"
 import { PageWrapper } from "@/components/site/page-wrapper"
 import { RippleStripes } from "@/components/site/ripple-stripes"
 import { SocialIcon } from "@/components/site/social-icons"
+import { FAQ_ITEMS } from "@/data/faq"
 import { CONTACT_TOPICS, type ContactTopic } from "@/lib/contact-topics"
 import { useGlobalContent } from "@/lib/site-content"
 
@@ -19,6 +21,12 @@ const TOPIC_DESCRIPTIONS: Record<ContactTopic, string> = {
   "menu-inquiry": "Ask about ingredients, dietary needs, availability, or our current menu.",
   "vinyl-request": "Tell us what record or artist you'd love to hear at the listening bar.",
 }
+
+const FAQ_REVEAL_INITIAL = { opacity: 0, y: 24 }
+const FAQ_REVEAL_VISIBLE = { opacity: 1, y: 0 }
+const FAQ_HEADER_VIEWPORT = { once: true, margin: "0px 0px -18% 0px" }
+const FAQ_LIST_VIEWPORT = { once: true, margin: "0px 0px -10% 0px" }
+const FAQ_REVEAL_TRANSITION = { duration: 0.9, ease: [0.22, 1, 0.36, 1] as const }
 
 export function Contact() {
   const global = useGlobalContent()
@@ -344,6 +352,40 @@ export function Contact() {
               src={global.mapsEmbed}
               className="h-full min-h-[360px] w-full"
             />
+          </motion.div>
+        </div>
+      </section>
+
+      <section id="faq" aria-labelledby="faq-heading" className="scroll-mt-24 bg-cream-deep">
+        <div className="mx-auto max-w-5xl px-6 py-24 md:px-8 md:py-32">
+          <motion.div
+            initial={FAQ_REVEAL_INITIAL}
+            whileInView={FAQ_REVEAL_VISIBLE}
+            viewport={FAQ_HEADER_VIEWPORT}
+            transition={FAQ_REVEAL_TRANSITION}
+            className="mb-12 text-center"
+          >
+            <p className="font-groovy text-sm tracking-widest text-terracotta uppercase">
+              Before you visit
+            </p>
+            <h2
+              id="faq-heading"
+              className="mt-3 font-display text-4xl leading-tight text-espresso md:text-6xl"
+            >
+              Frequently Asked Questions
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-espresso/70">
+              Everything you need to know about the coffee, food, studio, and stopping by.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={FAQ_REVEAL_INITIAL}
+            whileInView={FAQ_REVEAL_VISIBLE}
+            viewport={FAQ_LIST_VIEWPORT}
+            transition={FAQ_REVEAL_TRANSITION}
+          >
+            <FaqList items={FAQ_ITEMS} />
           </motion.div>
         </div>
       </section>

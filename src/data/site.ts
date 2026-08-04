@@ -137,5 +137,6 @@ export const RD_RESTAURANTS: Restaurant[] = [
   { name: "Gi-Jin", image: "/images/handroll.webp", href: "https://gi-jin.com/" },
   { name: "Sea Monkey", image: "/images/seamonkey.webp", href: "https://www.seamonkeypgh.com/" },
   { name: "Rib Room", image: "/images/ribroom.webp", href: "https://ribroompgh.com/" },
+  { name: "Aberdeen", image: "/images/aberdeen.png" },
   { name: "Pre Amp", image: "/images/preamplogo.png", href: "/" },
 ]
