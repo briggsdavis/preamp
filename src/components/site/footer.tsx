@@ -148,7 +148,7 @@ export function Footer() {
         <p>
           © {new Date().getFullYear()} {global.businessName} {global.tagline} · Pittsburgh, PA
         </p>
-        <p className="mt-2 md:hidden">
+        <p className="mt-2">
           Made by{" "}
           <a
             href="https://socialsatisfaction.agency/"
@@ -156,7 +156,7 @@ export function Footer() {
             rel="noreferrer"
             className="font-semibold text-amber transition-colors hover:text-gold"
           >
-            SocialSatisfaction
+            Social Satisfaction
           </a>
         </p>
       </div>

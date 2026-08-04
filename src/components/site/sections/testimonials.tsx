@@ -83,7 +83,7 @@ function TestimonialsView({ slides }: { slides: Slide[] }) {
         </motion.div>
 
         <div
-          className="relative mx-auto mt-3 flex h-56 max-w-3xl items-center justify-center overflow-hidden md:mt-6"
+          className="relative mx-auto mt-3 flex h-56 max-w-3xl items-center justify-center overflow-hidden"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
         >
