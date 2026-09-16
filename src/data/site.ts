@@ -123,7 +123,6 @@ export const RD_RESTAURANTS: Restaurant[] = [
     href: "https://butcherandtherye.com/",
   },
   { name: "täkō", image: "/images/tako.webp", href: "https://takopgh.com/" },
-  { name: "Tako Torta", image: "/images/takotorta.webp", href: "https://takotorta.com/" },
   { name: "Poulet Bleu", image: "/images/pouletbleu.webp", href: "https://www.pouletbleupgh.com/" },
   { name: "Fish nor Fowl", image: "/images/fishnorfowl.webp", href: "https://fishnorfowlpgh.com/" },
   { name: "Coup De Ville", image: "/images/coupdeville.webp", href: "https://coopdevillepgh.com/" },
