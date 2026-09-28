@@ -82,6 +82,7 @@ export type ColdBrewContent = {
   }
   method: {
     image: CmsImage
+    images: [CmsImage, CmsImage, CmsImage]
     kicker: string
     paragraphs: string[]
     button: CmsLink
@@ -238,6 +239,11 @@ export const DEFAULT_COLD_BREW_CONTENT: ColdBrewContent = {
   },
   method: {
     image: image("/images/menu-coffeebeans.webp", "Fresh coffee beans for cold brew"),
+    images: [
+      image("/images/menu-coffeepacket.webp", "Passenger coffee beans at Pre Amp"),
+      image("/images/menu-coffeepouring.webp", "Coffee being poured at Pre Amp"),
+      image("/images/menu-coffee.webp", "Coffee and vinyl at Pre Amp"),
+    ],
     kicker: "The Method",
     paragraphs: [
       "Kyoto-style cold brew is the slow road: ice-cold water falling one drop at a time through a tall tower of fresh Passenger grounds. No heat, no rush - just twelve patient hours.",

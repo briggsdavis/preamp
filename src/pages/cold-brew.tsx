@@ -204,6 +204,33 @@ export function ColdBrew() {
             </EditableLink>
           </motion.div>
         </div>
+        <div className="relative z-10 mx-auto mt-14 grid max-w-7xl gap-5 px-6 sm:grid-cols-2 md:mt-20 md:px-8 lg:grid-cols-3">
+          {content.method.images.map((image, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="aspect-[4/5] overflow-hidden rounded-3xl shadow-xl shadow-maroon/15"
+            >
+              <EditableImage
+                path={`method.images.${index}`}
+                value={image}
+                ratio="4:5"
+                className="h-full w-full"
+              >
+                <img
+                  src={imageUrl(image)}
+                  alt={image.alt}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover"
+                />
+              </EditableImage>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       {/* What's coming - pre-launch placeholders */}
