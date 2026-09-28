@@ -202,12 +202,22 @@ function EventForm({ existing, onClose }: { existing: EventData | null; onClose:
     <Modal title={existing ? "Edit event" : "New event"} onClose={onClose}>
       <div className="space-y-4">
         <div>
-          <label className={label}>Title</label>
-          <input className={field} value={title} onChange={(e) => setTitle(e.target.value)} />
+          <label htmlFor="field-events-205" className={label}>
+            Title
+          </label>
+          <input
+            id="field-events-205"
+            className={field}
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
         </div>
         <div>
-          <label className={label}>Date &amp; time</label>
+          <label htmlFor="field-events-209" className={label}>
+            Date &amp; time
+          </label>
           <input
+            id="field-events-209"
             type="datetime-local"
             className={field}
             value={when}
@@ -215,8 +225,11 @@ function EventForm({ existing, onClose }: { existing: EventData | null; onClose:
           />
         </div>
         <div>
-          <label className={label}>Short description</label>
+          <label htmlFor="field-events-218" className={label}>
+            Short description
+          </label>
           <textarea
+            id="field-events-218"
             className={`${field} resize-none`}
             rows={3}
             value={description}

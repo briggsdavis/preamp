@@ -235,6 +235,7 @@ function QuestionEditor({
   const [newOption, setNewOption] = useState("")
   const [busy, setBusy] = useState(false)
 
+  // oxlint-disable-next-line react/set-state-in-effect
   useEffect(() => setPrompt(question.prompt), [question.prompt])
 
   async function addOption(event: FormEvent) {
@@ -351,6 +352,7 @@ function OptionEditor({
 }) {
   const [optionLabel, setOptionLabel] = useState(option.label)
 
+  // oxlint-disable-next-line react/set-state-in-effect
   useEffect(() => setOptionLabel(option.label), [option.label])
 
   return (

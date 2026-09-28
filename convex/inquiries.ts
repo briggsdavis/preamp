@@ -1,6 +1,7 @@
 import { v, ConvexError } from "convex/values"
 import { mutation, query } from "./_generated/server"
 import { requireAdmin } from "./admin"
+import { isContactSpam } from "./contactSpam"
 import { contactTopic } from "./schema"
 import { sendContactNotification, sendHiringNotification } from "./submissionEmails"
 
@@ -32,11 +33,12 @@ export const counts = query({
       ctx.db.query("emailCaptures").collect(),
     ])
     const unread = (rows: { read?: boolean }[]) => rows.reduce((n, r) => n + (r.read ? 0 : 1), 0)
+    const inbox = contact.filter((row) => !isContactSpam(row))
     return {
-      contact: { total: contact.length, unread: unread(contact) },
+      contact: { total: inbox.length, unread: unread(inbox), spam: contact.length - inbox.length },
       hiring: { total: hiring.length, unread: unread(hiring) },
       captures: { total: captures.length },
-      totalUnread: unread(contact) + unread(hiring),
+      totalUnread: unread(inbox) + unread(hiring),
     }
   },
 })
@@ -61,8 +63,9 @@ export const submitContact = mutation({
       ...args,
       email: args.email.trim(),
     }
-    const id = await ctx.db.insert("contactSubmissions", submission)
-    await sendContactNotification(ctx, submission)
+    const spam = isContactSpam(submission)
+    const id = await ctx.db.insert("contactSubmissions", { ...submission, spam })
+    if (!spam) await sendContactNotification(ctx, submission)
     return id
   },
 })
@@ -72,9 +75,10 @@ export const listContact = query({
   handler: async (ctx, { topics }) => {
     await requireAdmin(ctx)
     const rows = await ctx.db.query("contactSubmissions").order("desc").collect()
-    if (!topics || topics.length === 0) return rows
+    const classified = rows.map((row) => ({ ...row, spam: isContactSpam(row) }))
+    if (!topics || topics.length === 0) return classified
     const wanted = new Set(topics)
-    return rows.filter((row) => wanted.has(row.topic ?? "general"))
+    return classified.filter((row) => wanted.has(row.topic ?? "general"))
   },
 })
 
@@ -92,6 +96,15 @@ export const setContactRead = mutation({
   handler: async (ctx, { id, read }) => {
     await requireAdmin(ctx)
     await ctx.db.patch(id, { read })
+  },
+})
+
+/** Move a contact submission between the inbox and spam. */
+export const setContactSpam = mutation({
+  args: { id: v.id("contactSubmissions"), spam: v.boolean() },
+  handler: async (ctx, { id, spam }) => {
+    await requireAdmin(ctx)
+    await ctx.db.patch(id, { spam })
   },
 })
 

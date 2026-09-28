@@ -69,6 +69,7 @@ export function CoffeeQuiz() {
   )
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     setStep(0)
     setAnswers({})
     setResult(null)

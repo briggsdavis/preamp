@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Link } from "react-router"
 import { Reveal } from "@/components/site/reveal"
 import { RippleStripes } from "@/components/site/ripple-stripes"
@@ -7,6 +8,7 @@ import { useTrack } from "@/lib/analytics"
 import { useGlobalContent } from "@/lib/site-content"
 
 export function Footer() {
+  const [year] = useState(() => new Date().getFullYear())
   const track = useTrack()
   const global = useGlobalContent()
   return (
@@ -146,7 +148,7 @@ export function Footer() {
 
       <div className="relative border-t border-cream/10 py-5 text-center text-xs text-cream/50">
         <p>
-          © {new Date().getFullYear()} {global.businessName} {global.tagline} · Pittsburgh, PA
+          © {year} {global.businessName} {global.tagline} · Pittsburgh, PA
         </p>
         <p className="mt-2">
           Made by{" "}

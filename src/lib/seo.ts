@@ -42,7 +42,8 @@ export function useSeo(seo: SeoData | null): void {
   // Serialize so the effect re-runs whenever the content changes.
   const key = seo ? JSON.stringify(seo) : ""
   useEffect(() => {
-    if (!seo) return
+    if (!key) return
+    const seo = JSON.parse(key) as SeoData
     const prevTitle = document.title
     document.title = seo.title
 

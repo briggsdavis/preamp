@@ -70,7 +70,7 @@ export function DietaryTagPicker({
 
   return (
     <div>
-      <label className={label}>Dietary tags (optional)</label>
+      <div className={label}>Dietary tags (optional)</div>
       <div className="flex flex-wrap gap-2">
         {tags === undefined && <span className="text-sm text-espresso/50">Loading tags…</span>}
         {tags?.map((t) => {
@@ -118,17 +118,20 @@ export function DietaryTagPicker({
         <div className="mt-3 rounded-xl border-2 border-sand bg-white p-3">
           <div className="flex flex-wrap items-end gap-3">
             <div className="min-w-[10rem] flex-1">
-              <label className={label}>Tag name</label>
+              <label htmlFor="field-dietary-tag-picker-121" className={label}>
+                Tag name
+              </label>
               <input
+                id="field-dietary-tag-picker-121"
                 className={field}
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 placeholder="Oat Milk"
-                autoFocus
+                autoFocus={true /* oxlint-disable-line jsx-a11y/no-autofocus */}
               />
             </div>
             <div className="basis-full">
-              <label className={label}>Icon</label>
+              <div className={label}>Icon</div>
               <div className="flex flex-wrap gap-2">
                 {DIETARY_ICON_OPTIONS.map((option) => (
                   <button
@@ -149,8 +152,11 @@ export function DietaryTagPicker({
               </div>
             </div>
             <div>
-              <label className={label}>Color</label>
+              <label htmlFor="field-dietary-tag-picker-152" className={label}>
+                Color
+              </label>
               <input
+                id="field-dietary-tag-picker-152"
                 type="color"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}

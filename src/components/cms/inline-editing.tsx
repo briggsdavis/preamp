@@ -59,11 +59,13 @@ export function EditableText({ path, value }: { path: string; value: string }) {
   if (!editing) return <>{value}</>
 
   return (
+    // oxlint-disable-next-line jsx-a11y/no-static-element-interactions
     <span
       ref={ref}
       contentEditable
       suppressContentEditableWarning
-      role="textbox"
+      role={"textbox" /* oxlint-disable-line jsx-a11y/prefer-tag-over-role */}
+      aria-label="Edit text"
       tabIndex={0}
       title="Edit text"
       className="cms-editable-text inline-block min-h-[1em] max-w-full min-w-8 cursor-text rounded-sm outline-none"
@@ -218,7 +220,7 @@ export function EditableLink({
         createPortal(
           <div
             ref={popoverRef}
-            role="dialog"
+            role={"dialog" /* oxlint-disable-line jsx-a11y/prefer-tag-over-role */}
             aria-label="Edit button"
             className="fixed z-[200] w-80 rounded-lg border-2 border-sand bg-cream p-4 text-left text-espresso shadow-2xl"
             style={position}
@@ -227,7 +229,7 @@ export function EditableLink({
             <label className="block text-xs font-bold text-espresso/60 uppercase">
               {labelTitle}
               <input
-                autoFocus
+                autoFocus={true /* oxlint-disable-line jsx-a11y/no-autofocus */}
                 value={value.label}
                 onChange={(event) => editing.updateValue(`${path}.${labelKey}`, event.target.value)}
                 className="mt-1.5 w-full rounded-md border-2 border-sand bg-white px-3 py-2 text-sm font-normal text-espresso outline-none focus:border-gold"
@@ -313,7 +315,7 @@ export function EditableIcon({
         createPortal(
           <div
             ref={popoverRef}
-            role="dialog"
+            role={"dialog" /* oxlint-disable-line jsx-a11y/prefer-tag-over-role */}
             aria-label="Choose icon"
             className="fixed z-[220] w-[17rem] rounded-lg border-2 border-sand bg-cream p-3 text-espresso shadow-2xl"
             style={position}

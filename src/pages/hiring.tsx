@@ -199,8 +199,11 @@ export function Hiring() {
                 </div>
 
                 <div>
-                  <label className={labelClass}>Resume Upload</label>
+                  <label htmlFor="field-hiring-202" className={labelClass}>
+                    Resume Upload
+                  </label>
                   <input
+                    id="field-hiring-202"
                     type="file"
                     name="resume"
                     accept=".pdf,.doc,.docx,.jpg,.jpeg"

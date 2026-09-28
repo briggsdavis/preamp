@@ -4,6 +4,7 @@ import type { Doc } from "./_generated/dataModel"
 import { mutation, query, internalMutation } from "./_generated/server"
 import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { requireAdmin } from "./admin"
+import { isContactSpam } from "./contactSpam"
 import { menuKind } from "./schema"
 
 /**
@@ -1084,7 +1085,7 @@ export const getHomeSummary = query({
       ctx.db.query("menuItems").collect(),
     ])
 
-    const contactUnread = contact.reduce((n, r) => n + (r.read ? 0 : 1), 0)
+    const contactUnread = contact.reduce((n, r) => n + (r.read || isContactSpam(r) ? 0 : 1), 0)
     const hiringUnread = hiring.reduce((n, r) => n + (r.read ? 0 : 1), 0)
     const weekAgo = now - 7 * 86_400_000
     let pendingReviews = 0

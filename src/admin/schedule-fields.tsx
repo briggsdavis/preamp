@@ -74,7 +74,7 @@ export function ScheduleFields({
   const invalid = startsAt != null && endsAt != null && endsAt <= startsAt
   return (
     <div>
-      <label className={label}>Schedule (optional)</label>
+      <div className={label}>Schedule (optional)</div>
       <p className="mb-2 text-xs text-espresso/55">
         Leave blank to go live as soon as it's turned on. Scheduling a new one for a later time
         automatically replaces the current one when its window opens.

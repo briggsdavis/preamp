@@ -183,6 +183,8 @@ export default defineSchema({
     message: v.string(),
     // Whether an admin has marked this inquiry as read.
     read: v.optional(v.boolean()),
+    // Admin overrides the automatic spam classification when set.
+    spam: v.optional(v.boolean()),
   }),
 
   hiringSubmissions: defineTable({

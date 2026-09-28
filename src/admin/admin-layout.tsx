@@ -315,7 +315,7 @@ function NewMenuPageDialog({
         <label className="block">
           <span className={label}>Page name</span>
           <input
-            autoFocus
+            autoFocus={true /* oxlint-disable-line jsx-a11y/no-autofocus */}
             required
             className={field}
             value={title}

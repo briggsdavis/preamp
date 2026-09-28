@@ -170,7 +170,7 @@ function EventModal({ event, onClose }: { event: EventDoc; onClose: () => void }
 
 /** Month-grid calendar with clickable event chips. Highlights today. */
 function Calendar({ events, onSelect }: { events: EventDoc[]; onSelect: (e: EventDoc) => void }) {
-  const today = new Date()
+  const [today] = useState(() => new Date())
   const [view, setView] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
 
   const year = view.getFullYear()

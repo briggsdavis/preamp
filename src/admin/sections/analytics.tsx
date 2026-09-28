@@ -935,7 +935,7 @@ function ItemsTable({
             return (
               <Fragment key={g.id}>
                 <tr className="border-b border-sand/60 bg-cream-deep/40">
-                  <td colSpan={cols} className="py-1.5">
+                  <td colSpan={cols} className="py-1.5" aria-label="Group">
                     <button
                       type="button"
                       onClick={() => onToggleCollapse(g.id)}
@@ -961,7 +961,7 @@ function ItemsTable({
                       {showMenu && (
                         <td className="py-2 pr-3 text-espresso/60 capitalize">{r.menu}</td>
                       )}
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pr-3" aria-label="Views">
                         <div className="flex items-center gap-2">
                           <div className="h-2 w-20 overflow-hidden rounded-full bg-cream-deep">
                             <div

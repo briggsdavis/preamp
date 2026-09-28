@@ -37,7 +37,7 @@ export function AnnouncementBar() {
       entityId: announcement._id,
       entityTitle: announcement.internalTitle,
     })
-  }, [visible, announcement?._id, pathname])
+  }, [visible, announcement, pathname, track])
 
   if (!visible || !announcement) return null
 

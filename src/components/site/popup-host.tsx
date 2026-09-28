@@ -2,7 +2,7 @@ import { api } from "@convex/_generated/api"
 import type { Id } from "@convex/_generated/dataModel"
 import { useQuery, useMutation } from "convex/react"
 import { motion, AnimatePresence } from "motion/react"
-import { useEffect, useRef, useState, type FormEvent } from "react"
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { useLocation } from "react-router"
 import { useTrack } from "@/lib/analytics"
 import { pageKeyForPath, showsOnPage } from "@/lib/cms"
@@ -124,7 +124,7 @@ function PopupItem({ popup, pathname }: { popup: Popup; pathname: string }) {
   }, [open])
 
   // Record the dismissal + dwell time once, then hide the pop-up.
-  function fireClose() {
+  const fireClose = useCallback(() => {
     if (closeTracked.current || openedAt.current == null) return
     closeTracked.current = true
     track("popup_close", {
@@ -133,7 +133,7 @@ function PopupItem({ popup, pathname }: { popup: Popup; pathname: string }) {
       entityTitle: popup.internalTitle,
       dwellMs: Date.now() - openedAt.current,
     })
-  }
+  }, [track, pathname, popup._id, popup.internalTitle])
   function close() {
     fireClose()
     setOpen(false)
@@ -145,7 +145,7 @@ function PopupItem({ popup, pathname }: { popup: Popup; pathname: string }) {
     () => () => {
       if (openRef.current) fireClose()
     },
-    [],
+    [fireClose],
   )
 
   // Arm the trigger once.
@@ -252,6 +252,7 @@ function PopupItem({ popup, pathname }: { popup: Popup; pathname: string }) {
       {media.length > 0 && (
         <div className="bg-cream-deep">
           {media[current]?.type === "video" ? (
+            /* oxlint-disable-next-line jsx-a11y/media-has-caption */
             <video
               src={media[current].url ?? undefined}
               controls
@@ -338,12 +339,12 @@ function PopupItem({ popup, pathname }: { popup: Popup; pathname: string }) {
 
   return (
     <AnimatePresence>
-      <div
-        className={`pointer-events-none ${wrapperClasses(popup.position)}`}
-        onClick={showBackdrop ? close : undefined}
-      >
+      <div className={`pointer-events-none ${wrapperClasses(popup.position)}`}>
         {showBackdrop && (
-          <div
+          <button
+            type="button"
+            aria-label="Close popup"
+            onClick={close}
             className={`pointer-events-auto absolute inset-0 ${
               blur ? "bg-espresso/60 backdrop-blur-sm" : "bg-transparent"
             }`}

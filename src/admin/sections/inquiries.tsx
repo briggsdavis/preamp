@@ -202,15 +202,19 @@ function ContactTab() {
   const { confirmThen } = useDialogs()
   const del = useMutation(api.inquiries.deleteContact)
   const markRead = useMutation(api.inquiries.setContactRead)
+  const markSpam = useMutation(api.inquiries.setContactSpam)
   const [q, setQ] = useState("")
   const [status, setStatus] = useState<ReadStatus>("all")
+  const [folder, setFolder] = useState<"inbox" | "spam">("inbox")
   const [topics, setTopics] = useState<ContactTopic[]>([])
   const rows = useQuery(api.inquiries.listContact, topics.length > 0 ? { topics } : {})
+  const spamCount = rows?.filter((row) => row.spam).length ?? 0
 
   const filtered = useMemo(() => {
     if (!rows) return []
     const needle = q.trim().toLowerCase()
     return rows.filter((r) => {
+      if (r.spam !== (folder === "spam")) return false
       if (!matchesRead(r.read, status)) return false
       if (!needle) return true
       return [r.firstName, r.lastName, r.email, r.phone, contactTopicLabel(r.topic), r.message]
@@ -218,13 +222,27 @@ function ContactTab() {
         .toLowerCase()
         .includes(needle)
     })
-  }, [rows, q, status])
+  }, [rows, q, status, folder])
 
   if (rows === undefined) return <Loading />
 
   return (
     <div>
       <div className="flex flex-wrap items-center gap-3">
+        <div className="inline-flex rounded-full border-2 border-sand bg-cream p-1">
+          {(["inbox", "spam"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setFolder(value)}
+              className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition-colors ${
+                folder === value ? "bg-brick text-cream" : "text-espresso/70 hover:bg-cream-deep"
+              }`}
+            >
+              {value === "inbox" ? "Inbox" : `Spam (${spamCount})`}
+            </button>
+          ))}
+        </div>
         <SearchBar value={q} onChange={setQ} count={filtered.length} inline />
         <ReadFilter value={status} onChange={setStatus} />
         <TopicFilter value={topics} onChange={setTopics} />
@@ -263,6 +281,13 @@ function ContactTab() {
                     read={!!r.read}
                     onClick={() => void markRead({ id: r._id, read: !r.read })}
                   />
+                  <button
+                    type="button"
+                    onClick={() => void markSpam({ id: r._id, spam: !r.spam })}
+                    className="text-xs font-semibold text-brick hover:underline"
+                  >
+                    {r.spam ? "Move to inbox" : "Mark spam"}
+                  </button>
                   <DeleteBtn
                     onClick={() =>
                       confirmThen(
@@ -540,7 +565,7 @@ function CapturesTab() {
                 <th className="px-4 py-2 font-semibold">Email</th>
                 <th className="px-4 py-2 font-semibold">Source</th>
                 <th className="px-4 py-2 font-semibold">Captured</th>
-                <th className="px-4 py-2" />
+                <th className="px-4 py-2" aria-label="Actions" />
               </tr>
             </thead>
             <tbody>

@@ -192,6 +192,7 @@ export function Navbar() {
 
   // Close the mobile drawer whenever the route changes (sync UI to the router).
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect
     setMobileOpen(false)
   }, [location.pathname])
 

@@ -84,7 +84,11 @@ function HeartButton({
   return (
     <button
       type="button"
-      onClick={onToggle}
+      onClick={(event) => {
+        event.preventDefault()
+        event.stopPropagation()
+        onToggle()
+      }}
       aria-pressed={liked}
       aria-label={liked ? "Unlike" : "Like"}
       className={`inline-flex items-center gap-1.5 rounded-full bg-cream/90 font-semibold text-espresso shadow-sm backdrop-blur transition-transform hover:scale-105 ${
@@ -212,13 +216,7 @@ function MenuCard({
           alt={item.name}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
-        <div
-          className="absolute top-3 right-3"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-          }}
-        >
+        <div className="absolute top-3 right-3">
           <HeartButton liked={state.liked} likes={state.likes} onToggle={onToggleLike} />
         </div>
       </div>
@@ -230,13 +228,7 @@ function MenuCard({
         <p className="mt-2 text-sm text-espresso/75">{item.description}</p>
         <DietaryPills tags={tags} />
         {orderEnabled && (
-          <div
-            className="mt-4 flex"
-            onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-            }}
-          >
+          <div className="mt-4 flex">
             <OrderButton item={item} label={orderLabel} />
           </div>
         )}
@@ -656,7 +648,7 @@ export function MenuPage({
       entityId: openItem.id,
       entityTitle: openItem.name,
     })
-  }, [openItem?.id, routed])
+  }, [openItem, routed, base, menuKind, track])
 
   // Per-item SEO (title/description/OG/JSON-LD) while a routed item is open.
   useSeo(

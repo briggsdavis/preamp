@@ -160,6 +160,7 @@ function Toggle({
     <button
       type="button"
       role="switch"
+      aria-label="Enabled"
       aria-checked={checked}
       disabled={disabled}
       onClick={() => onChange(!checked)}

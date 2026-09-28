@@ -42,13 +42,15 @@ export function Modal({
   }, [onClose])
 
   return createPortal(
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-espresso/70 p-4 py-10 backdrop-blur-sm"
-    >
+    <div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-espresso/70 p-4 py-10 backdrop-blur-sm">
+      <button
+        type="button"
+        aria-label="Close dialog"
+        onClick={onClose}
+        className="absolute inset-0"
+      />
       <div
-        onClick={(e) => e.stopPropagation()}
-        className={`w-full rounded-3xl bg-cream shadow-2xl ${wide ? "max-w-3xl" : "max-w-xl"}`}
+        className={`relative w-full rounded-3xl bg-cream shadow-2xl ${wide ? "max-w-3xl" : "max-w-xl"}`}
       >
         <div className="flex items-center justify-between border-b-2 border-sand px-6 py-4">
           <h2 className="font-display text-2xl text-espresso">{title}</h2>

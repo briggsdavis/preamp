@@ -615,7 +615,7 @@ function MoveSectionModal({
           </label>
           <select
             id="move-section-page"
-            autoFocus
+            autoFocus={true /* oxlint-disable-line jsx-a11y/no-autofocus */}
             className={field}
             value={targetMenu}
             onChange={(event) => setTargetMenu(event.target.value)}
@@ -675,12 +675,26 @@ function MenuPageFields({
   return (
     <div className="mt-5 grid gap-3 rounded-2xl border-2 border-sand bg-cream p-4 md:grid-cols-[1fr_1fr_auto] md:items-end">
       <div>
-        <label className={label}>Page title</label>
-        <input className={field} value={title} onChange={(e) => setTitle(e.target.value)} />
+        <label htmlFor="field-menu-manager-678" className={label}>
+          Page title
+        </label>
+        <input
+          id="field-menu-manager-678"
+          className={field}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
       </div>
       <div>
-        <label className={label}>Eyebrow text</label>
-        <input className={field} value={eyebrow} onChange={(e) => setEyebrow(e.target.value)} />
+        <label htmlFor="field-menu-manager-682" className={label}>
+          Eyebrow text
+        </label>
+        <input
+          id="field-menu-manager-682"
+          className={field}
+          value={eyebrow}
+          onChange={(e) => setEyebrow(e.target.value)}
+        />
       </div>
       <button
         type="button"
@@ -902,8 +916,11 @@ function ItemEditor({
     <Modal title={item === null ? `New ${menu} item` : `Edit ${item.name}`} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className={label}>Name</label>
+          <label htmlFor="field-menu-manager-905" className={label}>
+            Name
+          </label>
           <input
+            id="field-menu-manager-905"
             className={field}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -911,8 +928,11 @@ function ItemEditor({
           />
         </div>
         <div>
-          <label className={label}>Price</label>
+          <label htmlFor="field-menu-manager-914" className={label}>
+            Price
+          </label>
           <input
+            id="field-menu-manager-914"
             className={field}
             value={price}
             onChange={(e) => setPrice(e.target.value)}
@@ -920,8 +940,11 @@ function ItemEditor({
           />
         </div>
         <div>
-          <label className={label}>Description</label>
+          <label htmlFor="field-menu-manager-923" className={label}>
+            Description
+          </label>
           <textarea
+            id="field-menu-manager-923"
             className={`${field} resize-none`}
             rows={3}
             value={description}
@@ -949,8 +972,11 @@ function ItemEditor({
           )}
         </div>
         <div>
-          <label className={label}>Section</label>
+          <label htmlFor="field-menu-manager-952" className={label}>
+            Section
+          </label>
           <select
+            id="field-menu-manager-952"
             className={field}
             value={targetSection}
             onChange={(e) => setTargetSection(e.target.value as Id<"menuSections">)}
@@ -1017,9 +1043,7 @@ function ItemEditor({
           </div>
         )}
         <div>
-          <label className={label}>
-            Images - drag to reorder; the first is the primary one shown
-          </label>
+          <div className={label}>Images - drag to reorder; the first is the primary one shown</div>
           <div className="flex flex-wrap gap-2">
             {images.map((img, i) => (
               <div

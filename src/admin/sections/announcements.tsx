@@ -219,8 +219,11 @@ function AnnouncementForm({
     <Modal title={existing ? "Edit announcement" : "New announcement"} onClose={onClose}>
       <div className="space-y-4">
         <div>
-          <label className={label}>Internal title (admin only)</label>
+          <label htmlFor="field-announcements-222" className={label}>
+            Internal title (admin only)
+          </label>
           <input
+            id="field-announcements-222"
             className={field}
             value={internalTitle}
             onChange={(e) => setInternalTitle(e.target.value)}
@@ -228,8 +231,11 @@ function AnnouncementForm({
           />
         </div>
         <div>
-          <label className={label}>Announcement text</label>
+          <label htmlFor="field-announcements-231" className={label}>
+            Announcement text
+          </label>
           <input
+            id="field-announcements-231"
             className={field}
             value={text}
             onChange={(e) => setText(e.target.value)}
@@ -238,16 +244,22 @@ function AnnouncementForm({
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={label}>Button label (optional)</label>
+            <label htmlFor="field-announcements-241" className={label}>
+              Button label (optional)
+            </label>
             <input
+              id="field-announcements-241"
               className={field}
               value={buttonLabel}
               onChange={(e) => setButtonLabel(e.target.value)}
             />
           </div>
           <div>
-            <label className={label}>Button link (optional)</label>
+            <label htmlFor="field-announcements-249" className={label}>
+              Button link (optional)
+            </label>
             <input
+              id="field-announcements-249"
               className={field}
               value={buttonLink}
               onChange={(e) => setButtonLink(e.target.value)}
@@ -261,7 +273,7 @@ function AnnouncementForm({
         </div>
 
         <div>
-          <label className={label}>Show on</label>
+          <div className={label}>Show on</div>
           <div className="flex gap-4 text-sm">
             <label className="flex items-center gap-2">
               <input

@@ -126,7 +126,7 @@ export function DialogProvider({ children }: { children: ReactNode }) {
           >
             {req.message && <p className="mb-3 text-espresso/80">{req.message}</p>}
             <input
-              autoFocus
+              autoFocus={true /* oxlint-disable-line jsx-a11y/no-autofocus */}
               className={field}
               value={value}
               placeholder={req.placeholder}

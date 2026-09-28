@@ -344,21 +344,34 @@ function PopupForm({ existing, onClose }: { existing: Popup | null; onClose: () 
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={label}>Internal title (admin only)</label>
+            <label htmlFor="field-popups-347" className={label}>
+              Internal title (admin only)
+            </label>
             <input
+              id="field-popups-347"
               className={field}
               value={internalTitle}
               onChange={(e) => setInternalTitle(e.target.value)}
             />
           </div>
           <div>
-            <label className={label}>Heading (optional)</label>
-            <input className={field} value={heading} onChange={(e) => setHeading(e.target.value)} />
+            <label htmlFor="field-popups-355" className={label}>
+              Heading (optional)
+            </label>
+            <input
+              id="field-popups-355"
+              className={field}
+              value={heading}
+              onChange={(e) => setHeading(e.target.value)}
+            />
           </div>
         </div>
         <div>
-          <label className={label}>Body text (optional)</label>
+          <label htmlFor="field-popups-360" className={label}>
+            Body text (optional)
+          </label>
           <textarea
+            id="field-popups-360"
             className={`${field} resize-none`}
             rows={2}
             value={body}
@@ -368,8 +381,11 @@ function PopupForm({ existing, onClose }: { existing: Popup | null; onClose: () 
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={label}>Position</label>
+            <label htmlFor="field-popups-371" className={label}>
+              Position
+            </label>
             <select
+              id="field-popups-371"
               className={field}
               value={position}
               onChange={(e) => setPosition(e.target.value as PopupPosition)}
@@ -382,8 +398,11 @@ function PopupForm({ existing, onClose }: { existing: Popup | null; onClose: () 
             </select>
           </div>
           <div>
-            <label className={label}>Display frequency</label>
+            <label htmlFor="field-popups-385" className={label}>
+              Display frequency
+            </label>
             <select
+              id="field-popups-385"
               className={field}
               value={frequency}
               onChange={(e) => setFrequency(e.target.value as Popup["frequency"])}
@@ -399,7 +418,7 @@ function PopupForm({ existing, onClose }: { existing: Popup | null; onClose: () 
 
         {/* Trigger */}
         <div>
-          <label className={label}>Trigger</label>
+          <div className={label}>Trigger</div>
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <label className="flex items-center gap-2">
               <input
@@ -449,16 +468,22 @@ function PopupForm({ existing, onClose }: { existing: Popup | null; onClose: () 
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className={label}>Button label (optional)</label>
+            <label htmlFor="field-popups-452" className={label}>
+              Button label (optional)
+            </label>
             <input
+              id="field-popups-452"
               className={field}
               value={buttonLabel}
               onChange={(e) => setButtonLabel(e.target.value)}
             />
           </div>
           <div>
-            <label className={label}>Button link (optional)</label>
+            <label htmlFor="field-popups-460" className={label}>
+              Button link (optional)
+            </label>
             <input
+              id="field-popups-460"
               className={field}
               value={buttonLink}
               onChange={(e) => setButtonLink(e.target.value)}
@@ -487,7 +512,7 @@ function PopupForm({ existing, onClose }: { existing: Popup | null; onClose: () 
         </label>
 
         <div>
-          <label className={label}>Show on</label>
+          <div className={label}>Show on</div>
           <div className="flex gap-4 text-sm">
             <label className="flex items-center gap-2">
               <input

@@ -534,8 +534,11 @@ function MerchEditor({
     <Modal title={item ? `Edit ${item.title}` : "New merch item"} onClose={onClose}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className={label}>Title</label>
+          <label htmlFor="field-merchandise-537" className={label}>
+            Title
+          </label>
           <input
+            id="field-merchandise-537"
             className={field}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -543,8 +546,11 @@ function MerchEditor({
           />
         </div>
         <div>
-          <label className={label}>Price</label>
+          <label htmlFor="field-merchandise-546" className={label}>
+            Price
+          </label>
           <input
+            id="field-merchandise-546"
             className={field}
             value={price}
             onChange={(e) => setPrice(e.target.value)}
@@ -552,8 +558,11 @@ function MerchEditor({
           />
         </div>
         <div>
-          <label className={label}>Description</label>
+          <label htmlFor="field-merchandise-555" className={label}>
+            Description
+          </label>
           <textarea
+            id="field-merchandise-555"
             className={`${field} resize-none`}
             rows={3}
             value={description}
@@ -561,8 +570,11 @@ function MerchEditor({
           />
         </div>
         <div>
-          <label className={label}>Purchase link</label>
+          <label htmlFor="field-merchandise-564" className={label}>
+            Purchase link
+          </label>
           <input
+            id="field-merchandise-564"
             className={field}
             value={purchaseUrl}
             onChange={(e) => setPurchaseUrl(e.target.value)}
@@ -571,8 +583,11 @@ function MerchEditor({
           />
         </div>
         <div>
-          <label className={label}>Section</label>
+          <label htmlFor="field-merchandise-574" className={label}>
+            Section
+          </label>
           <select
+            id="field-merchandise-574"
             className={field}
             value={targetSection}
             onChange={(e) => setTargetSection(e.target.value as Id<"merchSections">)}
@@ -585,9 +600,7 @@ function MerchEditor({
           </select>
         </div>
         <div>
-          <label className={label}>
-            Images - drag to reorder; the first is the primary one shown
-          </label>
+          <div className={label}>Images - drag to reorder; the first is the primary one shown</div>
           <div className="flex flex-wrap gap-2">
             {images.map((image, index) => (
               <div
@@ -630,7 +643,7 @@ function MerchEditor({
           </div>
         </div>
         <div>
-          <label className={label}>Preview</label>
+          <div className={label}>Preview</div>
           <div className="h-24 w-24 overflow-hidden rounded-lg border-2 border-sand bg-cream-deep">
             {images[0]?.url && (
               <img src={images[0].url} alt="" className="h-full w-full object-cover" />

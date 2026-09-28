@@ -12,6 +12,7 @@ import type * as admin from "../admin.js";
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as cms from "../cms.js";
+import type * as contactSpam from "../contactSpam.js";
 import type * as crons from "../crons.js";
 import type * as dietaryTags from "../dietaryTags.js";
 import type * as events from "../events.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   auth: typeof auth;
   cms: typeof cms;
+  contactSpam: typeof contactSpam;
   crons: typeof crons;
   dietaryTags: typeof dietaryTags;
   events: typeof events;
