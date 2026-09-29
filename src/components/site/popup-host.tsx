@@ -251,20 +251,22 @@ function PopupItem({ popup, pathname }: { popup: Popup; pathname: string }) {
 
       {media.length > 0 && (
         <div className="bg-cream-deep">
-          {media[current]?.type === "video" ? (
-            /* oxlint-disable-next-line jsx-a11y/media-has-caption */
-            <video
-              src={media[current].url ?? undefined}
-              controls
-              className="max-h-72 w-full object-cover"
-            />
-          ) : (
-            <img
-              src={media[current]?.url ?? undefined}
-              alt={popup.heading ?? popup.internalTitle}
-              className="max-h-72 w-full object-cover"
-            />
-          )}
+          <div className="mx-auto aspect-[4/5] w-full overflow-hidden">
+            {media[current]?.type === "video" ? (
+              /* oxlint-disable-next-line jsx-a11y/media-has-caption */
+              <video
+                src={media[current].url ?? undefined}
+                controls
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <img
+                src={media[current]?.url ?? undefined}
+                alt={popup.heading ?? popup.internalTitle}
+                className="h-full w-full object-cover"
+              />
+            )}
+          </div>
           {media.length > 1 && (
             <div className="flex justify-center gap-1.5 py-2">
               {media.map((_, i) => (
@@ -284,8 +286,10 @@ function PopupItem({ popup, pathname }: { popup: Popup; pathname: string }) {
       )}
 
       <div className="p-6">
-        {popup.heading && <h3 className="font-display text-2xl text-espresso">{popup.heading}</h3>}
-        {popup.body && <p className="mt-2 text-espresso/80">{popup.body}</p>}
+        {popup.heading && (
+          <h3 className="text-center font-display text-2xl text-espresso">{popup.heading}</h3>
+        )}
+        {popup.body && <p className="mt-2 text-center text-espresso/80">{popup.body}</p>}
 
         {popup.emailCapture &&
           (captured ? (
