@@ -251,22 +251,16 @@ function PopupItem({ popup, pathname }: { popup: Popup; pathname: string }) {
 
       {media.length > 0 && (
         <div className="bg-cream-deep">
-          <div className="mx-auto aspect-[4/5] w-full overflow-hidden">
-            {media[current]?.type === "video" ? (
-              /* oxlint-disable-next-line jsx-a11y/media-has-caption */
-              <video
-                src={media[current].url ?? undefined}
-                controls
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <img
-                src={media[current]?.url ?? undefined}
-                alt={popup.heading ?? popup.internalTitle}
-                className="h-full w-full object-cover"
-              />
-            )}
-          </div>
+          {media[current]?.type === "video" ? (
+            /* oxlint-disable-next-line jsx-a11y/media-has-caption */
+            <video src={media[current].url ?? undefined} controls className="block h-auto w-full" />
+          ) : (
+            <img
+              src={media[current]?.url ?? undefined}
+              alt={popup.heading ?? popup.internalTitle}
+              className="block h-auto w-full"
+            />
+          )}
           {media.length > 1 && (
             <div className="flex justify-center gap-1.5 py-2">
               {media.map((_, i) => (
