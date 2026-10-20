@@ -124,7 +124,6 @@ export const RD_RESTAURANTS: Restaurant[] = [
   },
   { name: "täkō", image: "/images/tako.webp", href: "https://takopgh.com/" },
   { name: "Poulet Bleu", image: "/images/pouletbleu.webp", href: "https://www.pouletbleupgh.com/" },
-  { name: "Fish nor Fowl", image: "/images/fishnorfowl.webp", href: "https://fishnorfowlpgh.com/" },
   { name: "Coup De Ville", image: "/images/coupdeville.webp", href: "https://coopdevillepgh.com/" },
   { name: "Sally Ann's", image: "/images/sallyannys.webp", href: "https://sallyannspgh.com/" },
   { name: "Golden Gai", image: "/images/goldengai.webp", href: "https://goldengaipgh.com/" },
