@@ -107,7 +107,7 @@ export interface Restaurant {
 }
 
 /**
- * The other concepts under Richard Deshantz's restaurant group (RD Restaurants).
+ * The other concepts in our restaurant group (RD Restaurants).
  * Each renders as a square tile. Drop in the real Facebook profile images and
  * page links as `image` / `href` to replace the on-brand placeholders.
  */

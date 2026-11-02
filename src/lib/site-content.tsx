@@ -171,7 +171,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
   },
   restaurantGroup: {
     kicker: "The Family",
-    title: "Proud to be part of Richard Deshantz's Restaurant Group.",
+    title: "Proud to be part of our restaurant group.",
     button: { label: "Visit the restaurant group →", href: "https://richarddeshantz.com/" },
     restaurants: RD_RESTAURANTS.map((restaurant) => ({
       name: restaurant.name,
@@ -209,7 +209,7 @@ export const DEFAULT_ABOUT_CONTENT: AboutContent = {
     title: "A Decade in the Making",
     paragraphs: [
       "After dedicating a decade to working in restaurants, cafes, and a roastery in New York City, I finally decided to pack up my family and embark on a new chapter: opening my own cafe in Pittsburgh in 2020. However, the pandemic had other plans for us, and, in a twist of fate, things worked out better than I could have ever imagined or anticipated.",
-      "While seeking work during the pandemic's uncertainty, I had the fortune of meeting Tolga and Rick. They brought me on as their coffee lead at Coop De Ville, and from there, the rest is history. Their unwavering trust led to a partnership focused on creating the ultimate coffee experience in Pittsburgh, a dream I couldn't have achieved on my own. With their incredible support and belief, I've been able to build and realize my vision: establishing what I believe will be the best coffee shop in Pittsburgh.",
+      "While seeking work during the pandemic's uncertainty, I had the fortune of meeting Tolga and the team behind our restaurant group. They brought me on as their coffee lead at Coop De Ville, and from there, the rest is history. Their unwavering trust led to a partnership focused on creating the ultimate coffee experience in Pittsburgh, a dream I couldn't have achieved on my own. With their incredible support and belief, I've been able to build and realize my vision: establishing what I believe will be the best coffee shop in Pittsburgh.",
       "My passion for coffee ignited in 2009, sparked by a $6 cup of coffee on a Clover machine from Cafe Grumpy in NYC. I was utterly captivated and surprised by the complexity, rich flavors, and compelling stories held within each bean.",
     ],
     decorImages: [

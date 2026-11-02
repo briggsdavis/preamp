@@ -7,7 +7,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "Who are we?",
     answer:
-      "Pre Amp Coffee Studio is the Richard DeShantz Restaurant Group's first dedicated coffee concept.",
+      "Pre Amp Coffee Studio is our restaurant group's first dedicated coffee concept.",
   },
   {
     question: "What is Pre Amp best known for?",
