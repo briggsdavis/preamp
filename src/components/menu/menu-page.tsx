@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "re
 import { createPortal } from "react-dom"
 import { useNavigate } from "react-router"
 import { ContentIcon, dietaryIconName } from "@/components/site/content-icon"
+import { OperationalFeeNotice } from "@/components/menu/operational-fee-notice"
 import { PageWrapper } from "@/components/site/page-wrapper"
 import type { MenuItem, MenuSection } from "@/data/menu"
 import { useTrack } from "@/lib/analytics"
@@ -758,6 +759,11 @@ export function MenuPage({
               </div>
             ))}
           </div>
+          {menuKind && (
+            <div className="mt-12 border-t border-espresso/15 pt-8">
+              <OperationalFeeNotice />
+            </div>
+          )}
         </div>
       </section>
 

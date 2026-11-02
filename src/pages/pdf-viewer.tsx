@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { OperationalFeeNotice } from "@/components/menu/operational-fee-notice"
 
 /**
  * Full-screen PDF viewer served from our own origin, so the browser tab shows
@@ -21,5 +22,12 @@ export function PdfViewer() {
     )
   }
 
-  return <iframe title="Pre Amp Menu PDF" src={src} className="h-screen w-screen border-0" />
+  return (
+    <main className="bg-cream">
+      <iframe title="Pre Amp Menu PDF" src={src} className="h-[80vh] w-full border-0" />
+      <div className="px-5 py-8 md:px-8">
+        <OperationalFeeNotice />
+      </div>
+    </main>
+  )
 }
