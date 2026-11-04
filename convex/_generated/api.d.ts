@@ -23,6 +23,7 @@ import type * as marketing from "../marketing.js";
 import type * as menu from "../menu.js";
 import type * as menuQuiz from "../menuQuiz.js";
 import type * as merch from "../merch.js";
+import type * as ops from "../ops.js";
 import type * as reviews from "../reviews.js";
 import type * as seedData from "../seedData.js";
 import type * as settings from "../settings.js";
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   menu: typeof menu;
   menuQuiz: typeof menuQuiz;
   merch: typeof merch;
+  ops: typeof ops;
   reviews: typeof reviews;
   seedData: typeof seedData;
   settings: typeof settings;
