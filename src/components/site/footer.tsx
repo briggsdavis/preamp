@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react"
 import { useState } from "react"
 import { Link } from "react-router"
 import { Reveal } from "@/components/site/reveal"
@@ -6,6 +7,60 @@ import { SocialIcon } from "@/components/site/social-icons"
 import { NAV } from "@/data/site"
 import { useTrack } from "@/lib/analytics"
 import { useGlobalContent } from "@/lib/site-content"
+
+const HOLIDAY_CLOSURES = [
+  {
+    year: "2026",
+    dates: [
+      "Labor Day: Monday, September 7",
+      "Thanksgiving: Thursday, November 26",
+      "Christmas Eve: Thursday, December 24",
+      "Christmas: Friday, December 25",
+    ],
+  },
+  {
+    year: "2027",
+    dates: [
+      "New Year's Day: Friday, January 1",
+      "Easter: Sunday, March 28",
+      "Memorial Day: Monday, May 31",
+      "Fourth of July: Sunday, July 4",
+      "Thanksgiving: Thursday, November 25",
+      "Christmas Eve: Friday, December 24",
+      "Christmas: Saturday, December 25",
+    ],
+  },
+]
+
+function HolidayClosures() {
+  return (
+    <div className="relative mx-auto max-w-7xl px-6 pt-12 md:px-8 md:pt-40">
+      <details className="group mx-auto max-w-3xl border-b border-cream/10 pb-8 text-center">
+        <summary className="mx-auto flex w-fit cursor-pointer list-none items-center gap-3 font-display text-2xl text-gold transition-colors hover:text-amber md:text-3xl [&::-webkit-details-marker]:hidden">
+          Holiday Closures
+          <ChevronDown
+            aria-hidden="true"
+            className="size-6 text-amber transition-transform duration-300 group-open:rotate-180"
+          />
+        </summary>
+        <div className="mt-8 grid gap-10 sm:grid-cols-2">
+          {HOLIDAY_CLOSURES.map((group) => (
+            <div key={group.year}>
+              <p className="font-groovy text-sm tracking-[0.2em] text-amber uppercase">
+                {group.year}
+              </p>
+              <ul className="mt-3 space-y-2 text-sm text-cream/75">
+                {group.dates.map((date) => (
+                  <li key={date}>{date}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </details>
+    </div>
+  )
+}
 
 export function Footer() {
   const [year] = useState(() => new Date().getFullYear())
@@ -19,7 +74,9 @@ export function Footer() {
         <RippleStripes count={110} fade="none" variant="wave" gap={3} />
       </div>
 
-      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pt-12 pb-12 md:grid-cols-4 md:px-8 md:pt-56">
+      <HolidayClosures />
+
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 pt-12 pb-12 md:grid-cols-4 md:px-8 md:pt-16">
         <Reveal className="md:col-span-1">
           <div className="flex items-center gap-3">
             <img
