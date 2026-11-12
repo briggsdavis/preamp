@@ -6,8 +6,7 @@ export interface FaqItem {
 export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "Who are we?",
-    answer:
-      "Pre Amp Coffee Studio is our restaurant group's first dedicated coffee concept.",
+    answer: "Pre Amp Coffee Studio is a dedicated coffee concept in our restaurant group.",
   },
   {
     question: "What is Pre Amp best known for?",

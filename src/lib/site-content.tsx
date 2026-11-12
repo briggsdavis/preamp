@@ -172,7 +172,10 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
   restaurantGroup: {
     kicker: "The Family",
     title: "Proud to be part of our restaurant group.",
-    button: { label: "Visit the restaurant group →", href: "" },
+    button: {
+      label: "Visit the restaurant group →",
+      href: "https://violetdoorhospitalitygroup.com",
+    },
     restaurants: RD_RESTAURANTS.map((restaurant) => ({
       name: restaurant.name,
       image: image(restaurant.image ?? "", `${restaurant.name} restaurant`),
