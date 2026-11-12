@@ -172,7 +172,7 @@ export const DEFAULT_HOME_CONTENT: HomeContent = {
   restaurantGroup: {
     kicker: "The Family",
     title: "Proud to be part of our restaurant group.",
-    button: { label: "Visit the restaurant group →", href: "https://richarddeshantz.com/" },
+    button: { label: "Visit the restaurant group →", href: "" },
     restaurants: RD_RESTAURANTS.map((restaurant) => ({
       name: restaurant.name,
       image: image(restaurant.image ?? "", `${restaurant.name} restaurant`),
@@ -307,7 +307,7 @@ export const DEFAULT_GLOBAL_CONTENT: GlobalContent = {
       label: "@preamp.coffeestudio",
       url: "https://www.instagram.com/preamp.coffeestudio/",
     },
-    { platform: "tiktok", label: "TikTok", url: "https://www.tiktok.com/@rd_restaurants" },
+    { platform: "tiktok", label: "TikTok", url: "https://www.tiktok.com/@preamp.coffeestudio" },
   ],
 }
 

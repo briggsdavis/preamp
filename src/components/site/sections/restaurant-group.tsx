@@ -292,24 +292,26 @@ export function RestaurantGroup() {
           </div>
         )}
 
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -18% 0px" }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-12 text-center"
-        >
-          <EditableLink path="restaurantGroup.button" value={content.button}>
-            <a
-              href={content.button.href}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
-            >
-              {content.button.label}
-            </a>
-          </EditableLink>
-        </motion.div>
+        {content.button.href.trim() || editor ? (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "0px 0px -18% 0px" }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-12 text-center"
+          >
+            <EditableLink path="restaurantGroup.button" value={content.button}>
+              <a
+                href={content.button.href}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-block rounded-full bg-terracotta px-7 py-3 font-semibold text-cream shadow-lg shadow-maroon/20 transition-all hover:-translate-y-1 hover:bg-brick"
+              >
+                {content.button.label}
+              </a>
+            </EditableLink>
+          </motion.div>
+        ) : null}
       </div>
     </section>
   )

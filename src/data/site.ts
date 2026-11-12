@@ -15,7 +15,7 @@ export const SITE = {
     { day: "Sunday", time: "8:00 AM – 5:00 PM" },
   ],
   instagram: "https://www.instagram.com/preamp.coffeestudio/",
-  tiktok: "https://www.tiktok.com/@rd_restaurants",
+  tiktok: "https://www.tiktok.com/@preamp.coffeestudio",
   mapsEmbed: "https://www.google.com/maps?q=5840+Forbes+Ave,+Pittsburgh,+PA+15217&output=embed",
   mapsLink: "https://www.google.com/maps/search/?api=1&query=5840+Forbes+Ave+Pittsburgh+PA+15217",
   // TODO: confirm the real online-ordering URL - placeholder based on the Toast
