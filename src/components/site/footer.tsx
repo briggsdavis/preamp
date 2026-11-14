@@ -120,16 +120,6 @@ export function Footer() {
               </a>
             ))}
           </div>
-          {global.socials[0] && (
-            <a
-              href={global.socials[0].url}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-4 inline-block text-sm font-semibold text-amber transition-colors hover:text-gold"
-            >
-              {global.socials[0].label} →
-            </a>
-          )}
         </Reveal>
 
         <nav className="space-y-4 md:hidden" aria-label="Footer navigation">
