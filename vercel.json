@@ -1,4 +1,8 @@
 {
+  "redirects": [
+    { "source": "/coffee", "destination": "/menu/coffee", "permanent": true },
+    { "source": "/join-our-team", "destination": "/hiring", "permanent": true }
+  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {
