@@ -5,6 +5,7 @@ import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { requireAdmin } from "./admin"
 import { menuKind, menuQuizAnswer } from "./schema"
 import { COFFEE_SEED, FOOD_SEED, MERCH_SEED, type SeedSection } from "./seedData"
+import { mediaUrl } from "./mediaUrl"
 
 /**
  * Menu data: one public read endpoint (used by both the live site and the
@@ -126,7 +127,7 @@ async function itemImages(
           : []
   return await Promise.all(
     refs.map(async (ref) => ({
-      url: ref.storageId ? await ctx.storage.getUrl(ref.storageId) : (ref.path ?? null),
+      url: ref.storageId ? await mediaUrl(ctx, ref.storageId) : (ref.path ?? null),
       storageId: ref.storageId,
       path: ref.path,
     })),
@@ -208,7 +209,7 @@ export const getMenu = query({
       .query("menuMeta")
       .withIndex("by_menu", (q) => q.eq("menu", menu))
       .unique()
-    const pdfUrl = meta?.pdfStorageId ? await ctx.storage.getUrl(meta.pdfStorageId) : null
+    const pdfUrl = meta?.pdfStorageId ? await mediaUrl(ctx, meta.pdfStorageId) : null
 
     return {
       page,

@@ -3,6 +3,7 @@ import type { Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import type { QueryCtx } from "./_generated/server"
 import { requireAdmin } from "./admin"
+import { mediaUrl } from "./mediaUrl"
 
 const contentKey = v.union(
   v.literal("home"),
@@ -25,7 +26,7 @@ async function resolveStorageUrls(ctx: QueryCtx, value: JsonValue): Promise<Json
     resolved[key] = await resolveStorageUrls(ctx, child)
   }
   if (typeof value.storageId === "string") {
-    resolved.url = await ctx.storage.getUrl(value.storageId as Id<"_storage">)
+    resolved.url = await mediaUrl(ctx, value.storageId as Id<"_storage">)
   }
   return resolved
 }

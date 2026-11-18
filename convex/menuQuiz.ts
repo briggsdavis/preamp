@@ -3,6 +3,7 @@ import type { Doc } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { requireAdmin } from "./admin"
+import { mediaUrl } from "./mediaUrl"
 
 const DEFAULT_QUESTIONS = [
   {
@@ -57,9 +58,9 @@ async function orderedQuestions(ctx: QueryCtx) {
 
 async function primaryImage(ctx: QueryCtx, item: Doc<"menuItems">): Promise<string | null> {
   const first = item.images?.[0]
-  if (first?.storageId) return await ctx.storage.getUrl(first.storageId)
+  if (first?.storageId) return await mediaUrl(ctx, first.storageId)
   if (first?.path) return first.path
-  if (item.imageStorageId) return await ctx.storage.getUrl(item.imageStorageId)
+  if (item.imageStorageId) return await mediaUrl(ctx, item.imageStorageId)
   return item.image ?? null
 }
 

@@ -6,6 +6,7 @@ import type { MutationCtx, QueryCtx } from "./_generated/server"
 import type { Infer } from "convex/values"
 import { requireAdmin } from "./admin"
 import { popupPosition } from "./schema"
+import { mediaUrl } from "./mediaUrl"
 
 /**
  * Marketing tools: announcement bars and pop-ups.
@@ -211,7 +212,7 @@ export async function withMediaUrls(ctx: QueryCtx, popup: Doc<"popups">) {
   const media = await Promise.all(
     popup.media.map(async (m) => ({
       type: m.type,
-      url: await ctx.storage.getUrl(m.storageId),
+      url: await mediaUrl(ctx, m.storageId),
       storageId: m.storageId,
     })),
   )

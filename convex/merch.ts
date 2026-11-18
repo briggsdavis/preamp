@@ -3,6 +3,7 @@ import type { Doc, Id } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { requireAdmin } from "./admin"
+import { mediaUrl } from "./mediaUrl"
 
 type MerchImage = {
   storageId?: Id<"_storage">
@@ -38,7 +39,7 @@ async function uniqueSlug(
 
 async function imageUrl(ctx: QueryCtx, image?: MerchImage): Promise<string | null> {
   if (!image) return null
-  if (image.storageId) return await ctx.storage.getUrl(image.storageId)
+  if (image.storageId) return await mediaUrl(ctx, image.storageId)
   return image.path ?? null
 }
 

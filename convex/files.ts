@@ -1,6 +1,7 @@
 import { v } from "convex/values"
 import { mutation, query } from "./_generated/server"
 import { requireAdmin } from "./admin"
+import { mediaUrl } from "./mediaUrl"
 
 /**
  * File storage helpers used by the admin for menu images, menu PDFs, and
@@ -23,6 +24,6 @@ export const generateUploadUrl = mutation({
 export const getUrl = query({
   args: { storageId: v.id("_storage") },
   handler: async (ctx, { storageId }) => {
-    return await ctx.storage.getUrl(storageId)
+    return await mediaUrl(ctx, storageId)
   },
 })

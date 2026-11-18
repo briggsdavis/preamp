@@ -3,6 +3,7 @@ import type { Doc } from "./_generated/dataModel"
 import { mutation, query } from "./_generated/server"
 import type { QueryCtx } from "./_generated/server"
 import { requireAdmin } from "./admin"
+import { mediaUrl } from "./mediaUrl"
 
 /**
  * Events: a public list (used by the public Events page + calendar) and
@@ -21,7 +22,7 @@ const imageInput = v.array(
 async function imageUrls(ctx: QueryCtx, event: Doc<"events">): Promise<string[]> {
   const urls = await Promise.all(
     event.images.map(async (img) => {
-      if (img.storageId) return await ctx.storage.getUrl(img.storageId)
+      if (img.storageId) return await mediaUrl(ctx, img.storageId)
       return img.path ?? null
     }),
   )
@@ -66,7 +67,7 @@ export const adminList = query({
           event.images.map(async (img) => ({
             storageId: img.storageId,
             path: img.path,
-            url: img.storageId ? await ctx.storage.getUrl(img.storageId) : (img.path ?? null),
+            url: img.storageId ? await mediaUrl(ctx, img.storageId) : (img.path ?? null),
           })),
         ),
       })),
